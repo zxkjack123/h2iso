@@ -223,7 +223,7 @@
 
 ### Phase 2.3: CLI 扩展与参数优化
 
-#### Task 2.3.1: CLI flowsheet 子命令
+#### ✅ Task 2.3.1: CLI flowsheet 子命令
 - **目标**：添加 `h2iso flowsheet --config iss_o.json` 命令
 - **依赖**：T2.1.3
 - **修改内容**：

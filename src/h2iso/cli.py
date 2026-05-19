@@ -206,6 +206,78 @@ def cmd_export(args: argparse.Namespace) -> None:
     print(f"Exported to {output}")
 
 
+def cmd_flowsheet(args: argparse.Namespace) -> None:
+    """Execute flowsheet subcommand."""
+    from h2iso.flowsheet.schema import load_flowsheet
+    from h2iso.flowsheet.solver import SequentialModularSolver
+    from h2iso.mesh.export import export_csv
+
+    config_path = Path(args.config)
+    if not config_path.exists():
+        print(f"Error: config file not found: {config_path}", file=sys.stderr)
+        raise SystemExit(1)
+
+    config = load_flowsheet(config_path)
+    print(f"Flowsheet: {len(config.columns)} columns, {len(config.feeds)} feeds, "
+          f"{len(config.tear_streams)} tear streams")
+
+    solver = SequentialModularSolver(
+        config,
+        method=args.method,
+        continuation_substeps=3,
+    )
+    result = solver.solve(max_iter=args.max_iter, tol=args.tol)
+
+    # Summary
+    status = "CONVERGED" if result.converged else "NOT CONVERGED"
+    print(f"\nStatus: {status}")
+    print(f"Iterations: {result.iterations}")
+    print(f"Tear residual: {result.tear_residual:.2e}")
+
+    # Product streams
+    print("\n--- Product Streams ---")
+    for name, stream in sorted(result.streams.items()):
+        if name.endswith("_distillate") or name.endswith("_bottoms"):
+            comp_str = _format_comp(stream.composition)
+            print(f"  {name}: flow={stream.flow:.2f} mol/h, T={stream.temperature:.2f} K")
+            print(f"    composition: {comp_str}")
+
+    # Export
+    out_dir = Path(args.output) if args.output else Path(".")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Export column profiles
+    for col_name, col_result in result.column_results.items():
+        if col_result is not None:
+            export_csv(col_result, out_dir / f"{col_name}_profiles.csv")
+
+    # Export summary JSON
+    summary = {
+        "converged": result.converged,
+        "iterations": result.iterations,
+        "tear_residual": float(result.tear_residual),
+        "method": args.method,
+        "streams": {},
+    }
+    for name, stream in result.streams.items():
+        summary["streams"][name] = {
+            "flow_mol_h": float(stream.flow),
+            "temperature_K": float(stream.temperature),
+            "pressure_Pa": float(stream.pressure),
+            "composition": {
+                sp: float(stream.composition[i])
+                for i, sp in enumerate(SPECIES_ORDER)
+                if stream.composition[i] > 1e-12
+            },
+        }
+
+    summary_path = out_dir / "summary.json"
+    with open(summary_path, "w") as f:
+        json.dump(summary, f, indent=2)
+
+    print(f"\nResults exported to {out_dir}/")
+
+
 def _format_comp(x: np.ndarray) -> str:
     """Format composition array as readable string."""
     parts = []
@@ -234,6 +306,15 @@ def main():
     col_p.add_argument("--config", type=str, required=True, help="Column config JSON file")
     col_p.add_argument("--output", type=str, default=None, help="Output directory (default: current)")
 
+    # flowsheet subcommand
+    fs_p = subparsers.add_parser("flowsheet", help="Solve multi-column flowsheet from JSON config")
+    fs_p.add_argument("--config", type=str, required=True, help="Flowsheet config JSON file")
+    fs_p.add_argument("--output", type=str, default=None, help="Output directory (default: current)")
+    fs_p.add_argument("--max-iter", type=int, default=50, help="Max tear stream iterations (default: 50)")
+    fs_p.add_argument("--tol", type=float, default=1e-4, help="Convergence tolerance (default: 1e-4)")
+    fs_p.add_argument("--method", type=str, choices=["wegstein", "direct"], default="wegstein",
+                      help="Convergence method (default: wegstein)")
+
     # export subcommand
     exp_p = subparsers.add_parser("export", help="Convert column results between formats")
     exp_p.add_argument("--input", type=str, required=True, help="Input JSON results file")
@@ -250,6 +331,8 @@ def main():
         cmd_flash(args)
     elif args.command == "column":
         cmd_column(args)
+    elif args.command == "flowsheet":
+        cmd_flowsheet(args)
     elif args.command == "export":
         cmd_export(args)
 
