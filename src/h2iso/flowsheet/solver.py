@@ -61,6 +61,10 @@ class SequentialModularSolver:
         on_unit_failure: Literal["raise", "skip", "stale"] = "raise",
     ):
         self.config = config
+        if method not in ("direct", "wegstein"):
+            raise ValueError(
+                f"method must be 'direct' or 'wegstein' (case-sensitive); got {method!r}"
+            )
         self.method = method
         self.continuation_substeps = continuation_substeps
         if on_unit_failure not in ("raise", "skip", "stale"):
@@ -452,12 +456,17 @@ class SequentialModularSolver:
             new_x_prev[name] = x_vec
             new_g_prev[name] = g_vec
 
-            # Reconstruct stream
+            # Reconstruct stream — preserve composition simplex:
+            #   x_new[0] is flow (scalar); x_new[1:] is the composition vector.
+            # The Wegstein/direct update may break sum-to-one and produce small
+            # negatives. Clip negatives then radially renormalise (symmetric
+            # simplex projection); this avoids biasing any single component the
+            # way an asymmetric (tail = 1 - sum(head)) closure would.
             flow_new = max(x_new[0], 0.1)
-            comp_new = x_new[1:]
-            comp_sum = comp_new.sum()
+            comp_raw = np.clip(x_new[1:], 0.0, None)
+            comp_sum = comp_raw.sum()
             if comp_sum > 0:
-                comp_new /= comp_sum
+                comp_new = comp_raw / comp_sum
             else:
                 comp_new = np.ones(N_SPECIES) / N_SPECIES
 

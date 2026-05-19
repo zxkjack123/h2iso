@@ -174,7 +174,7 @@
   - ✅ Rachford-Rice 括号无效时 raise ValueError，不再静默返回 0.5
   - ✅ T<=0 时 enthalpy 计算 raise ValueError
 
-#### Task 4.3: Wegstein 与 Continuation 数值稳定性 (BG-05 / CQ-08 / BG-06 / BG-07)
+#### ✅ Task 4.3: Wegstein 与 Continuation 数值稳定性 (BG-05 / CQ-08 / BG-06 / BG-07)
 - **目标**：修复 Wegstein 破坏组成单纯形、continuation 扰动后不归一化、method 参数无校验等问题
 - **依赖**：T4.1
 - **修改内容**：

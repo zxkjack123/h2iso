@@ -125,6 +125,15 @@ class ColumnUnit(UnitOp):
         if self.continuation_substeps > 0 and self.n_stages > 20:
             base_N = 15
             base_feeds = ContinuationSolver._scale_feeds(spec, base_N)
+            # Defensive consistency check: if the unit was configured with a
+            # multi-feed list but the scaler returned None, the base column
+            # would silently drop the auxiliary feeds. Fail loudly instead.
+            if spec.feeds is not None and base_feeds is None:
+                raise RuntimeError(
+                    f"ColumnUnit '{self.name}': multi-feed spec present but "
+                    f"ContinuationSolver._scale_feeds returned None for base_N={base_N}; "
+                    f"refusing to continue without scaled feeds."
+                )
             base_feed_stage = max(2, min(base_N - 1, int(stages[0] / self.n_stages * base_N)))
             base_spec = ColumnSpec(
                 n_stages=base_N,

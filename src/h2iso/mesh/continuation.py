@@ -170,6 +170,22 @@ class ContinuationSolver:
                 # Adaptive: perturb initial guess slightly
                 x0 = x0 * (1 + 0.01 * np.random.randn(len(x0)))
                 x0 = np.clip(x0, 0.0, None)
+                # Re-normalise composition blocks (x and y, 6 elements each) per
+                # stage so the perturbed initial guess still lives on the simplex.
+                # Layout per stage: [T (1), x (Nc), y (Nc)]; here Nc = N_SPECIES.
+                from h2iso.species import N_SPECIES as _NS
+                stride = 1 + 2 * _NS
+                for j in range(len(x0) // stride):
+                    x_off = j * stride + 1
+                    y_off = x_off + _NS
+                    x_blk = x0[x_off : x_off + _NS]
+                    y_blk = x0[y_off : y_off + _NS]
+                    xs = x_blk.sum()
+                    if xs > 0:
+                        x0[x_off : x_off + _NS] = x_blk / xs
+                    ys = y_blk.sum()
+                    if ys > 0:
+                        x0[y_off : y_off + _NS] = y_blk / ys
 
             history.append({
                 "param": "N",
