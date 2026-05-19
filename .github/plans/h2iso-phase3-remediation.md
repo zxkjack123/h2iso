@@ -242,7 +242,7 @@
 
 ### Phase 6: P3 Test Pyramid Completion
 
-#### Task 6.1: Property-based testing (hypothesis)
+#### ✅ Task 6.1: Property-based testing (hypothesis)
 - **目标**：用 hypothesis 覆盖关键不变性，发现 edge case
 - **依赖**：Phase 3+4 完成（输入验证就位后 property test 才有意义）
 - **修改内容**：
