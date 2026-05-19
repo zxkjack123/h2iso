@@ -154,3 +154,55 @@ class TestColumnSolve:
 
         assert result.condenser_duty < 0 or abs(result.condenser_duty) < 1e-6
         assert result.reboiler_duty > 0 or abs(result.reboiler_duty) < 1e-6
+
+
+class TestColumnSpecInputValidation:
+    """Task 4.1: ColumnSpec rejects out-of-range parameters at construction."""
+
+    def _valid_feed(self) -> np.ndarray:
+        z = np.zeros(6)
+        z[3] = 1.0  # pure D2
+        return z
+
+    def test_n_stages_below_two_rejected(self):
+        with pytest.raises(ValueError, match="n_stages"):
+            ColumnSpec(n_stages=1, feed_stage=1, feed_flow=100.0,
+                       feed_composition=self._valid_feed(),
+                       pressure=101325.0, reflux_ratio=3.0,
+                       distillate_to_feed=0.5)
+
+    def test_distillate_to_feed_above_one_rejected(self):
+        with pytest.raises(ValueError, match="distillate_to_feed"):
+            ColumnSpec(n_stages=10, feed_stage=5, feed_flow=100.0,
+                       feed_composition=self._valid_feed(),
+                       pressure=101325.0, reflux_ratio=3.0,
+                       distillate_to_feed=1.5)
+
+    def test_distillate_to_feed_zero_rejected(self):
+        with pytest.raises(ValueError, match="distillate_to_feed"):
+            ColumnSpec(n_stages=10, feed_stage=5, feed_flow=100.0,
+                       feed_composition=self._valid_feed(),
+                       pressure=101325.0, reflux_ratio=3.0,
+                       distillate_to_feed=0.0)
+
+
+class TestEquilibratorUnitValidation:
+    """Task 4.1: EquilibratorUnit rejects non-positive temperature."""
+
+    def test_zero_temperature_raises(self):
+        from h2iso.flowsheet.unit import EquilibratorUnit
+        from h2iso.flowsheet.stream import Stream
+        z = np.array([0.4, 0.0, 0.0, 0.4, 0.0, 0.2])
+        s = Stream(flow=10.0, composition=z, temperature=25.0, pressure=101325.0)
+        unit = EquilibratorUnit(name="EQ", temperature=0.0)
+        with pytest.raises(ValueError, match="temperature"):
+            unit.solve({"in": s})
+
+    def test_negative_temperature_raises(self):
+        from h2iso.flowsheet.unit import EquilibratorUnit
+        from h2iso.flowsheet.stream import Stream
+        z = np.array([0.4, 0.0, 0.0, 0.4, 0.0, 0.2])
+        s = Stream(flow=10.0, composition=z, temperature=25.0, pressure=101325.0)
+        unit = EquilibratorUnit(name="EQ", temperature=-5.0)
+        with pytest.raises(ValueError, match="temperature"):
+            unit.solve({"in": s})

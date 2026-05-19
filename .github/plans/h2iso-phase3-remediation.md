@@ -139,7 +139,7 @@
 
 ### Phase 4: P1 Robustness Hardening
 
-#### Task 4.1: Stream/ColumnSpec 输入验证 (CQ-02 / CQ-03 / CQ-04 / CQ-05)
+#### ✅ Task 4.1: Stream/ColumnSpec 输入验证 (CQ-02 / CQ-03 / CQ-04 / CQ-05)
 - **目标**：所有边界外输入在构造时立即报错，不让畸形数据进入求解器
 - **依赖**：Phase 3 全部完成
 - **修改内容**：

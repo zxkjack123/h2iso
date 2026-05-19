@@ -54,6 +54,16 @@ class ColumnSpec:
     feed_quality: float = 1.0  # q=1 saturated liquid (legacy single-feed)
     feeds: list[FeedSpec] | None = None  # Multi-feed list (overrides legacy fields)
 
+    def __post_init__(self):
+        if self.n_stages < 2:
+            raise ValueError(
+                f"n_stages must be >= 2 (need condenser + reboiler); got {self.n_stages}"
+            )
+        if not (0.0 < self.distillate_to_feed < 1.0):
+            raise ValueError(
+                f"distillate_to_feed must lie in (0, 1); got {self.distillate_to_feed}"
+            )
+
 
 @dataclass
 class ColumnResult:

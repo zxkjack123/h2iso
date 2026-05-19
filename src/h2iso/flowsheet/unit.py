@@ -195,7 +195,11 @@ class EquilibratorUnit(UnitOp):
         aH, aD, aT = atom_fractions(mixed.composition)
 
         # Compute equilibrium at unit temperature
-        T_eq = self.temperature if self.temperature > 0 else mixed.temperature
+        if self.temperature <= 0:
+            raise ValueError(
+                f"EquilibratorUnit.temperature must be > 0 K; got {self.temperature}"
+            )
+        T_eq = self.temperature
         x_eq = equilibrium_composition(aH, aD, aT, T=T_eq)
 
         self.inlets = inputs

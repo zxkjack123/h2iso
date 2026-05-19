@@ -98,3 +98,29 @@ class TestStreamSplit:
     def test_empty_ratios_raises(self, h2_stream):
         with pytest.raises(ValueError, match="non-empty"):
             stream_split(h2_stream, [])
+
+
+class TestStreamInputValidation:
+    """Task 4.1: Stream rejects invalid composition at construction."""
+
+    def test_negative_composition_rejected(self):
+        bad = np.array([-0.1, 0.0, 0.0, 1.1, 0.0, 0.0])
+        with pytest.raises(ValueError, match="non-negative"):
+            Stream(flow=1.0, composition=bad, temperature=25.0, pressure=101325.0)
+
+    def test_unnormalized_composition_rejected(self):
+        bad = np.array([0.5, 0.0, 0.0, 0.4, 0.0, 0.0])  # sum=0.9
+        with pytest.raises(ValueError, match="sum to 1"):
+            Stream(flow=1.0, composition=bad, temperature=25.0, pressure=101325.0)
+
+    def test_oversum_composition_rejected(self):
+        bad = np.array([0.6, 0.0, 0.0, 0.6, 0.0, 0.0])  # sum=1.2
+        with pytest.raises(ValueError, match="sum to 1"):
+            Stream(flow=1.0, composition=bad, temperature=25.0, pressure=101325.0)
+
+    def test_round_off_composition_accepted(self):
+        """NLP solver noise within tolerance must not be rejected."""
+        comp = np.array([1.0 - 1e-9, -1e-10, 0.0, 1e-9, 0.0, 0.0])
+        # Should not raise
+        s = Stream(flow=1.0, composition=comp, temperature=25.0, pressure=101325.0)
+        assert s.composition.shape == (N_SPECIES,)

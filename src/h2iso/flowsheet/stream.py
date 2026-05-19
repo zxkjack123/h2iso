@@ -37,6 +37,29 @@ class Stream:
         self.composition = np.asarray(self.composition, dtype=float)
         if self.composition.shape != (N_SPECIES,):
             raise ValueError(f"composition must have shape ({N_SPECIES},)")
+        self._validate_composition()
+
+    def _validate_composition(self) -> None:
+        """Reject malformed compositions before they pollute the solver.
+
+        Tolerances are loose enough to accept NLP solver round-off (~1e-9)
+        but tight enough to catch genuinely wrong data such as a -0.1 entry
+        or a composition that does not sum to 1.
+        """
+        comp = self.composition
+        neg_tol = 1e-8
+        sum_tol = 1e-6
+        if np.any(comp < -neg_tol):
+            raise ValueError(
+                f"composition must be non-negative (tolerance {neg_tol:.0e}); "
+                f"got min={float(comp.min()):.3e}"
+            )
+        total = float(comp.sum())
+        if abs(total - 1.0) > sum_tol:
+            raise ValueError(
+                f"composition must sum to 1.0 within {sum_tol:.0e}; "
+                f"got sum={total:.12g}"
+            )
 
 
 def stream_mix(streams: list[Stream]) -> Stream:
