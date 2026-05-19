@@ -93,7 +93,7 @@
 
 ### Phase 2.1: Flowsheet 基础设施
 
-#### Task 2.1.1: Stream 与 UnitOp 抽象层
+#### ✅ Task 2.1.1: Stream 与 UnitOp 抽象层
 - **目标**：定义流股数据结构和单元操作基类，作为 flowsheet 求解器的基础
 - **依赖**：T2.0.1
 - **修改内容**：
