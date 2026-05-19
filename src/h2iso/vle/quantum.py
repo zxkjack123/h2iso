@@ -119,6 +119,47 @@ def quantum_pvap_correction(T: Numeric, species: str) -> Numeric:
     return 1.0 / fugacity_correction(T, species)
 
 
+def quantum_alpha_correction(T: Numeric, species: str) -> Numeric:
+    """Feynman-Hibbs quantum correction multiplier for the SRK alpha function.
+
+    The leading-order Feynman-Hibbs effective potential modifies the
+    attractive parameter a(T) of cubic EOS for quantum fluids. We expose
+    this as a multiplicative factor on the classical Soave alpha:
+
+        α_quantum(T) = α_classical(T) · (1 + α_K2 / T²)
+
+    where α_K2 reuses the species-specific Feynman-Hibbs coefficient that
+    governs the gas-phase fugacity correction. The form is leading-order in
+    ℏ² and reduces to unity at high T (classical limit). The sign of
+    α_K2 is species-dependent and taken from `data/parameters/quantum.json`.
+
+    Parameters
+    ----------
+    T : float or ndarray
+        Temperature in Kelvin (must be > 0).
+    species : str
+        Species formula.
+
+    Returns
+    -------
+    float or ndarray
+        Multiplicative correction factor (dimensionless), approaching 1 as T→∞.
+    """
+    alphas = _QPARAMS["feynman_hibbs_correction"]["alpha_K2"]
+    if species not in alphas:
+        raise ValueError(f"Unknown species '{species}'.")
+    alpha_K2 = alphas[species]
+    T_arr = np.asarray(T, dtype=np.float64)
+    if np.any(T_arr <= 0):
+        raise ValueError(
+            f"quantum_alpha_correction requires T > 0; got T={T}"
+        )
+    correction = 1.0 + alpha_K2 / T_arr**2
+    if np.ndim(T) == 0:
+        return float(correction)
+    return correction
+
+
 def acentric_factor(species: str) -> float:
     """Return the acentric factor ω for a species.
 

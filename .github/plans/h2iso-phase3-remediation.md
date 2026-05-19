@@ -225,7 +225,7 @@
   - ✅ JSON 配置含 pressure_changer 可被 schema 验证通过
   - ✅ 嵌入 ISS-O 流程后求解仍收敛
 
-#### Task 5.3: SRK EOS 完整实现 (GAP-02 / DR-12)
+#### ✅ Task 5.3: SRK EOS 完整实现 (GAP-02 / DR-12)
 - **目标**：替换 `SRKQuantum` 占位符，实现完整 SRK + 量子修正 alpha 函数
 - **依赖**：Phase 3+4 完成
 - **修改内容**：

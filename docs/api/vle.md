@@ -115,6 +115,24 @@ beta, x_liq, y_vap = flash_TP(24.0, 90_000, z_feed)
 
 ## `h2iso.vle.eos` — Equation of State
 
+### EOS classes
+
+Two pluggable equation-of-state implementations sharing a common interface
+(`kvalue`, `fugacity_coeff_liquid`, `fugacity_coeff_vapor`):
+
+- **`IdealVLE`** — modified Raoult's law with vapour-pressure quantum
+  correction (`K_i = (P_sat_i / P) · φ_corr`). Baseline used for low-pressure
+  H-isotope distillation (P ≲ 100 kPa).
+- **`SRKQuantum`** — full Soave-Redlich-Kwong cubic EOS with
+  Graboski-Daubert α function and a leading-order Feynman-Hibbs quantum
+  correction. The cubic `Z³ − Z² + (A−B−B²)Z − AB = 0` is solved via
+  `numpy.roots`; liquid root = smallest real root > B, vapour root = largest.
+  Van der Waals mixing is used with `k_ij = 0` (no binary interaction
+  parameters fitted). The vapour-phase fugacity coefficient is applied as a
+  residual correction on top of the Souers-anchored Raoult K-value, so SRK
+  reduces to `IdealVLE` to within ~1 % at P < 50 kPa and shows > 5 %
+  non-ideal departure for P > 500 kPa.
+
 ### `liquid_molar_volume(T, species)`
 
 Liquid molar volume using Rackett correlation.

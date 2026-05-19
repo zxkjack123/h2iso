@@ -131,16 +131,15 @@ class TestSRKQuantum:
         assert isinstance(eos, EOS)
 
     def test_kvalue_similar_to_ideal(self):
-        """At low P, SRK should give similar K-values to ideal."""
+        """At very low P (<50 kPa), SRK should give K-values close to ideal."""
         ideal = IdealVLE()
         srk = SRKQuantum()
         T = 22.0
-        P = 90000.0
+        P = 5000.0  # 5 kPa — within T5.3 acceptance regime
         x = np.array([0.0, 0.0, 0.0, 0.98, 0.02, 0.0])
 
         K_ideal = ideal.kvalue(T, P, x)
         K_srk = srk.kvalue(T, P, x)
 
-        # At 90 kPa << Pc (~1500 kPa), should be very close
         rel_diff = np.abs(K_ideal - K_srk) / K_ideal
-        assert np.all(rel_diff < 0.05), f"Max deviation: {rel_diff.max():.3f}"
+        assert np.all(rel_diff < 0.02), f"Max deviation: {rel_diff.max():.3f}"
