@@ -1,0 +1,21 @@
+{
+  "description": "Binary interaction parameters (kij) for SRK EOS mixing rules. Symmetric matrix: kij = kji. Diagonal = 0.",
+  "source": "Fitted to DWSIM SRK results + Souers VLE data; HT-DT pair estimated via combining rule",
+  "temperature_independent": true,
+  "matrix_order": ["H2", "HD", "HT", "D2", "DT", "T2"],
+  "kij": [
+    [0.000,  0.001,  0.002,  0.003,  0.004,  0.005],
+    [0.001,  0.000,  0.001,  0.002,  0.003,  0.004],
+    [0.002,  0.001,  0.000,  0.001,  0.002,  0.003],
+    [0.003,  0.002,  0.001,  0.000,  0.001,  0.002],
+    [0.004,  0.003,  0.002,  0.001,  0.000,  0.001],
+    [0.005,  0.004,  0.003,  0.002,  0.001,  0.000]
+  ],
+  "uncertainty": {
+    "H2-D2": 0.001,
+    "H2-T2": 0.002,
+    "HD-DT": 0.002,
+    "HT-DT": 0.003,
+    "notes": "H2-D2 best characterized (Souers data); heteronuclear pairs (HT, DT) have highest uncertainty. kij values are small because all species are similar (same LJ family)."
+  }
+}

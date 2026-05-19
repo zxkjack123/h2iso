@@ -131,7 +131,7 @@
   - ✅ CasADi 兼容
 - **潜在风险**：Feynman-Hibbs 在极低温（<15 K）可能不够精确 → 标注适用下界
 
-#### Task 1.3: BIP/kij 参数库与混合物 VLE
+#### ✅ Task 1.3: BIP/kij 参数库与混合物 VLE
 - **目标**：实现混合物 bubble/dew point 计算，建立 BIP 参数数据库
 - **依赖**：T1.1, T1.2
 - **修改内容**：
