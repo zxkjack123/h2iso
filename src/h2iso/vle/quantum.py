@@ -17,20 +17,19 @@ References:
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Union
 
 import numpy as np
 
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "parameters"
+from h2iso._data import data_path
 
 Numeric = Union[float, np.ndarray]
 
 
 def _load_quantum_params() -> dict:
-    path = _DATA_DIR / "quantum.json"
-    with open(path) as f:
-        return json.load(f)
+    with data_path("parameters", "quantum.json") as path:
+        with open(path) as f:
+            return json.load(f)
 
 
 _QPARAMS = _load_quantum_params()

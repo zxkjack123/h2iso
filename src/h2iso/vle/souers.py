@@ -15,12 +15,11 @@ from __future__ import annotations
 
 import json
 import warnings
-from pathlib import Path
 from typing import Union
 
 import numpy as np
 
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "parameters"
+from h2iso._data import data_path
 
 # Type alias for numeric inputs (numpy or scalar)
 Numeric = Union[float, np.ndarray]
@@ -28,9 +27,9 @@ Numeric = Union[float, np.ndarray]
 
 def _load_params() -> dict:
     """Load vapor pressure parameters from JSON."""
-    path = _DATA_DIR / "vapor_pressure.json"
-    with open(path) as f:
-        return json.load(f)["species"]
+    with data_path("parameters", "vapor_pressure.json") as path:
+        with open(path) as f:
+            return json.load(f)["species"]
 
 
 _PARAMS = _load_params()

@@ -12,14 +12,14 @@ import math
 from pathlib import Path
 from typing import Any
 
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "parameters"
+from h2iso._data import data_path
 
 
 def _load_json(filename: str) -> dict[str, Any]:
     """Load a JSON parameter file from the data directory."""
-    path = _DATA_DIR / filename
-    with open(path) as f:
-        return json.load(f)
+    with data_path("parameters", filename) as path:
+        with open(path) as f:
+            return json.load(f)
 
 
 def _pvap_python(T: float, params: dict[str, float]) -> float:

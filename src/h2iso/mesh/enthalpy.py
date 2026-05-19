@@ -8,20 +8,18 @@ liquid at the normal boiling point of D2 (23.661 K).
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import casadi as ca
 import numpy as np
 
+from h2iso._data import data_path
 from h2iso.species import SPECIES_ORDER
-
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "parameters"
 
 
 def _load_enthalpy_params() -> dict:
-    path = _DATA_DIR / "enthalpy.json"
-    with open(path) as f:
-        return json.load(f)
+    with data_path("parameters", "enthalpy.json") as path:
+        with open(path) as f:
+            return json.load(f)
 
 
 _PARAMS = _load_enthalpy_params()

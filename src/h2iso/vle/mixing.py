@@ -12,23 +12,21 @@ All functions use modified Raoult's law with quantum corrections as default.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import numpy as np
 from scipy.optimize import brentq
 
+from h2iso._data import data_path
 from h2iso.species import N_SPECIES, SPECIES_ORDER
 from h2iso.vle.eos import EOS, IdealVLE
 from h2iso.vle.souers import pvap
 
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "parameters"
-
 
 def _load_bip() -> np.ndarray:
     """Load BIP matrix from JSON."""
-    path = _DATA_DIR / "bip.json"
-    with open(path) as f:
-        data = json.load(f)
+    with data_path("parameters", "bip.json") as path:
+        with open(path) as f:
+            data = json.load(f)
     return np.array(data["kij"], dtype=np.float64)
 
 

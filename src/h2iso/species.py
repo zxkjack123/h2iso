@@ -8,9 +8,8 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from pathlib import Path
 
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "parameters"
+from h2iso._data import data_path
 
 
 @dataclass(frozen=True)
@@ -29,9 +28,9 @@ class Species:
 
 def _load_species() -> dict[str, Species]:
     """Load species registry from JSON parameter file."""
-    path = _DATA_DIR / "species.json"
-    with open(path) as f:
-        data = json.load(f)
+    with data_path("parameters", "species.json") as path:
+        with open(path) as f:
+            data = json.load(f)
 
     registry = {}
     for entry in data["species"]:

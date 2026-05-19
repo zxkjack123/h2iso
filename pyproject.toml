@@ -51,7 +51,7 @@ h2iso = "h2iso.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-h2iso = ["../data/parameters/*.json"]
+h2iso = ["data/parameters/*.json", "data/schemas/*.json"]
 
 [tool.ruff]
 target-version = "py39"

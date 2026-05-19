@@ -109,7 +109,7 @@
   - ✅ `on_unit_failure="skip"` 时跳过该塔的当前迭代
 - **潜在风险**：现有 ISS-O 测试依赖旧的静默行为——需逐个检查并显式设置策略
 
-#### Task 3.4: `_DATA_DIR` 迁移到 importlib.resources (CQ-01)
+#### ✅ Task 3.4: `_DATA_DIR` 迁移到 importlib.resources (CQ-01)
 - **目标**：h2iso 通过 `pip install h2iso`（非 editable）安装后能正常加载所有参数 JSON
 - **依赖**：无
 - **修改内容**：

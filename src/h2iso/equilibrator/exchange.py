@@ -20,20 +20,18 @@ References:
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import numpy as np
 from scipy.optimize import fsolve
 
+from h2iso._data import data_path
 from h2iso.species import N_SPECIES
-
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "parameters"
 
 
 def _load_eq_params() -> dict:
-    path = _DATA_DIR / "equilibrium.json"
-    with open(path) as f:
-        return json.load(f)
+    with data_path("parameters", "equilibrium.json") as path:
+        with open(path) as f:
+            return json.load(f)
 
 
 _EQ_PARAMS = _load_eq_params()
