@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from h2iso.mesh.column import Column, ColumnResult, ColumnSpec
+from h2iso.mesh.column import Column, ColumnResult, ColumnSpec, FeedSpec
 
 
 @dataclass
@@ -137,7 +137,10 @@ class ContinuationSolver:
         current_spec = spec
 
         for N_next in N_values:
-            # Adjust feed stage proportionally
+            # Scale feeds proportionally
+            new_feeds = self._scale_feeds(spec, N_next)
+
+            # Legacy feed_stage (for backward compatibility)
             feed_frac = spec.feed_stage / spec.n_stages
             new_feed = max(2, min(N_next - 1, int(round(feed_frac * N_next))))
 
@@ -150,6 +153,7 @@ class ContinuationSolver:
                 reflux_ratio=spec.reflux_ratio,
                 distillate_to_feed=spec.distillate_to_feed,
                 feed_quality=spec.feed_quality,
+                feeds=new_feeds,
             )
 
             # Interpolate solution as initial guess
@@ -185,6 +189,28 @@ class ContinuationSolver:
 
         return current_result, current_spec, history
 
+    @staticmethod
+    def _scale_feeds(spec: ColumnSpec, N_new: int) -> list[FeedSpec] | None:
+        """Scale feed stages proportionally to new column size.
+
+        Returns None if spec has no multi-feed list (legacy single-feed mode).
+        """
+        if spec.feeds is None:
+            return None
+
+        N_old = spec.n_stages
+        scaled = []
+        for f in spec.feeds:
+            frac = f.stage / N_old
+            new_stage = max(2, min(N_new - 1, int(round(frac * N_new))))
+            scaled.append(FeedSpec(
+                stage=new_stage,
+                flow=f.flow,
+                composition=f.composition.copy(),
+                quality=f.quality,
+            ))
+        return scaled
+
     def _continue_R(
         self,
         step: ContinuationStep,
@@ -211,6 +237,7 @@ class ContinuationSolver:
                 reflux_ratio=R_next,
                 distillate_to_feed=spec.distillate_to_feed,
                 feed_quality=spec.feed_quality,
+                feeds=spec.feeds,
             )
 
             # Use current solution as warm start (same N, different R)
@@ -259,6 +286,7 @@ class ContinuationSolver:
                 reflux_ratio=spec.reflux_ratio,
                 distillate_to_feed=DF_next,
                 feed_quality=spec.feed_quality,
+                feeds=spec.feeds,
             )
 
             x0 = self._result_to_x0(current_result)

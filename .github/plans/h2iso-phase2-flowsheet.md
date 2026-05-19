@@ -73,7 +73,7 @@
   - ✅ `_compute_flows()` 对 N 个进料产生 N+1 段的 L/V 阶梯
 - **潜在风险**：多进料 CMO 假设在进料热条件差异大时不够准确；Phase 2 暂不处理，后续考虑能量平衡修正
 
-#### Task 2.0.2: ContinuationSolver 适配多进料
+#### ✅ Task 2.0.2: ContinuationSolver 适配多进料
 - **目标**：使 continuation warm-start 正确处理多进料塔的 feed_stage 插值
 - **依赖**：T2.0.1
 - **修改内容**：
