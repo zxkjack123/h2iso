@@ -254,7 +254,7 @@
   - ✅ 求解时间 < 10s（15 板）
 - **潜在风险**：IPOPT 对初值敏感 → T2.3 的 continuation 是解决方案；先用 linear T profile + equal molar split 作为 naive 初值
 
-#### Task 2.3: Continuation 与高板数求解
+#### ✅ Task 2.3: Continuation 与高板数求解
 - **目标**：实现从短塔到长塔的分步 continuation 策略，稳定求解 75-100 板
 - **依赖**：T2.2
 - **修改内容**：
