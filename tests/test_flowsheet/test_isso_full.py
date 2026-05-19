@@ -164,3 +164,38 @@ class TestISSOFullMassBalance:
             f"Mass balance: feed={total_feed:.2f}, products={product_flow:.2f}, "
             f"rel_error={rel_error:.6f}"
         )
+
+
+class TestISSOFullColumnResults:
+    """Regression for BG-01: FlowsheetResult.column_results must expose ColumnResult profiles."""
+
+    def test_column_results_populated(self, isso_full_result):
+        """All three columns must appear in column_results with non-None ColumnResult."""
+        assert isso_full_result.column_results, (
+            "FlowsheetResult.column_results is empty — BG-01 regression"
+        )
+        for name in ("CD1", "CD2", "CD3"):
+            assert name in isso_full_result.column_results, (
+                f"Column '{name}' missing from column_results"
+            )
+            cr = isso_full_result.column_results[name]
+            assert cr is not None, f"ColumnResult for '{name}' is None"
+
+    def test_column_profiles_shape(self, isso_full_result):
+        """T_profile / x_profile / y_profile must have shape matching n_stages."""
+        from h2iso.flowsheet.schema import load_flowsheet
+
+        config = load_flowsheet(FIXTURE_PATH)
+        n_stages_map = {c.name: c.n_stages for c in config.columns}
+
+        for name, cr in isso_full_result.column_results.items():
+            N = n_stages_map[name]
+            assert cr.T_profile.shape == (N,), (
+                f"{name}: T_profile shape {cr.T_profile.shape}, expected ({N},)"
+            )
+            assert cr.x_profile.shape == (N, 6), (
+                f"{name}: x_profile shape {cr.x_profile.shape}, expected ({N}, 6)"
+            )
+            assert cr.y_profile.shape == (N, 6), (
+                f"{name}: y_profile shape {cr.y_profile.shape}, expected ({N}, 6)"
+            )

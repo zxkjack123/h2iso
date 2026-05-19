@@ -281,9 +281,8 @@ class SequentialModularSolver:
                 for out_key, out_stream in outputs.items():
                     stream_id = f"{unit_name}_{out_key}"
                     self.streams[stream_id] = out_stream
-                # Store last result for ColumnUnit
-                if isinstance(unit, ColumnUnit):
-                    unit._last_result = None  # Will be set if we track it
+                # ColumnUnit persists its ColumnResult on self._last_result
+                # inside solve() (BG-01); we collect it after the loop.
             except RuntimeError:
                 # Column solve failure — keep previous values
                 pass

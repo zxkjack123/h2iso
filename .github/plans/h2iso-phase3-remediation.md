@@ -58,7 +58,7 @@
 
 ### Phase 3: P0 Critical Bug Fixes（阻塞工程使用）
 
-#### Task 3.1: 修复 FlowsheetResult.column_results 数据丢失 (BG-01)
+#### ✅ Task 3.1: 修复 FlowsheetResult.column_results 数据丢失 (BG-01)
 - **目标**：调用者能从 `FlowsheetResult.column_results[name]` 获取完整 `ColumnResult`（T_profile、x_profile、y_profile）
 - **依赖**：无
 - **修改内容**：

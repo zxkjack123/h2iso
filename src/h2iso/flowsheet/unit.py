@@ -149,6 +149,10 @@ class ColumnUnit(UnitOp):
                 f"ColumnUnit '{self.name}' failed: {result.convergence_info['status']}"
             )
 
+        # Persist last successful ColumnResult for downstream consumers
+        # (e.g. FlowsheetResult.column_results profile collection — BG-01)
+        self._last_result = result
+
         # Extract outputs
         D_flow = self.distillate_to_feed * total_flow
         B_flow = total_flow - D_flow
