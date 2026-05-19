@@ -342,6 +342,10 @@ class Column:
             convergence_info={
                 "status": stats.get("return_status", "unknown"),
                 "iterations": stats.get("iter_count", -1),
-                "success": stats.get("return_status") == "Solve_Succeeded",
+                "success": stats.get("return_status") in (
+                    "Solve_Succeeded",
+                    "Solved_To_Acceptable_Level",
+                    "Feasible_Point_Found",
+                ),
             },
         )

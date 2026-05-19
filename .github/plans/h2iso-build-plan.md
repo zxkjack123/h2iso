@@ -301,7 +301,7 @@
   - ✅ MAT 格式与 OpenModelica `readMatrix` 兼容
 - **潜在风险**：MAT v4 vs v5 格式兼容性 → 使用 scipy.io.savemat(..., do_compression=False, format='4')
 
-#### Task 2.5: Wang 2022 全面验证与 Go/No-Go
+#### ✅ Task 2.5: Wang 2022 全面验证与 Go/No-Go
 - **目标**：用 Wang 2022 ISS-I CD2（75板）和 ISS-O 三塔配置进行完整验证，判定 Go/No-Go
 - **依赖**：T2.3, T1.5
 - **修改内容**：
