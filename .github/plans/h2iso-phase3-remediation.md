@@ -75,7 +75,7 @@
   - ✅ 全量测试无回归
 - **潜在风险**：`ContinuationSolver` 返回的 result 类型可能与 `Column.solve()` 不同——需检查并统一为 `ColumnResult`
 
-#### Task 3.2: 检查 fsolve 收敛标志 (BG-02)
+#### ✅ Task 3.2: 检查 fsolve 收敛标志 (BG-02)
 - **目标**：`equilibrium_composition()` 在 fsolve 不收敛时显式 raise，不再返回垃圾值
 - **依赖**：无
 - **修改内容**：

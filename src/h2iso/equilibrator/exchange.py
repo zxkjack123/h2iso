@@ -168,8 +168,15 @@ def equilibrium_composition(
     d0 = np.sqrt(max(alpha_D, 1e-20))
     t0 = np.sqrt(max(alpha_T, 1e-20))
 
-    sol = fsolve(residuals, [h0, d0, t0], full_output=True)
-    params = sol[0]
+    params, info, ier, mesg = fsolve(
+        residuals, [h0, d0, t0], full_output=True
+    )
+    if ier != 1:
+        raise RuntimeError(
+            f"Equilibrium solve failed (ier={ier}): {mesg.strip()} | "
+            f"alpha=(H={alpha_H:.4g}, D={alpha_D:.4g}, T={alpha_T:.4g}), "
+            f"T={T:.2f} K, final_residual_norm={np.linalg.norm(info['fvec']):.3e}"
+        )
     h, d, t = params
 
     # Compute final mole fractions

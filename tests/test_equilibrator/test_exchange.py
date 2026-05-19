@@ -136,3 +136,44 @@ class TestIsEquilibrated:
         x_non_eq = np.array([0.5, 0.0, 0.0, 0.5, 0.0, 0.0])
         # Q1 = 0^2/(0.5*0.5) = 0, K1 ≈ 4 → not equilibrated
         assert not is_equilibrated(x_non_eq, 25.0)
+
+
+class TestEquilibriumConvergenceCheck:
+    """Regression for BG-02: fsolve ier flag must be checked."""
+
+    def test_raises_on_non_convergence(self, monkeypatch):
+        """Mock fsolve to return ier != 1 and verify RuntimeError is raised."""
+        from h2iso.equilibrator import exchange
+
+        def fake_fsolve(func, x0, full_output=True, **kw):
+            # ier=2 means "iteration not making good progress"
+            info = {"fvec": np.array([1.0, 1.0, 1.0])}
+            return np.array(x0), info, 2, "Mocked failure"
+
+        monkeypatch.setattr(exchange, "fsolve", fake_fsolve)
+        with pytest.raises(RuntimeError, match="Equilibrium solve failed"):
+            equilibrium_composition(1.0 / 3, 1.0 / 3, 1.0 / 3, T=25.0)
+
+    def test_error_message_contains_diagnostics(self, monkeypatch):
+        """Error message must include ier, mesg, alpha, T, and residual norm."""
+        from h2iso.equilibrator import exchange
+
+        def fake_fsolve(func, x0, full_output=True, **kw):
+            info = {"fvec": np.array([0.1, 0.2, 0.3])}
+            return np.array(x0), info, 5, "Mocked diverged"
+
+        monkeypatch.setattr(exchange, "fsolve", fake_fsolve)
+        with pytest.raises(RuntimeError) as excinfo:
+            equilibrium_composition(0.5, 0.3, 0.2, T=300.0)
+        msg = str(excinfo.value)
+        assert "ier=5" in msg
+        assert "Mocked diverged" in msg
+        assert "T=300" in msg
+        assert "alpha" in msg
+
+    def test_normal_input_still_works(self):
+        """Sanity: standard inputs must continue to converge silently."""
+        x_eq = equilibrium_composition(0.4, 0.3, 0.3, T=25.0)
+        assert x_eq.shape == (6,)
+        assert np.isclose(x_eq.sum(), 1.0, atol=1e-10)
+        assert np.all(x_eq >= 0)
