@@ -50,7 +50,7 @@
 
 ### Phase 2.0: 多进料扩展
 
-#### Task 2.0.1: ColumnSpec 多进料支持
+#### ✅ Task 2.0.1: ColumnSpec 多进料支持
 - **目标**：将 ColumnSpec 从单进料扩展为多进料，支持 ISS-O 中 CD2 有 3 个进料口的场景
 - **依赖**：无（Phase 1 已完成）
 - **修改内容**：

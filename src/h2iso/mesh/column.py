@@ -10,7 +10,7 @@ Uses CMO (Constant Molar Overflow) assumption:
 Column configuration:
 - Stage 1 = condenser (total condenser)
 - Stage N = reboiler (partial)
-- Feed enters at feed_stage
+- Feed enters at feed_stage (or multiple feeds via FeedSpec list)
 - Specification: reflux ratio R and distillate-to-feed ratio D/F
 """
 
@@ -31,17 +31,28 @@ from h2iso.vle.souers import pvap_sx
 
 
 @dataclass
+class FeedSpec:
+    """Specification for a single feed stream."""
+
+    stage: int  # 1-indexed from top
+    flow: float  # mol/h
+    composition: np.ndarray  # (6,)
+    quality: float = 1.0  # q=1 saturated liquid
+
+
+@dataclass
 class ColumnSpec:
     """Column specification."""
 
     n_stages: int
-    feed_stage: int  # 1-indexed from top
-    feed_flow: float  # mol/h
-    feed_composition: np.ndarray  # (6,)
+    feed_stage: int  # 1-indexed from top (legacy single-feed)
+    feed_flow: float  # mol/h (legacy single-feed)
+    feed_composition: np.ndarray  # (6,) (legacy single-feed)
     pressure: float  # Pa (uniform for now)
     reflux_ratio: float
     distillate_to_feed: float  # D/F
-    feed_quality: float = 1.0  # q=1 saturated liquid
+    feed_quality: float = 1.0  # q=1 saturated liquid (legacy single-feed)
+    feeds: list[FeedSpec] | None = None  # Multi-feed list (overrides legacy fields)
 
 
 @dataclass
@@ -66,38 +77,56 @@ class Column:
         self.N = spec.n_stages
         self.Nc = N_SPECIES
 
+    def _get_feeds(self) -> list[FeedSpec]:
+        """Get feed list (multi-feed or legacy single-feed)."""
+        if self.spec.feeds is not None:
+            return self.spec.feeds
+        return [FeedSpec(
+            stage=self.spec.feed_stage,
+            flow=self.spec.feed_flow,
+            composition=self.spec.feed_composition,
+            quality=self.spec.feed_quality,
+        )]
+
+    def _total_feed_flow(self) -> float:
+        """Total feed flow across all feeds."""
+        return sum(f.flow for f in self._get_feeds())
+
     def _compute_flows(self) -> tuple[np.ndarray, np.ndarray]:
         """Compute L and V profiles under CMO assumption.
 
         Returns (L[N], V[N]) arrays.
-        For saturated liquid feed (q=1):
-          Above feed: L = R*D,         V = (R+1)*D
-          Below feed: L = R*D + q*F,   V = (R+1)*D - (1-q)*F
+        For multi-feed: each feed at stage j adds q_k*F_k to L and
+        subtracts (1-q_k)*F_k from V below that stage.
         """
         spec = self.spec
-        D = spec.distillate_to_feed * spec.feed_flow
-        F = spec.feed_flow
-        q = spec.feed_quality
+        F_total = self._total_feed_flow()
+        D = spec.distillate_to_feed * F_total
         R = spec.reflux_ratio
+        feeds = self._get_feeds()
 
         L = np.zeros(self.N)
         V = np.zeros(self.N)
-        feed_j = spec.feed_stage - 1  # 0-indexed
+
+        # Base flows (rectifying section = above all feeds)
+        L_base = R * D
+        V_base = (R + 1) * D
 
         for j in range(self.N):
-            if j < feed_j:
-                # Rectifying section (above feed)
-                L[j] = R * D
-                V[j] = (R + 1) * D
-            else:
-                # Stripping section (at feed and below)
-                L[j] = R * D + q * F
-                V[j] = (R + 1) * D - (1 - q) * F
+            L[j] = L_base
+            V[j] = V_base
+            # Add contribution from each feed at or above this stage
+            for f in feeds:
+                feed_j = f.stage - 1  # 0-indexed
+                if j >= feed_j:
+                    L[j] += f.quality * f.flow
+                    V[j] -= (1 - f.quality) * f.flow
 
         # Special: V[0] = 0 for total condenser (no vapor leaves)
         V[0] = 0.0
         # L[N-1] represents B (bottoms product flow)
-        L[-1] = F - D  # B = F - D
+        B = F_total - D
+        L[-1] = B
 
         return L, V
 
@@ -110,11 +139,16 @@ class Column:
         Nc = self.Nc
         spec = self.spec
         P = spec.pressure
-        F = spec.feed_flow
-        z = spec.feed_composition
-        D = spec.distillate_to_feed * F
-        B = F - D
-        feed_j = spec.feed_stage - 1  # 0-indexed
+        feeds = self._get_feeds()
+        F_total = self._total_feed_flow()
+        D = spec.distillate_to_feed * F_total
+        B = F_total - D
+
+        # Build feed map: stage_index -> (flow, composition) for that feed
+        feed_map: dict[int, list[tuple[float, np.ndarray]]] = {}
+        for f in feeds:
+            j = f.stage - 1  # 0-indexed
+            feed_map.setdefault(j, []).append((f.flow, f.composition))
 
         L, V = self._compute_flows()
 
@@ -135,15 +169,21 @@ class Column:
 
         # Initial guess: use linear composition profile for better convergence
         # Top (distillate-like): enrich light key, bottom: deplete light key
-        x_top_init = spec.feed_composition.copy()
-        x_bot_init = spec.feed_composition.copy()
+        # Use flow-weighted average composition for multi-feed
+        z_avg = np.zeros(Nc)
+        for f in feeds:
+            z_avg += f.flow * f.composition
+        z_avg /= F_total
+
+        x_top_init = z_avg.copy()
+        x_bot_init = z_avg.copy()
         # Find dominant component and boost it at top
-        i_light = int(np.argmax(spec.feed_composition))
-        x_top_init[i_light] = min(0.99, spec.feed_composition[i_light] * 1.05)
+        i_light = int(np.argmax(z_avg))
+        x_top_init[i_light] = min(0.99, z_avg[i_light] * 1.05)
         # Normalize
         x_top_init /= x_top_init.sum()
         # Bottom: reduce light key
-        x_bot_init[i_light] = max(0.01, spec.feed_composition[i_light] * 0.5)
+        x_bot_init[i_light] = max(0.01, z_avg[i_light] * 0.5)
         x_bot_init /= x_bot_init.sum()
 
         # Linear T profile (increasing from top to bottom)
@@ -230,16 +270,20 @@ class Column:
                 elif j == N - 1:
                     # Reboiler: L[N-2]*x[N-2]_i - V[N-1]*y[N-1]_i - B*x[N-1]_i = 0
                     mb = L[j - 1] * x_vars[j - 1][i] - V[j] * y_vars[j][i] - B * x_vars[j][i]
-                    if j == feed_j:
-                        mb = mb + F * z[i]
+                    # Add feed if reboiler is a feed stage
+                    if j in feed_map:
+                        for f_flow, f_z in feed_map[j]:
+                            mb = mb + f_flow * f_z[i]
                 else:
                     # Internal: L[j-1]*x[j-1] + V[j+1]*y[j+1] + F_j*z - L[j]*x[j] - V[j]*y[j] = 0
                     mb = (L[j - 1] * x_vars[j - 1][i]
                           + V[j + 1] * y_vars[j + 1][i]
                           - L[j] * x_vars[j][i]
                           - V[j] * y_vars[j][i])
-                    if j == feed_j:
-                        mb = mb + F * z[i]
+                    # Add feed(s) at this stage
+                    if j in feed_map:
+                        for f_flow, f_z in feed_map[j]:
+                            mb = mb + f_flow * f_z[i]
 
                 g.append(mb)
                 lbg.append(0.0)
