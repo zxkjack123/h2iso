@@ -1,0 +1,32 @@
+{
+  "description": "Molar heat capacity parameters for hydrogen isotopologues. Ideal gas Cp(T) = a + b*T + c*T^2 [J/(mol·K)]. Liquid heat capacity approximation: Cp_L ≈ Cp_V * (1 + d/T).",
+  "source": "Souers UCRL-52628 Table 2.1; NIST Webbook; estimated from corresponding states for less-characterized species",
+  "units": {"a": "J/(mol·K)", "b": "J/(mol·K²)", "c": "J/(mol·K³)", "d": "K"},
+  "vapor_cp": {
+    "H2":  {"a": 27.28, "b": 0.0033, "c": 5.0e-6},
+    "HD":  {"a": 27.50, "b": 0.0032, "c": 4.5e-6},
+    "HT":  {"a": 27.60, "b": 0.0031, "c": 4.2e-6},
+    "D2":  {"a": 27.80, "b": 0.0035, "c": 4.0e-6},
+    "DT":  {"a": 28.00, "b": 0.0034, "c": 3.8e-6},
+    "T2":  {"a": 28.20, "b": 0.0036, "c": 3.5e-6}
+  },
+  "liquid_cp_correction_d": {
+    "description": "Liquid Cp ≈ Cp_V * (1 + d/T). The 'd' parameter captures the excess heat capacity of the liquid phase.",
+    "H2": 5.0,
+    "HD": 5.5,
+    "HT": 5.8,
+    "D2": 6.0,
+    "DT": 6.5,
+    "T2": 7.0
+  },
+  "heat_of_vaporization_Tb": {
+    "description": "Latent heat at normal boiling point [J/mol]",
+    "source": "Souers UCRL-52628",
+    "H2": 899,
+    "HD": 1060,
+    "HT": 1120,
+    "D2": 1226,
+    "DT": 1380,
+    "T2": 1394
+  }
+}

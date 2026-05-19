@@ -200,7 +200,7 @@
 
 ### Phase 2: L2-CasADi 稳态 MESH 求解器
 
-#### Task 2.1: 单板 MESH 方程构建
+#### ✅ Task 2.1: 单板 MESH 方程构建
 - **目标**：用 CasADi 符号框架构建单个理论板的 MESH (Material, Equilibrium, Summation, Heat) 方程组
 - **依赖**：T1.3（需要 VLE K-value 函数）
 - **修改内容**：
