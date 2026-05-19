@@ -283,7 +283,7 @@
   - ✅ tricys CI 在无 h2iso 时 gracefully skip（optional dependency）
 - **潜在风险**：tricys Modelica 模型变量命名可能与 .mos 中引用不一致；需查阅 tricys ISS 模型确认命名
 
-#### Task 2.4.2: Modelica record 代码生成
+#### ✅ Task 2.4.2: Modelica record 代码生成
 - **目标**：从 h2iso VLE 参数 JSON 自动生成 Modelica record（物性参数源一致性）
 - **依赖**：T2.4.1
 - **修改内容**：
