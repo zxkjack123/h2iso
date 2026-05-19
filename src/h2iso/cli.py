@@ -278,6 +278,54 @@ def cmd_flowsheet(args: argparse.Namespace) -> None:
     print(f"\nResults exported to {out_dir}/")
 
 
+def cmd_sweep(args: argparse.Namespace) -> None:
+    """Execute sweep subcommand."""
+    from h2iso.flowsheet.schema import load_flowsheet
+    from h2iso.flowsheet.sweep import ParameterSweep
+
+    config_path = Path(args.config)
+    if not config_path.exists():
+        print(f"Error: config file not found: {config_path}", file=sys.stderr)
+        raise SystemExit(1)
+
+    config = load_flowsheet(config_path)
+
+    # Parse sweep values
+    start, stop, step = args.start, args.stop, args.step
+    if args.parameter == "n_stages":
+        values = list(range(int(start), int(stop) + 1, int(step)))
+    else:
+        values = list(np.arange(start, stop + step * 0.5, step))
+
+    print(f"Sweeping {args.parameter} on {args.column}: {values}")
+
+    sweep = ParameterSweep(
+        config,
+        target_column=args.column,
+        continuation_substeps=3,
+        method="wegstein",
+    )
+
+    if args.parameter == "reflux_ratio":
+        result = sweep.sweep_reflux_ratio(values, max_iter=args.max_iter, tol=args.tol)
+    elif args.parameter == "n_stages":
+        result = sweep.sweep_n_stages(values, max_iter=args.max_iter, tol=args.tol)
+    elif args.parameter == "distillate_to_feed":
+        result = sweep.sweep_distillate_to_feed(values, max_iter=args.max_iter, tol=args.tol)
+    else:
+        print(f"Error: unknown parameter '{args.parameter}'", file=sys.stderr)
+        raise SystemExit(1)
+
+    print(f"\nCompleted: {len(result.converged_points)}/{len(result.points)} converged")
+
+    # Export
+    out_dir = Path(args.output) if args.output else Path(".")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "sweep_results.json"
+    result.to_json(out_path)
+    print(f"Results exported to {out_path}")
+
+
 def _format_comp(x: np.ndarray) -> str:
     """Format composition array as readable string."""
     parts = []
@@ -315,6 +363,20 @@ def main():
     fs_p.add_argument("--method", type=str, choices=["wegstein", "direct"], default="wegstein",
                       help="Convergence method (default: wegstein)")
 
+    # sweep subcommand
+    sw_p = subparsers.add_parser("sweep", help="Parameter sweep over a flowsheet column")
+    sw_p.add_argument("--config", type=str, required=True, help="Flowsheet config JSON file")
+    sw_p.add_argument("--column", type=str, required=True, help="Target column name (e.g., CD2)")
+    sw_p.add_argument("--parameter", type=str, required=True,
+                      choices=["reflux_ratio", "n_stages", "distillate_to_feed"],
+                      help="Parameter to sweep")
+    sw_p.add_argument("--start", type=float, required=True, help="Start value")
+    sw_p.add_argument("--stop", type=float, required=True, help="Stop value")
+    sw_p.add_argument("--step", type=float, required=True, help="Step size")
+    sw_p.add_argument("--output", type=str, default=None, help="Output directory (default: current)")
+    sw_p.add_argument("--max-iter", type=int, default=50, help="Max iterations per solve")
+    sw_p.add_argument("--tol", type=float, default=1e-4, help="Convergence tolerance")
+
     # export subcommand
     exp_p = subparsers.add_parser("export", help="Convert column results between formats")
     exp_p.add_argument("--input", type=str, required=True, help="Input JSON results file")
@@ -333,6 +395,8 @@ def main():
         cmd_column(args)
     elif args.command == "flowsheet":
         cmd_flowsheet(args)
+    elif args.command == "sweep":
+        cmd_sweep(args)
     elif args.command == "export":
         cmd_export(args)
 

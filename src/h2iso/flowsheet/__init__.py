@@ -8,6 +8,7 @@ from h2iso.flowsheet.schema import (
 )
 from h2iso.flowsheet.solver import FlowsheetResult, SequentialModularSolver
 from h2iso.flowsheet.stream import Stream, stream_mix, stream_split
+from h2iso.flowsheet.sweep import ParameterSweep, SweepResult
 from h2iso.flowsheet.unit import (
     ColumnUnit,
     EquilibratorUnit,
@@ -22,9 +23,11 @@ __all__ = [
     "FlowsheetConfig",
     "FlowsheetResult",
     "MixerUnit",
+    "ParameterSweep",
     "SequentialModularSolver",
     "SplitterUnit",
     "Stream",
+    "SweepResult",
     "UnitOp",
     "detect_tear_streams",
     "load_flowsheet",
