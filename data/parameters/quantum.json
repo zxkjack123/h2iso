@@ -1,43 +1,43 @@
 {
-  "description": "Quantum correction parameters for hydrogen isotopologues. de Boer quantum parameter and Feynman-Hibbs effective potential corrections.",
-  "de_boer_lambda_star": {
-    "description": "Reduced de Boer quantum parameter Λ* = h/(σ*sqrt(m*ε)). Higher values indicate stronger quantum effects.",
-    "source": "Souers UCRL-52628 Ch.2; de Boer 1948; Hirschfelder et al. Molecular Theory of Gases (1954)",
-    "values": {
-      "H2": 3.08,
-      "HD": 2.52,
-      "HT": 2.19,
-      "D2": 2.18,
-      "DT": 1.89,
-      "T2": 1.78
+    "description": "Quantum correction parameters for hydrogen isotopologues. de Boer quantum parameter and Feynman-Hibbs effective potential corrections.",
+    "de_boer_lambda_star": {
+        "description": "Reduced de Boer quantum parameter Λ* = h/(σ*sqrt(m*ε)). Higher values indicate stronger quantum effects.",
+        "source": "Souers UCRL-52628 Ch.2; de Boer 1948; Hirschfelder et al. Molecular Theory of Gases (1954)",
+        "values": {
+            "H2": 3.08,
+            "HD": 2.52,
+            "HT": 2.19,
+            "D2": 2.18,
+            "DT": 1.89,
+            "T2": 1.78
+        },
+        "notes": "Classical limit: Λ* → 0. Noble gases: He=2.67, Ne=0.59, Ar=0.19. All H-isotopes are strongly quantum."
     },
-    "notes": "Classical limit: Λ* → 0. Noble gases: He=2.67, Ne=0.59, Ar=0.19. All H-isotopes are strongly quantum."
-  },
-  "feynman_hibbs_correction": {
-    "description": "Second-order Feynman-Hibbs effective potential correction to fugacity coefficient. Form: ln(φ_correction) = α/T^2, where α depends on mass and LJ parameters.",
-    "source": "Feynman & Hibbs 1965; Sesé 1993; Kim et al. 1986 (Quantum corrections to second virial coeff)",
-    "alpha_K2": {
-      "H2": -4.5,
-      "HD": -3.0,
-      "HT": -2.3,
-      "D2": -2.25,
-      "DT": -1.7,
-      "T2": -1.5
+    "feynman_hibbs_correction": {
+        "description": "Second-order Feynman-Hibbs effective potential correction to fugacity coefficient. Form: ln(φ_correction) = α/T^2, where α depends on mass and LJ parameters.",
+        "source": "Feynman & Hibbs 1965; Sesé 1993; Kim et al. 1986 (Quantum corrections to second virial coeff)",
+        "alpha_K2": {
+            "H2": -4.5,
+            "HD": -3.0,
+            "HT": -2.3,
+            "D2": -2.25,
+            "DT": -1.7,
+            "T2": -1.5
+        },
+        "notes": "Negative alpha means quantum effects INCREASE fugacity (reduce intermolecular attraction). Valid above ~14 K. Magnitude decreases with molecular mass as expected (heavier = more classical).",
+        "uncertainty_percent": 20
     },
-    "notes": "Negative alpha means quantum effects INCREASE fugacity (reduce intermolecular attraction). Valid above ~14 K. Magnitude decreases with molecular mass as expected (heavier = more classical).",
-    "uncertainty_percent": 20
-  },
-  "critical_properties_quantum_corrected": {
-    "description": "Quantum effects shift Tc and Pc relative to classical corresponding states. These are the actual measured values (already include quantum effects).",
-    "source": "Souers UCRL-52628 Table 2.3; NIST",
-    "acentric_factor": {
-      "H2": -0.219,
-      "HD": -0.180,
-      "HT": -0.150,
-      "D2": -0.136,
-      "DT": -0.100,
-      "T2": -0.080
-    },
-    "notes": "Negative acentric factors are characteristic of quantum fluids (He, H2, Ne). Classical SRK/PR EOS with ω<0 gives poor α(T); quantum correction needed."
-  }
+    "critical_properties_quantum_corrected": {
+        "description": "Quantum effects shift Tc and Pc relative to classical corresponding states. These are the actual measured values (already include quantum effects).",
+        "source": "Souers UCRL-52628 Table 2.3; NIST",
+        "acentric_factor": {
+            "H2": -0.219,
+            "HD": -0.180,
+            "HT": -0.150,
+            "D2": -0.136,
+            "DT": -0.100,
+            "T2": -0.080
+        },
+        "notes": "Negative acentric factors are characteristic of quantum fluids (He, H2, Ne). Classical SRK/PR EOS with ω<0 gives poor α(T); quantum correction needed."
+    }
 }
