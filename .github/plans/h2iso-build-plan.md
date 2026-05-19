@@ -69,7 +69,7 @@
   - ✅ ruff check 通过，无 lint 错误
 - **潜在风险**：CasADi wheel 在某些 Linux 发行版上安装复杂 → 设为 optional dependency `[solver]`
 
-#### Task 0.2: 迁移 Wang 2022 benchmark fixtures
+#### ✅ Task 0.2: 迁移 Wang 2022 benchmark fixtures
 - **目标**：从 tricys 迁移 Wang 2022 benchmark 数据作为 h2iso 的验证基准
 - **依赖**：T0.1
 - **修改内容**：

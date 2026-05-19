@@ -1,0 +1,88 @@
+{
+  "source": {
+    "authors": "X. Wang et al.",
+    "title": "Hydrogen isotope inventory evaluation of hydrogen isotopes separation system of CFETR using Aspen Plus simulator",
+    "journal": "Fusion Engineering and Design",
+    "volume": 184,
+    "year": 2022,
+    "doi": "10.1016/j.fusengdes.2022.113078",
+    "tables_used": ["Table 1 (feed)", "Table 5 (column design)", "Table 8 (heat load/temperature)", "Table 9 (product compositions)"],
+    "model": "ISS-I (inner fuel cycle)",
+    "column": "CD2",
+    "software": "Aspen Plus",
+    "thermodynamic_model": "Custom PLXANT parameters for HD/HT/DT/T2"
+  },
+  "feed": {
+    "name": "NBI",
+    "description": "Neutral Beam Injection exhaust gas, fed to ISS-I CD2 at stage 37",
+    "total_flow_mol_h": 80.357,
+    "composition_mole_fraction": {
+      "H2": 0.0,
+      "HD": 0.0,
+      "D2": 0.98,
+      "HT": 0.0,
+      "DT": 0.02,
+      "T2": 0.0
+    },
+    "temperature_K": null,
+    "pressure_Pa": 90000,
+    "notes": "Table 1: NBI feed is 80.357 mol/h with D2=98.000%, DT=2.000%. Other species not reported (assumed zero)."
+  },
+  "column": {
+    "name": "CD2",
+    "total_stages": 75,
+    "feed_stage": 37,
+    "reflux_ratio": 15,
+    "distillate_to_feed_ratio": 0.979,
+    "pressure_top_Pa": 90000,
+    "pressure_bottom_Pa": 100000,
+    "condenser_type": "Total_Condenser",
+    "inside_diameter_m": 0.06,
+    "condenser_volume_m3": 1.0e-3,
+    "reboiler_volume_m3": 2.0e-4,
+    "HETP_m": 0.05,
+    "notes": "Table 5, ISS-I CD2 column. Feed stage counted from top (condenser = stage 1)."
+  },
+  "expected_results": {
+    "top_composition_mole_fraction": {
+      "D2": 0.999736,
+      "DT": 0.000264,
+      "notes": "Table 9: CD2 top product. D2 purity 99.9736%, DT impurity 0.0264%."
+    },
+    "bottom_composition_mole_fraction": {
+      "D2": 0.059939,
+      "DT": 0.940061,
+      "notes": "Table 9: CD2 bottom product. D2=5.9939%, DT=94.0061%."
+    },
+    "top_flow_mol_h": null,
+    "bottom_flow_mol_h": null,
+    "temperatures_K": {
+      "top": 23.4102,
+      "bottom": 24.4085,
+      "notes": "Table 8: CD2 top temperature 23.4102 K, bottom temperature 24.4085 K."
+    },
+    "heat_loads_W": {
+      "condenser": -432.357,
+      "reboiler": 432.745,
+      "notes": "Table 8: CD2 condenser heat load -432.357 W, reboiler heat load 432.745 W."
+    },
+    "tritium_inventory_mol": {
+      "total": 1.4392,
+      "gas_condenser": 0.0,
+      "gas_packed": 0.3908,
+      "gas_reboiler": 0.0217,
+      "liquid_condenser": 0.0,
+      "liquid_packed": 0.9256,
+      "liquid_reboiler": 0.1009,
+      "notes": "Table 10: CD2 tritium inventory breakdown."
+    }
+  },
+  "tolerances": {
+    "composition_rel": 0.15,
+    "composition_rel_notes": "15% relative deviation on mole fractions, consistent with Wang et al. self-reported ~15% inventory estimation error",
+    "temperature_abs_K": 1.0,
+    "temperature_abs_notes": "1 K absolute deviation on column top/bottom temperatures",
+    "heat_load_rel": 0.25,
+    "heat_load_rel_notes": "25% relative deviation on heat loads, allowing for EOS model differences (SRK vs PLXANT)"
+  }
+}

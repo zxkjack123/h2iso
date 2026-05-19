@@ -1,0 +1,99 @@
+{
+  "converged": true,
+  "actual_results": {
+    "converged": true,
+    "top_composition": {
+      "H2": 4.5690113281361994e-14,
+      "HD": 4.5686240715913436e-14,
+      "D2": 0.983581650979708,
+      "HT": 4.5672665822301106e-14,
+      "DT": 0.016418349020143268,
+      "T2": 1.1692634518493874e-14
+    },
+    "bottom_composition": {
+      "H2": 2.166509121443707e-18,
+      "HD": 1.970945284484887e-16,
+      "D2": 0.7997254330112585,
+      "HT": 8.803593753688039e-16,
+      "DT": 0.2002745669870292,
+      "T2": 1.7111908997781474e-12
+    },
+    "top_flow_mol_h": 78.66950264001437,
+    "bottom_flow_mol_h": 1.6874970000000082,
+    "temperatures": {
+      "top_K": 23.43949218672317,
+      "bottom_K": 23.88833127631178
+    },
+    "heat_loads": {
+      "condenser_W": -459.65084059850074,
+      "reboiler_W": 459.5990110988395
+    },
+    "degraded_stages": 15,
+    "target_stages": 75
+  },
+  "comparison": [
+    {
+      "metric": "top_D2",
+      "expected": 0.999736,
+      "actual": 0.983581650979708,
+      "deviation": 0.016158614894624185,
+      "pass": true
+    },
+    {
+      "metric": "top_DT",
+      "expected": 0.000264,
+      "actual": 0.016418349020143268,
+      "deviation": 61.19071598539116,
+      "pass": false
+    },
+    {
+      "metric": "bottom_D2",
+      "expected": 0.059939,
+      "actual": 0.7997254330112585,
+      "deviation": 12.342321910796953,
+      "pass": false
+    },
+    {
+      "metric": "bottom_DT",
+      "expected": 0.940061,
+      "actual": 0.2002745669870292,
+      "deviation": 0.78695577522413,
+      "pass": false
+    },
+    {
+      "metric": "T_top",
+      "expected": 23.4102,
+      "actual": 23.43949218672317,
+      "deviation": 0.02929218672317191,
+      "pass": true
+    },
+    {
+      "metric": "T_bottom",
+      "expected": 24.4085,
+      "actual": 23.88833127631178,
+      "deviation": 0.5201687236882186,
+      "pass": true
+    },
+    {
+      "metric": "Q_condenser",
+      "expected": -432.357,
+      "actual": -459.65084059850074,
+      "deviation": 0.0631280182777212,
+      "pass": true
+    },
+    {
+      "metric": "Q_reboiler",
+      "expected": 432.745,
+      "actual": 459.5990110988395,
+      "deviation": 0.06205504650276611,
+      "pass": true
+    }
+  ],
+  "pass_count": 5,
+  "total_count": 8,
+  "notes": {
+    "degraded_stages": 15,
+    "target_stages": 75,
+    "dwsim_limitation": "DWSIM bubble-point solver cannot converge >15 stages for close-boiling H-isotope systems (\u03b1_D2/DT \u2248 1.24). SetCondenserSpec/SetReboilerSpec API has a bug that corrupts spec SType to Heat_Duty; workaround uses direct Specs dictionary manipulation. Bottom DT enrichment requires >50 stages (Fenske N_min), which exceeds DWSIM's convergence limit for this system."
+  }
+}
