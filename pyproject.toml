@@ -31,6 +31,7 @@ solver = [
 dev = [
     "pytest>=7.0",
     "pytest-cov",
+    "pytest-benchmark>=4.0",
     "ruff>=0.4",
     "hypothesis",
 ]
@@ -69,4 +70,6 @@ known-first-party = ["h2iso"]
 testpaths = ["tests"]
 markers = [
     "slow: marks tests requiring CasADi solver",
+    "benchmark: performance regression benchmark (run with `pytest tests/benchmark`)",
 ]
+addopts = "--benchmark-disable --ignore=tests/benchmark"

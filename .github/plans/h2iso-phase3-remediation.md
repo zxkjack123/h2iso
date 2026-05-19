@@ -274,7 +274,7 @@
   - ✅ 每个 raise ValueError/RuntimeError 路径至少有一个测试
   - ✅ 错误消息中含可调试信息（变量名、违规值）
 
-#### Task 6.3: Performance regression benchmarks
+#### ✅ Task 6.3: Performance regression benchmarks
 - **目标**：建立性能基线，CI 检测显著回归（> 50% 变慢）
 - **依赖**：Phase 3+4 完成
 - **修改内容**：
