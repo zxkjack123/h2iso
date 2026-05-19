@@ -158,7 +158,7 @@
   - ✅ `EquilibratorUnit(temperature=0)` 在 solve 时 ValueError
 - **潜在风险**：现有 fixture 中可能有未严格归一化的组成——需检查并修正
 
-#### Task 4.2: 数值安全加固 (CQ-06 / CQ-07 / BG-04)
+#### ✅ Task 4.2: 数值安全加固 (CQ-06 / CQ-07 / BG-04)
 - **目标**：消除已知 NaN/Inf 传播路径
 - **依赖**：T4.1
 - **修改内容**：

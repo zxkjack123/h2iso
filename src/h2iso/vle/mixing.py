@@ -69,7 +69,13 @@ def kvalue(T: float, P: float, x: np.ndarray | None = None,
         eos = IdealVLE()
     if x is None:
         x = np.ones(N_SPECIES) / N_SPECIES
-    return eos.kvalue(T, P, x)
+    K = eos.kvalue(T, P, x)
+    if np.any(K <= 0):
+        raise ValueError(
+            f"K-values must be strictly positive; got K={np.asarray(K)} at "
+            f"T={T} K, P={P} Pa"
+        )
+    return K
 
 
 def bubble_pressure(T: float, x: np.ndarray,
@@ -209,28 +215,30 @@ def rachford_rice(z: np.ndarray, K: np.ndarray) -> float:
     def rr_residual(V):
         return np.sum(z * (K - 1) / (1 + V * (K - 1)))
 
-    # Bounds for V to avoid division by zero
-    # V must be in (V_min, V_max) where denominators stay positive
+    # Compute the feasible V interval where every denominator 1 + V*(K_i - 1)
+    # stays strictly positive.
+    #   K_i > 1 (km1 > 0): denom = 1 + V*km1 > 0 for V > -1/km1 (a negative
+    #     number); the constraint is automatic for V >= 0.
+    #   K_i < 1 (km1 < 0): denom = 1 + V*km1 > 0 for V < -1/km1 = 1/(1-K_i),
+    #     a positive upper bound on V.
+    # The bubble/dew screens above already ensure V is in (0, 1); we just need
+    # to keep V away from any denominator singularity below 1.
     km1 = K - 1
     neg_mask = km1 < 0
-    pos_mask = km1 > 0
-
-    V_min = 0.0
-    V_max = 1.0
+    V_low = 1e-10
+    V_high = 1.0 - 1e-10
 
     if np.any(neg_mask):
-        V_min = max(V_min, np.max(-1.0 / km1[neg_mask]) + 1e-10)
-    if np.any(pos_mask):
-        V_max = min(V_max, np.min(-1.0 / km1[pos_mask]) - 1e-10)
+        V_high = min(V_high, float(np.min(-1.0 / km1[neg_mask])) - 1e-10)
 
-    # Ensure valid bounds
-    V_min = max(V_min, 0.0)
-    V_max = min(V_max, 1.0)
+    if V_low >= V_high:
+        raise ValueError(
+            f"Rachford-Rice bracket invalid: V_low={V_low:.6g} >= V_high={V_high:.6g}. "
+            f"Two-phase region indicated by bubble/dew checks but no feasible V; "
+            f"K={K.tolist()}, z={z.tolist()}"
+        )
 
-    if V_min >= V_max:
-        return 0.5  # Fallback
-
-    V = brentq(rr_residual, V_min, V_max, xtol=1e-12)
+    V = brentq(rr_residual, V_low, V_high, xtol=1e-12)
     return V
 
 

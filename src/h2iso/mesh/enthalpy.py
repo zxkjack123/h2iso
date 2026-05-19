@@ -124,6 +124,10 @@ def vapor_enthalpy_numeric(T: float, y: np.ndarray) -> float:
 
 def liquid_enthalpy_numeric(T: float, x: np.ndarray) -> float:
     """Numeric liquid enthalpy evaluation (no CasADi dependency)."""
+    if np.any(np.asarray(T) <= 0):
+        raise ValueError(
+            f"liquid_enthalpy_numeric requires T > 0 K (uses log(T/T_REF)); got T={T}"
+        )
     H = 0.0
     for i, sp in enumerate(SPECIES_ORDER):
         a, b, c = _vapor_cp_coeffs(sp)
