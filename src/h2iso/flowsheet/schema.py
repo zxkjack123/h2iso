@@ -43,6 +43,16 @@ class EquilibratorConfig:
 
 
 @dataclass
+class PressureChangerConfig:
+    """Pressure changer (throttle/pump/compressor) specification from JSON."""
+
+    name: str
+    target_pressure: float  # Pa
+    mode: str  # "throttle" | "pump" | "compressor"
+    gamma: float = 1.4
+
+
+@dataclass
 class Connection:
     """A connection between units in the topology."""
 
@@ -70,6 +80,7 @@ class FlowsheetConfig:
     connections: list[Connection]
     products: dict[str, str]  # product_name -> description
     tear_streams: list[TearStream] = field(default_factory=list)
+    pressure_changers: list[PressureChangerConfig] = field(default_factory=list)
 
 
 def load_flowsheet(path: str | Path) -> FlowsheetConfig:
@@ -148,12 +159,23 @@ def load_flowsheet(path: str | Path) -> FlowsheetConfig:
     # Parse products
     products = topo.get("products", {})
 
+    # Parse pressure changers (optional section)
+    pressure_changers = []
+    for name, pdata in data.get("pressure_changers", {}).items():
+        pressure_changers.append(PressureChangerConfig(
+            name=name,
+            target_pressure=pdata["target_pressure_Pa"],
+            mode=pdata["mode"],
+            gamma=pdata.get("gamma", 1.4),
+        ))
+
     config = FlowsheetConfig(
         feeds=feeds,
         columns=columns,
         equilibrators=equilibrators,
         connections=connections,
         products=products,
+        pressure_changers=pressure_changers,
     )
 
     # Detect tear streams

@@ -11,7 +11,10 @@ from h2iso.equilibrator.exchange import atom_fractions, equilibrium_composition
 from h2iso.flowsheet.stream import Stream, stream_mix
 from h2iso.mesh.column import Column, ColumnSpec, FeedSpec
 from h2iso.mesh.continuation import ContinuationSolver
+from h2iso.mesh.enthalpy import liquid_enthalpy_numeric, vapor_enthalpy_numeric
 from h2iso.species import N_SPECIES
+
+_PRESSURE_CHANGER_MODES = ("throttle", "pump", "compressor")
 
 
 @dataclass
@@ -269,4 +272,75 @@ class SplitterUnit(UnitOp):
                 pressure=source.pressure,
                 phase=source.phase,
             )
+        return self.outlets
+
+
+@dataclass
+class PressureChangerUnit(UnitOp):
+    """Pressure changer: throttle valve, pump, or compressor.
+
+    Parameters
+    ----------
+    target_pressure : float
+        Outlet pressure (Pa).
+    mode : str
+        One of "throttle" (isenthalpic), "pump" (incompressible liquid,
+        T unchanged), or "compressor" (isentropic ideal-gas).
+    gamma : float
+        Heat capacity ratio Cp/Cv used by the compressor isentropic relation.
+        Default 1.4 (diatomic H2/D2/T2 around 25 K).
+    """
+
+    target_pressure: float = 101325.0
+    mode: str = "throttle"
+    gamma: float = 1.4
+
+    def __post_init__(self) -> None:
+        if self.mode not in _PRESSURE_CHANGER_MODES:
+            raise ValueError(
+                f"PressureChangerUnit '{self.name}': mode must be one of "
+                f"{_PRESSURE_CHANGER_MODES}; got {self.mode!r}"
+            )
+        if self.target_pressure <= 0:
+            raise ValueError(
+                f"PressureChangerUnit '{self.name}': target_pressure must be > 0; "
+                f"got {self.target_pressure}"
+            )
+        if self.gamma <= 1.0:
+            raise ValueError(
+                f"PressureChangerUnit '{self.name}': gamma must be > 1; "
+                f"got {self.gamma}"
+            )
+
+    def solve(self, inputs: dict[str, Stream]) -> dict[str, Stream]:
+        if len(inputs) != 1:
+            raise ValueError(
+                f"PressureChangerUnit '{self.name}' expects 1 input, "
+                f"got {len(inputs)}"
+            )
+        source = next(iter(inputs.values()))
+        T_in = float(source.temperature)
+        P_in = float(source.pressure)
+
+        if self.mode == "throttle":
+            # Isenthalpic: h2iso's enthalpy model has no explicit pressure
+            # dependence, so an isenthalpic change at fixed composition leaves
+            # T invariant. This is consistent with an ideal-gas JT coefficient
+            # of zero — the model's documented limitation.
+            T_out = T_in
+        elif self.mode == "pump":
+            T_out = T_in
+        else:  # compressor
+            ratio = self.target_pressure / P_in
+            T_out = T_in * (ratio ** ((self.gamma - 1.0) / self.gamma))
+
+        outlet = Stream(
+            flow=source.flow,
+            composition=source.composition.copy(),
+            temperature=T_out,
+            pressure=self.target_pressure,
+            phase=source.phase,
+        )
+        self.inlets = inputs
+        self.outlets = {"out": outlet}
         return self.outlets

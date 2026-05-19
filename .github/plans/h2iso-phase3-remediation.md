@@ -210,7 +210,7 @@
   - ✅ 温度偏差 < 2 K
 - **潜在风险**：BLOCKED — 数据未到位前该 Task 不启动；可在用户/CFEDR 提供后并行实施 T5.2/T5.3
 
-#### Task 5.2: 多压系统支持 — PressureChangerUnit
+#### ✅ Task 5.2: 多压系统支持 — PressureChangerUnit
 - **目标**：支持流股压力变化（阀门 throttle、泵 pump、压缩机 compressor），允许塔间不同压力级联
 - **依赖**：Phase 3+4 完成
 - **修改内容**：

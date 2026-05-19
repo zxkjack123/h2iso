@@ -160,6 +160,35 @@
                     }
                 }
             }
+        },
+        "pressure_changers": {
+            "type": "object",
+            "description": "Pressure changers (throttle/pump/compressor) keyed by name",
+            "additionalProperties": {
+                "type": "object",
+                "required": [
+                    "target_pressure_Pa",
+                    "mode"
+                ],
+                "properties": {
+                    "target_pressure_Pa": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                    },
+                    "mode": {
+                        "type": "string",
+                        "enum": [
+                            "throttle",
+                            "pump",
+                            "compressor"
+                        ]
+                    },
+                    "gamma": {
+                        "type": "number",
+                        "exclusiveMinimum": 1
+                    }
+                }
+            }
         }
     }
 }
