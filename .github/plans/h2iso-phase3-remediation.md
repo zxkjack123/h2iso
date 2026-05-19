@@ -90,7 +90,7 @@
   - ✅ 构造不收敛场景能稳定触发 RuntimeError，错误消息含 ier 和 mesg
 - **潜在风险**：scipy 不同版本 fsolve 返回顺序一致——经验证 ≥1.0 稳定
 
-#### Task 3.3: 塔求解失败不再静默吞掉 (BG-03)
+#### ✅ Task 3.3: 塔求解失败不再静默吞掉 (BG-03)
 - **目标**：`SequentialModularSolver` 在塔求解失败时记录到 `FlowsheetResult.unit_failures`，并按策略决定是否继续
 - **依赖**：T3.1（避免对 `_execute_sequence` 的合并冲突，T3.1 先合并）
 - **修改内容**：

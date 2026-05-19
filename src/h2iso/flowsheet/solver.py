@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Literal
 
 import numpy as np
 
@@ -26,6 +27,7 @@ class FlowsheetResult:
     converged: bool = False
     iterations: int = 0
     tear_residual: float = float("inf")
+    unit_failures: dict[str, str] = field(default_factory=dict)
 
 
 class SequentialModularSolver:
@@ -42,6 +44,13 @@ class SequentialModularSolver:
         Convergence acceleration method: "direct" or "wegstein".
     continuation_substeps : int
         Substeps for column continuation solver. 0 = direct solve.
+    on_unit_failure : Literal["raise", "skip", "stale"]
+        Policy when a UnitOp.solve() raises RuntimeError during
+        flowsheet iteration (BG-03). "raise" (default) propagates the
+        error immediately. "stale" keeps previous-iteration stream
+        values and continues (original silent behaviour, but the failure
+        is now recorded in FlowsheetResult.unit_failures). "skip" is a
+        synonym of "stale" for the sequential modular driver.
     """
 
     def __init__(
@@ -49,12 +58,20 @@ class SequentialModularSolver:
         config: FlowsheetConfig,
         method: str = "wegstein",
         continuation_substeps: int = 3,
+        on_unit_failure: Literal["raise", "skip", "stale"] = "raise",
     ):
         self.config = config
         self.method = method
         self.continuation_substeps = continuation_substeps
+        if on_unit_failure not in ("raise", "skip", "stale"):
+            raise ValueError(
+                f"on_unit_failure must be one of 'raise', 'skip', 'stale'; "
+                f"got {on_unit_failure!r}"
+            )
+        self.on_unit_failure = on_unit_failure
         self.units: dict[str, UnitOp] = {}
         self.streams: dict[str, Stream] = {}
+        self._unit_failures: dict[str, str] = {}
         self._build_units()
 
     def _build_units(self):
@@ -176,6 +193,7 @@ class SequentialModularSolver:
             converged=converged,
             iterations=iteration,
             tear_residual=residual,
+            unit_failures=dict(self._unit_failures),
         )
 
     def _build_calculation_order(self) -> list[str]:
@@ -283,9 +301,19 @@ class SequentialModularSolver:
                     self.streams[stream_id] = out_stream
                 # ColumnUnit persists its ColumnResult on self._last_result
                 # inside solve() (BG-01); we collect it after the loop.
-            except RuntimeError:
-                # Column solve failure — keep previous values
-                pass
+                # Clear any prior failure entry on success.
+                self._unit_failures.pop(unit_name, None)
+            except RuntimeError as exc:
+                # BG-03: record the failure and dispatch by policy.
+                self._unit_failures[unit_name] = str(exc)
+                if self.on_unit_failure == "raise":
+                    raise
+                # "skip" and "stale" both keep previous values for this
+                # iteration; in the sequential modular driver the outer
+                # iteration revisits the unit, so the two are equivalent
+                # here. "stale" preserves the original silent behaviour
+                # but the failure is now visible in unit_failures.
+                continue
 
     def _collect_inputs(self, unit_name: str) -> dict[str, Stream]:
         """Collect input streams for a unit from connections and external feeds."""

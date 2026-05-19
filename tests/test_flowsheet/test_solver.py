@@ -184,3 +184,72 @@ class TestRecycleFlowsheet:
         assert result_dir.converged
         # Wegstein should be at least as fast (often faster)
         assert result_weg.iterations <= result_dir.iterations + 5
+
+
+class TestOnUnitFailurePolicy:
+    """Regression for BG-03: unit failures must surface in unit_failures and obey policy."""
+
+    def test_invalid_policy_rejected(self):
+        """Constructor must reject unknown on_unit_failure values."""
+        cfg = FlowsheetConfig(feeds=[], columns=[], equilibrators=[],
+                              connections=[], products={}, tear_streams=[])
+        with pytest.raises(ValueError, match="on_unit_failure"):
+            SequentialModularSolver(cfg, on_unit_failure="bogus")
+
+    def test_default_is_raise(self):
+        """Default policy must be 'raise' so failures are not silenced."""
+        cfg = FlowsheetConfig(feeds=[], columns=[], equilibrators=[],
+                              connections=[], products={}, tear_streams=[])
+        solver = SequentialModularSolver(cfg)
+        assert solver.on_unit_failure == "raise"
+
+    def test_raise_propagates_unit_failure(self, monkeypatch):
+        """on_unit_failure='raise' must propagate RuntimeError from a unit."""
+        from h2iso.flowsheet import solver as solver_mod
+        from h2iso.flowsheet.unit import ColumnUnit
+
+        def boom(self, inputs):
+            raise RuntimeError(f"forced failure in {self.name}")
+        monkeypatch.setattr(ColumnUnit, "solve", boom)
+
+        cfg = FlowsheetConfig(
+            feeds=[FeedConfig(name="F", flow=10.0, composition=_make_h2_comp(),
+                              target_column="C1", feed_stage=5)],
+            columns=[ColumnConfig(name="C1", n_stages=10, pressure=101325.0,
+                                  reflux_ratio=2.0, distillate_to_feed=0.5,
+                                  feed_positions={"F": 5})],
+            equilibrators=[],
+            connections=[Connection(from_unit="F", to_unit="C1")],
+            products={},
+            tear_streams=[],
+        )
+        s = solver_mod.SequentialModularSolver(cfg, on_unit_failure="raise",
+                                               continuation_substeps=0)
+        with pytest.raises(RuntimeError, match="forced failure"):
+            s.solve(max_iter=2)
+
+    def test_stale_records_failure_and_continues(self, monkeypatch):
+        """on_unit_failure='stale' records failure in unit_failures and continues."""
+        from h2iso.flowsheet import solver as solver_mod
+        from h2iso.flowsheet.unit import ColumnUnit
+
+        def boom(self, inputs):
+            raise RuntimeError(f"forced failure in {self.name}")
+        monkeypatch.setattr(ColumnUnit, "solve", boom)
+
+        cfg = FlowsheetConfig(
+            feeds=[FeedConfig(name="F", flow=10.0, composition=_make_h2_comp(),
+                              target_column="C1", feed_stage=5)],
+            columns=[ColumnConfig(name="C1", n_stages=10, pressure=101325.0,
+                                  reflux_ratio=2.0, distillate_to_feed=0.5,
+                                  feed_positions={"F": 5})],
+            equilibrators=[],
+            connections=[Connection(from_unit="F", to_unit="C1")],
+            products={},
+            tear_streams=[],
+        )
+        s = solver_mod.SequentialModularSolver(cfg, on_unit_failure="stale",
+                                               continuation_substeps=0)
+        result = s.solve(max_iter=2)
+        assert "C1" in result.unit_failures
+        assert "forced failure" in result.unit_failures["C1"]
