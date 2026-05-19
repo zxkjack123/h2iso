@@ -280,7 +280,7 @@
   - ✅ 求解时间 < 60s（75 板，含 continuation）
 - **潜在风险**：75 板高纯度区域 x_i 接近 0/1 导致 log 奇异 → 添加 epsilon barrier 或变量替换（logit）
 
-#### Task 2.4: Profile 输出与 Modelica 接口
+#### ✅ Task 2.4: Profile 输出与 Modelica 接口
 - **目标**：将 CasADi 求解结果导出为 tricys/Modelica 可消费的初始化文件格式
 - **依赖**：T2.2
 - **修改内容**：
