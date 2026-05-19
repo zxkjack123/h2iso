@@ -291,7 +291,7 @@
   - ✅ 基线数据记录到文档
 - **潜在风险**：CI runner 性能波动——使用相对值（vs 上次 main）而非绝对阈值
 
-#### Task 6.4: End-to-end h2iso → tricys → simulate 测试 (GAP-10)
+#### ✅ Task 6.4: End-to-end h2iso → tricys → simulate 测试 (GAP-10)
 - **目标**：codegen 生成的 .mo 文件能被 OMC 编译；init_from_h2iso.py 生成的 .mos 能在 tricys 中跑通仿真
 - **依赖**：T5.1, T5.2 完成（如果集成 ISS-I）；OMC 1.23+ 可用环境
 - **修改内容**：

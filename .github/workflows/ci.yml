@@ -103,3 +103,36 @@ jobs:
                       benchmark_results.json
                       .benchmarks/
                   if-no-files-found: warn
+
+    e2e-modelica:
+        runs-on: ubuntu-latest
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+
+            - name: Install OpenModelica
+              run: |
+                  for keyfile in deb.openmodelica.org.gpg.key build.openmodelica.org.key; do
+                      wget -qO- "https://openmodelica.org/$keyfile" \
+                          | sudo gpg --dearmor -o /etc/apt/keyrings/openmodelica.gpg && break
+                  done
+                  echo "deb [signed-by=/etc/apt/keyrings/openmodelica.gpg] https://build.openmodelica.org/apt $(lsb_release -cs) release" \
+                      | sudo tee /etc/apt/sources.list.d/openmodelica.list
+                  sudo apt-get update
+                  sudo apt-get install -y --no-install-recommends omc
+
+            - name: Install h2iso with dev deps
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -e ".[dev]"
+
+            - name: Run Modelica E2E pytest suite
+              run: pytest tests/e2e/ -v --override-ini="addopts=--benchmark-disable"
+
+            - name: Run E2E shell script
+              run: bash tests/e2e/test_tricys_init.sh

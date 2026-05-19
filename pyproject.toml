@@ -72,4 +72,4 @@ markers = [
     "slow: marks tests requiring CasADi solver",
     "benchmark: performance regression benchmark (run with `pytest tests/benchmark`)",
 ]
-addopts = "--benchmark-disable --ignore=tests/benchmark"
+addopts = "--benchmark-disable --ignore=tests/benchmark --ignore=tests/e2e"
