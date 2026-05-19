@@ -1,0 +1,42 @@
+{
+  "description": "Hydrogen isotopologue species registry. Molar masses from IUPAC 2021 atomic weights: H=1.00794, D=2.01410, T=3.01605.",
+  "source": "IUPAC 2021 + Souers UCRL-52628 Table 2.1",
+  "species": [
+    {
+      "name": "Protium (hydrogen)",
+      "formula": "H2",
+      "molar_mass": 2.01588,
+      "atoms": {"H": 2}
+    },
+    {
+      "name": "Hydrogen deuteride",
+      "formula": "HD",
+      "molar_mass": 3.02204,
+      "atoms": {"H": 1, "D": 1}
+    },
+    {
+      "name": "Hydrogen tritide",
+      "formula": "HT",
+      "molar_mass": 4.02399,
+      "atoms": {"H": 1, "T": 1}
+    },
+    {
+      "name": "Deuterium",
+      "formula": "D2",
+      "molar_mass": 4.02820,
+      "atoms": {"D": 2}
+    },
+    {
+      "name": "Deuterium tritide",
+      "formula": "DT",
+      "molar_mass": 5.03015,
+      "atoms": {"D": 1, "T": 1}
+    },
+    {
+      "name": "Tritium",
+      "formula": "T2",
+      "molar_mass": 6.03210,
+      "atoms": {"T": 2}
+    }
+  ]
+}

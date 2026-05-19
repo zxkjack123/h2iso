@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "h2iso"
+version = "0.1.0"
+authors = [
+    {name = "Zhang Xiaokang", email = "zhangxk@ipp.ac.cn"},
+]
+description = "Hydrogen Isotope Thermodynamics — cryogenic VLE and distillation solver for H₂/HD/HT/D₂/DT/T₂"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "numpy>=1.22",
+    "scipy>=1.8",
+]
+
+[project.optional-dependencies]
+solver = [
+    "casadi>=3.6",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "ruff>=0.4",
+    "hypothesis",
+]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
+
+[project.urls]
+Homepage = "https://github.com/asipp-neutronics/h2iso"
+Issues = "https://github.com/asipp-neutronics/h2iso/issues"
+
+[project.scripts]
+h2iso = "h2iso.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+h2iso = ["../data/parameters/*.json"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["h2iso"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests requiring CasADi solver",
+]
