@@ -263,7 +263,7 @@
 
 ### Phase 2.4: tricys 集成
 
-#### Task 2.4.1: tricys 集成脚本
+#### ✅ Task 2.4.1: tricys 集成脚本
 - **目标**：在 tricys repo 中添加使用 h2iso 生成 Modelica 初始化文件的脚本
 - **依赖**：T2.2.2
 - **修改内容**：
