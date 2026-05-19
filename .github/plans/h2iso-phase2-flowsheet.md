@@ -199,7 +199,7 @@
   - ✅ CD3 bottom 接近纯 T₂ 或 DT-rich
 - **潜在风险**：CD3 (60 板, R=18) 高回流比可能导致 continuation 困难
 
-#### Task 2.2.2: ISS-O 三塔完整验证（含 recycle）
+#### ✅ Task 2.2.2: ISS-O 三塔完整验证（含 recycle）
 - **目标**：完整 ISS-O 三塔 + 平衡器 + 双循环流验证
 - **依赖**：T2.2.1
 - **修改内容**：
