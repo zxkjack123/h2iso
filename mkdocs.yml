@@ -1,0 +1,24 @@
+site_name: h2iso
+site_description: Hydrogen Isotope Thermodynamics — Cryogenic VLE & Distillation Solver
+repo_url: https://github.com/your-org/h2iso
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Quick Start: quickstart.md
+  - API Reference:
+      - VLE: api/vle.md
+      - MESH Solver: api/mesh.md
+  - Validation:
+      - MESH Report: validation/mesh_report.md
+  - Examples:
+      - Single Column: examples/single_column.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
