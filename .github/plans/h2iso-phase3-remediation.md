@@ -259,7 +259,7 @@
   - ✅ 任何发现的反例必须修复或文档化为已知局限
 - **潜在风险**：hypothesis 可能发现真实 bug——需预算时间修复
 
-#### Task 6.2: Error path coverage
+#### ✅ Task 6.2: Error path coverage
 - **目标**：系统化测试求解器在异常输入下的行为
 - **依赖**：Phase 3+4 完成
 - **修改内容**：
