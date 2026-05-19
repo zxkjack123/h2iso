@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://h2iso.readthedocs.io/schemas/flowsheet_v1.json",
+  "title": "h2iso Flowsheet Configuration",
+  "description": "Schema for multi-column hydrogen isotope separation flowsheet",
+  "type": "object",
+  "required": ["feeds", "columns", "topology"],
+  "properties": {
+    "source": {
+      "type": "object",
+      "description": "Reference/citation metadata"
+    },
+    "feeds": {
+      "type": "object",
+      "description": "External feed streams",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["total_flow_mol_h", "composition_mole_fraction", "target_column", "feed_stage"],
+        "properties": {
+          "description": {"type": "string"},
+          "total_flow_mol_h": {"type": "number", "minimum": 0},
+          "composition_mole_fraction": {
+            "type": "object",
+            "properties": {
+              "H2": {"type": "number", "minimum": 0, "maximum": 1},
+              "HD": {"type": "number", "minimum": 0, "maximum": 1},
+              "HT": {"type": "number", "minimum": 0, "maximum": 1},
+              "D2": {"type": "number", "minimum": 0, "maximum": 1},
+              "DT": {"type": "number", "minimum": 0, "maximum": 1},
+              "T2": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          },
+          "target_column": {"type": "string"},
+          "feed_stage": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "columns": {
+      "type": "object",
+      "description": "Distillation column specifications",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["total_stages", "reflux_ratio", "distillate_to_feed_ratio"],
+        "properties": {
+          "total_stages": {"type": "integer", "minimum": 2},
+          "reflux_ratio": {"type": "number", "minimum": 0},
+          "distillate_to_feed_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+          "feed_positions": {
+            "type": "object",
+            "additionalProperties": {"type": "integer", "minimum": 1}
+          },
+          "pressure_top_Pa": {"type": "number", "minimum": 0},
+          "pressure_bottom_Pa": {"type": "number", "minimum": 0}
+        }
+      }
+    },
+    "topology": {
+      "type": "object",
+      "required": ["connections"],
+      "properties": {
+        "description": {"type": "string"},
+        "connections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to"],
+            "properties": {
+              "from": {"type": "string"},
+              "to": {"type": "string"},
+              "stage": {"type": ["integer", "null"]}
+            }
+          }
+        },
+        "products": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        }
+      }
+    }
+  }
+}

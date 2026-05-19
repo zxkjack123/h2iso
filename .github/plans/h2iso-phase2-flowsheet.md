@@ -121,7 +121,7 @@
   - ✅ EquilibratorUnit 包装后结果与直接调用一致
 - **潜在风险**：无
 
-#### Task 2.1.2: Flowsheet JSON Schema
+#### ✅ Task 2.1.2: Flowsheet JSON Schema
 - **目标**：定义描述多塔拓扑的 JSON Schema，兼容现有 wang2022_isso.json 格式
 - **依赖**：T2.1.1
 - **修改内容**：
