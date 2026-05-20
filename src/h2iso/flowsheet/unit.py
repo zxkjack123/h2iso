@@ -11,7 +11,6 @@ from h2iso.equilibrator.exchange import atom_fractions, equilibrium_composition
 from h2iso.flowsheet.stream import Stream, stream_mix
 from h2iso.mesh.column import Column, ColumnSpec, FeedSpec
 from h2iso.mesh.continuation import ContinuationSolver
-from h2iso.mesh.enthalpy import liquid_enthalpy_numeric, vapor_enthalpy_numeric
 from h2iso.species import N_SPECIES
 
 _PRESSURE_CHANGER_MODES = ("throttle", "pump", "compressor")

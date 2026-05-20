@@ -71,7 +71,7 @@ jobs:
                   /tmp/wheel-test-env/bin/pip install --upgrade pip
                   /tmp/wheel-test-env/bin/pip install dist/h2iso-*.whl pytest
                   cd /tmp && /tmp/wheel-test-env/bin/python -c "from h2iso.species import SPECIES_ORDER, N_SPECIES; from h2iso.vle.mixing import bubble_pressure; from h2iso.equilibrator.exchange import equilibrium_composition; import numpy as np; x = np.array([0.5, 0.0, 0.0, 0.5, 0.0, 0.0]); result = bubble_pressure(25.0, x); assert N_SPECIES == 6 and len(SPECIES_ORDER) == 6; print('Smoke OK, bubble_pressure type=', type(result).__name__)"
-                  cd ${{ github.workspace }} && /tmp/wheel-test-env/bin/python -m pytest tests/test_data_resources.py -v
+                  cd ${{ github.workspace }} && /tmp/wheel-test-env/bin/python -m pytest tests/test_data_resources.py -v -o "addopts="
 
     benchmark:
         runs-on: ubuntu-latest

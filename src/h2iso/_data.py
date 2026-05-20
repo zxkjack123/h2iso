@@ -6,10 +6,10 @@ and wheel/zipimport installations without relying on `__file__` path math.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from importlib import resources
 from pathlib import Path
-from typing import Iterator
 
 
 @contextmanager

@@ -8,7 +8,6 @@ import pytest
 
 from h2iso._data import data_path
 
-
 PARAMETER_FILES = [
     "species.json",
     "bip.json",

@@ -190,8 +190,8 @@ class TestEquilibratorUnitValidation:
     """Task 4.1: EquilibratorUnit rejects non-positive temperature."""
 
     def test_zero_temperature_raises(self):
-        from h2iso.flowsheet.unit import EquilibratorUnit
         from h2iso.flowsheet.stream import Stream
+        from h2iso.flowsheet.unit import EquilibratorUnit
         z = np.array([0.4, 0.0, 0.0, 0.4, 0.0, 0.2])
         s = Stream(flow=10.0, composition=z, temperature=25.0, pressure=101325.0)
         unit = EquilibratorUnit(name="EQ", temperature=0.0)
@@ -199,8 +199,8 @@ class TestEquilibratorUnitValidation:
             unit.solve({"in": s})
 
     def test_negative_temperature_raises(self):
-        from h2iso.flowsheet.unit import EquilibratorUnit
         from h2iso.flowsheet.stream import Stream
+        from h2iso.flowsheet.unit import EquilibratorUnit
         z = np.array([0.4, 0.0, 0.0, 0.4, 0.0, 0.2])
         s = Stream(flow=10.0, composition=z, temperature=25.0, pressure=101325.0)
         unit = EquilibratorUnit(name="EQ", temperature=-5.0)

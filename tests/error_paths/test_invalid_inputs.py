@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from h2iso.mesh.enthalpy import liquid_enthalpy_numeric
-from h2iso.species import N_SPECIES, SPECIES_ORDER
+from h2iso.species import N_SPECIES
 from h2iso.vle.mixing import _validate_composition, bubble_pressure, flash_TP
 from h2iso.vle.quantum import (
     acentric_factor,
