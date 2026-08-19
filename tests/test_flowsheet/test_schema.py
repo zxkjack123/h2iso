@@ -92,7 +92,7 @@ class TestDetectTearStreams:
     """Test detect_tear_streams()."""
 
     def test_recycle_detected(self):
-        """ISS-O has a recycle loop: CD2_bottom_recycle -> CD1."""
+        """ISS-O has recycle loops: CD2_top -> CD1 and CD3_top -> CD2."""
         config = load_flowsheet(FIXTURE_DIR / "wang2022_isso.json")
         tear_names = [t.name for t in config.tear_streams]
         # There should be at least one tear stream in the ISS-O topology

@@ -50,7 +50,7 @@
       "distillate_to_feed_ratio": 0.9948,
       "feed_positions": {
         "WDS": 20,
-        "CD2_bottom_recycle": 15
+        "CD2_top": 15
       },
       "pressure_top_Pa": 90000,
       "pressure_bottom_Pa": 100000,
@@ -58,7 +58,7 @@
       "condenser_volume_m3": 1.0e-3,
       "reboiler_volume_m3": 2.0e-4,
       "HETP_m": 0.05,
-      "notes": "Table 5. CD1 receives WDS at stage 20 and CD2 bottom product recycle at stage 15."
+      "notes": "Table 5. CD1 receives WDS at stage 20 and CD2 distillate (top) recycle at stage 15."
     },
     "CD2": {
       "total_stages": 70,
@@ -90,7 +90,7 @@
       "condenser_volume_m3": 1.0e-3,
       "reboiler_volume_m3": 2.0e-4,
       "HETP_m": 0.05,
-      "notes": "Table 5. CD3 receives equilibrator output at stage 30. In simplified model (no equilibrator), CD2 bottom feeds CD3 directly."
+      "notes": "Table 5. CD3 receives equilibrator output at stage 30."
     }
   },
   "topology": {
@@ -102,14 +102,13 @@
       {"from": "CD2_bottom", "to": "equilibrator", "stage": null},
       {"from": "equilibrator", "to": "CD3", "stage": 30},
       {"from": "CD3_top", "to": "CD2", "stage": 45},
-      {"from": "CD2_bottom_recycle", "to": "CD1", "stage": 15}
+      {"from": "CD2_top", "to": "CD1", "stage": 15}
     ],
     "products": {
       "CD1_top": "H2-rich exhaust (to environment)",
-      "CD2_top": "H2-rich exhaust (to environment)",
       "CD3_bottom": "T2 product (high purity)"
     },
-    "simplification_notes": "The equilibrator (catalytic reactor converting 2HT -> H2 + T2) is not modeled in the DWSIM benchmark. CD2 bottom is fed directly to CD3. This simplification affects CD3 feed composition and downstream results. The CD2_bottom_recycle to CD1 creates a recycle loop that requires iterative convergence."
+    "simplification_notes": "Wang 2022 ISS-O configuration: CD2 top is recycled to CD1 to recover carrier H2/HD; CD2 bottom is fed to the equilibrator (2HT -> H2 + T2) and then to CD3 for high-purity T2 concentration."
   },
   "expected_results": {
     "temperatures_K": {
