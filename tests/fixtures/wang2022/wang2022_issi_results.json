@@ -1,0 +1,469 @@
+{
+  "columns": {
+    "CD1": {
+      "converged": true,
+      "actual_results": {
+        "converged": true,
+        "top_composition": {
+          "H2": 0.0002603341472420622,
+          "HD": 0.01967400890745101,
+          "HT": 0.01747939447754188,
+          "D2": 0.9625757100990188,
+          "DT": 1.0552176671353292e-05,
+          "T2": 1.9204717783643117e-10
+        },
+        "bottom_composition": {
+          "H2": -4.20891326617707e-16,
+          "HD": 7.068044340093438e-12,
+          "HT": 6.662083641517023e-08,
+          "D2": 0.2043062603467448,
+          "DT": 0.5787783485099386,
+          "T2": 0.2169153245154126
+        },
+        "top_flow_mol_h": 12.003035457315402,
+        "bottom_flow_mol_h": 52.87823728493001,
+        "temperatures": {
+          "top_K": 23.38840707578292,
+          "bottom_K": 24.129458710454017
+        },
+        "heat_loads": {
+          "condenser_W": -207.98770876971483,
+          "reboiler_W": 229.21828443481309
+        }
+      },
+      "comparison": [
+        {
+          "metric": "top_H2",
+          "expected": 0.000256,
+          "actual": 0.0002603341472420622,
+          "deviation": 0.016930262664305577,
+          "pass": true
+        },
+        {
+          "metric": "top_HD",
+          "expected": 0.019674,
+          "actual": 0.01967400890745101,
+          "deviation": 4.527524148331144e-07,
+          "pass": true
+        },
+        {
+          "metric": "top_HT",
+          "expected": 0.01748,
+          "actual": 0.01747939447754188,
+          "deviation": 3.46408728901132e-05,
+          "pass": true
+        },
+        {
+          "metric": "top_D2",
+          "expected": 0.942851,
+          "actual": 0.9625757100990188,
+          "deviation": 0.020920283373532796,
+          "pass": true
+        },
+        {
+          "metric": "top_DT",
+          "expected": 0.018977,
+          "actual": 1.0552176671353292e-05,
+          "deviation": 0.9994439491662881,
+          "pass": true
+        },
+        {
+          "metric": "top_T2",
+          "expected": 0.000762,
+          "actual": 1.9204717783643117e-10,
+          "deviation": 0.9999997479695829,
+          "pass": true
+        },
+        {
+          "metric": "bottom_HT",
+          "expected": 5.53e-07,
+          "actual": 6.662083641517023e-08,
+          "deviation": 4.863791635848298e-07,
+          "pass": true
+        },
+        {
+          "metric": "bottom_D2",
+          "expected": 0.013274,
+          "actual": 0.2043062603467448,
+          "deviation": 14.39146152981353,
+          "pass": false
+        },
+        {
+          "metric": "bottom_DT",
+          "expected": 0.577846,
+          "actual": 0.5787783485099386,
+          "deviation": 0.0016134895974682158,
+          "pass": true
+        },
+        {
+          "metric": "bottom_T2",
+          "expected": 0.408879,
+          "actual": 0.2169153245154126,
+          "deviation": 0.46948773472002087,
+          "pass": false
+        },
+        {
+          "metric": "T_top",
+          "expected": 23.3745,
+          "actual": 23.38840707578292,
+          "deviation": 0.013907075782917389,
+          "pass": true
+        },
+        {
+          "metric": "T_bottom",
+          "expected": 24.5114,
+          "actual": 24.129458710454017,
+          "deviation": 0.3819412895459813,
+          "pass": true
+        },
+        {
+          "metric": "Q_condenser",
+          "expected": -210.066,
+          "actual": -207.98770876971483,
+          "deviation": 0.009893515515529281,
+          "pass": true
+        },
+        {
+          "metric": "Q_reboiler",
+          "expected": 85.7631,
+          "actual": 229.21828443481309,
+          "deviation": 1.6726912207559321,
+          "pass": false
+        }
+      ],
+      "pass_count": 11,
+      "total_count": 14
+    },
+    "CD2": {
+      "converged": true,
+      "actual_results": {
+        "converged": true,
+        "top_composition": {
+          "H2": -9.99972546477903e-09,
+          "HD": -9.999731501948817e-09,
+          "HT": -9.999732018208322e-09,
+          "D2": 0.9999527621867516,
+          "DT": 4.727330041981945e-05,
+          "T2": -9.999730633161524e-09
+        },
+        "bottom_composition": {
+          "H2": -9.999497059986766e-09,
+          "HD": -9.999719970110367e-09,
+          "HT": -9.999757161915077e-09,
+          "D2": 0.04982207411898626,
+          "DT": 0.9501779656820223,
+          "T2": -9.999137913739736e-09
+        },
+        "top_flow_mol_h": 78.66950299999999,
+        "bottom_flow_mol_h": 1.6874970000000076,
+        "temperatures": {
+          "top_K": 23.438780821378163,
+          "bottom_K": 24.11752082313434
+        },
+        "heat_loads": {
+          "condenser_W": -429.2141477099761,
+          "reboiler_W": 478.61293914847704
+        }
+      },
+      "comparison": [
+        {
+          "metric": "top_D2",
+          "expected": 0.999736,
+          "actual": 0.9999527621867516,
+          "deviation": 0.00021681942708034487,
+          "pass": true
+        },
+        {
+          "metric": "top_DT",
+          "expected": 0.000264,
+          "actual": 4.727330041981945e-05,
+          "deviation": 0.8209344681067444,
+          "pass": true
+        },
+        {
+          "metric": "bottom_D2",
+          "expected": 0.059939,
+          "actual": 0.04982207411898626,
+          "deviation": 0.16878703149891958,
+          "pass": false
+        },
+        {
+          "metric": "bottom_DT",
+          "expected": 0.940061,
+          "actual": 0.9501779656820223,
+          "deviation": 0.010762031061837742,
+          "pass": true
+        },
+        {
+          "metric": "T_top",
+          "expected": 23.4102,
+          "actual": 23.438780821378163,
+          "deviation": 0.028580821378163535,
+          "pass": true
+        },
+        {
+          "metric": "T_bottom",
+          "expected": 24.4085,
+          "actual": 24.11752082313434,
+          "deviation": 0.29097917686566177,
+          "pass": true
+        },
+        {
+          "metric": "Q_condenser",
+          "expected": -432.357,
+          "actual": -429.2141477099761,
+          "deviation": 0.007269113926740954,
+          "pass": true
+        },
+        {
+          "metric": "Q_reboiler",
+          "expected": 432.745,
+          "actual": 478.61293914847704,
+          "deviation": 0.10599299621827413,
+          "pass": true
+        }
+      ],
+      "pass_count": 7,
+      "total_count": 8
+    },
+    "CD3": {
+      "converged": true,
+      "actual_results": {
+        "converged": true,
+        "top_composition": {
+          "H2": -3.9646707728373594e-10,
+          "HD": -3.87694034228962e-10,
+          "HT": 8.23734256571853e-08,
+          "D2": 0.25580600843410073,
+          "DT": 0.7441900292083347,
+          "T2": 3.880768300189623e-06
+        },
+        "bottom_composition": {
+          "H2": -1.138541652157583e-17,
+          "HD": -1.610502868257575e-17,
+          "HT": -1.9836160838755415e-17,
+          "D2": 1.832291857403862e-08,
+          "DT": 0.04452732072464305,
+          "T2": 0.9554726609524384
+        },
+        "top_flow_mol_h": 42.561272742245414,
+        "bottom_flow_mol_h": 12.004461542684602,
+        "temperatures": {
+          "top_K": 23.960689106617277,
+          "bottom_K": 24.78469176259718
+        },
+        "heat_loads": {
+          "condenser_W": -965.764230185515,
+          "reboiler_W": 998.2907054603862
+        }
+      },
+      "comparison": [
+        {
+          "metric": "top_HT",
+          "expected": 6.87e-07,
+          "actual": 8.23734256571853e-08,
+          "deviation": 6.046265743428147e-07,
+          "pass": true
+        },
+        {
+          "metric": "top_D2",
+          "expected": 0.018869,
+          "actual": 0.25580600843410073,
+          "deviation": 12.556945701102375,
+          "pass": false
+        },
+        {
+          "metric": "top_DT",
+          "expected": 0.736452,
+          "actual": 0.7441900292083347,
+          "deviation": 0.01050717386650408,
+          "pass": true
+        },
+        {
+          "metric": "top_T2",
+          "expected": 0.24468,
+          "actual": 3.880768300189623e-06,
+          "deviation": 0.9999841394135189,
+          "pass": false
+        },
+        {
+          "metric": "bottom_DT",
+          "expected": 0.066435,
+          "actual": 0.04452732072464305,
+          "deviation": 0.32976110898407385,
+          "pass": false
+        },
+        {
+          "metric": "bottom_T2",
+          "expected": 0.933565,
+          "actual": 0.9554726609524384,
+          "deviation": 0.023466669115100133,
+          "pass": true
+        },
+        {
+          "metric": "T_top",
+          "expected": 24.1152,
+          "actual": 23.960689106617277,
+          "deviation": 0.1545108933827244,
+          "pass": true
+        },
+        {
+          "metric": "T_bottom",
+          "expected": 24.6124,
+          "actual": 24.78469176259718,
+          "deviation": 0.1722917625971796,
+          "pass": true
+        },
+        {
+          "metric": "Q_condenser",
+          "expected": -941.965,
+          "actual": -965.764230185515,
+          "deviation": 0.02526551430840312,
+          "pass": true
+        },
+        {
+          "metric": "Q_reboiler",
+          "expected": 941.761,
+          "actual": 998.2907054603862,
+          "deviation": 0.060025532444416635,
+          "pass": true
+        }
+      ],
+      "pass_count": 7,
+      "total_count": 10
+    },
+    "CD4": {
+      "converged": true,
+      "actual_results": {
+        "converged": true,
+        "top_composition": {
+          "H2": 0.011305440202706164,
+          "HD": 0.9886943885635686,
+          "HT": 1.704785761388899e-07,
+          "D2": 7.550100407115987e-10,
+          "DT": 8.070774036334372e-14,
+          "T2": 5.801720493186103e-14
+        },
+        "bottom_composition": {
+          "H2": 4.230279648090283e-08,
+          "HD": 0.004314288440505338,
+          "HT": 0.0003415959540714283,
+          "D2": 0.9776832288175861,
+          "DT": 0.017580218616970823,
+          "T2": 8.062586807007547e-05
+        },
+        "top_flow_mol_h": 0.39369956299994524,
+        "bottom_flow_mol_h": 11.609335894315457,
+        "temperatures": {
+          "top_K": 21.881273411806493,
+          "bottom_K": 23.44236817613434
+        },
+        "heat_loads": {
+          "condenser_W": -34.64604550308448,
+          "reboiler_W": 39.8005562556855
+        }
+      },
+      "comparison": [
+        {
+          "metric": "top_H2",
+          "expected": 0.006797,
+          "actual": 0.011305440202706164,
+          "deviation": 0.6632985438732035,
+          "pass": true
+        },
+        {
+          "metric": "top_HD",
+          "expected": 0.993198,
+          "actual": 0.9886943885635686,
+          "deviation": 0.004534454797967182,
+          "pass": true
+        },
+        {
+          "metric": "top_HT",
+          "expected": 1.29e-07,
+          "actual": 1.704785761388899e-07,
+          "deviation": 4.147857613888989e-08,
+          "pass": true
+        },
+        {
+          "metric": "top_D2",
+          "expected": 4.13e-06,
+          "actual": 7.550100407115987e-10,
+          "deviation": 4.129244989959288e-06,
+          "pass": true
+        },
+        {
+          "metric": "bottom_HD",
+          "expected": 0.00412,
+          "actual": 0.004314288440505338,
+          "deviation": 0.04715738847216938,
+          "pass": true
+        },
+        {
+          "metric": "bottom_HT",
+          "expected": 0.000672,
+          "actual": 0.0003415959540714283,
+          "deviation": 0.4916726873937079,
+          "pass": true
+        },
+        {
+          "metric": "bottom_D2",
+          "expected": 0.957342,
+          "actual": 0.9776832288175861,
+          "deviation": 0.0212476093366697,
+          "pass": true
+        },
+        {
+          "metric": "bottom_DT",
+          "expected": 0.037105,
+          "actual": 0.017580218616970823,
+          "deviation": 0.5262035138937926,
+          "pass": true
+        },
+        {
+          "metric": "bottom_T2",
+          "expected": 0.000756,
+          "actual": 8.062586807007547e-05,
+          "deviation": 0.8933520263623341,
+          "pass": true
+        },
+        {
+          "metric": "T_top",
+          "expected": 21.8277,
+          "actual": 21.881273411806493,
+          "deviation": 0.053573411806493,
+          "pass": true
+        },
+        {
+          "metric": "T_bottom",
+          "expected": 23.7856,
+          "actual": 23.44236817613434,
+          "deviation": 0.34323182386565776,
+          "pass": true
+        },
+        {
+          "metric": "Q_condenser",
+          "expected": -35.122,
+          "actual": -34.64604550308448,
+          "deviation": 0.013551463382367748,
+          "pass": true
+        },
+        {
+          "metric": "Q_reboiler",
+          "expected": 3.1672,
+          "actual": 39.8005562556855,
+          "deviation": 11.56648025248974,
+          "pass": false
+        }
+      ],
+      "pass_count": 12,
+      "total_count": 13
+    }
+  },
+  "overall_pass_count": 37,
+  "overall_total_count": 45,
+  "notes": {
+    "solver": "h2iso SequentialModularSolver with CasADi MESH",
+    "topology": "Wang 2022 ISS-I four-column cascade (CD1 bottom + CD2 bottom to CD3, CD3 top to E1 recycle to CD1, CD1 top to E2 to CD4)"
+  }
+}

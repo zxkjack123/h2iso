@@ -384,8 +384,16 @@ class SequentialModularSolver:
                 if key == f"{base}_bottoms":
                     return stream
 
-        # Check equilibrator output
-        if source_name.startswith("equilibrator"):
+        # Check unit generic output (e.g., equilibrator1_out, mixer_out)
+        if f"{source_name}_out" in self.streams:
+            return self.streams[f"{source_name}_out"]
+
+        # Single equilibrator / legacy fallback
+        if "equilibrator" in source_name:
+            # First try matching specific equilibrator prefix
+            for key, stream in self.streams.items():
+                if key.startswith(source_name) and key.endswith("_out"):
+                    return stream
             for key, stream in self.streams.items():
                 if "equilibrator" in key and "out" in key:
                     return stream
