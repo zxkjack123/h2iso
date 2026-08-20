@@ -32,6 +32,12 @@ class ColumnConfig:
     distillate_to_feed: float
     feed_positions: dict[str, int]  # feed_name -> stage
     pressure: float  # Pa (average of top/bottom)
+    pressure_top_Pa: float = 101325.0
+    pressure_bottom_Pa: float = 101325.0
+    inside_diameter_m: float = 0.05
+    HETP_m: float = 0.05
+    condenser_volume_m3: float = 1.0e-3
+    reboiler_volume_m3: float = 2.0e-4
 
 
 @dataclass
@@ -131,6 +137,12 @@ def load_flowsheet(path: str | Path) -> FlowsheetConfig:
             distillate_to_feed=cdata["distillate_to_feed_ratio"],
             feed_positions=cdata.get("feed_positions", {}),
             pressure=(p_top + p_bot) / 2.0,
+            pressure_top_Pa=p_top,
+            pressure_bottom_Pa=p_bot,
+            inside_diameter_m=cdata.get("inside_diameter_m", 0.05),
+            HETP_m=cdata.get("HETP_m", 0.05),
+            condenser_volume_m3=cdata.get("condenser_volume_m3", 1.0e-3),
+            reboiler_volume_m3=cdata.get("reboiler_volume_m3", 2.0e-4),
         ))
 
     # Parse equilibrators (implicit from topology)

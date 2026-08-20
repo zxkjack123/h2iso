@@ -7,3 +7,10 @@ __version__ = "0.1.0"
 
 from h2iso.species import SPECIES as SPECIES
 from h2iso.species import Species as Species
+from h2iso.inventory import (
+    evaluate_column_inventory,
+    evaluate_flowsheet_inventory,
+    ColumnInventoryResult,
+    FlowsheetInventoryResult,
+    InventoryGeometry,
+)
