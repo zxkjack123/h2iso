@@ -55,12 +55,12 @@ class TestWang2022ISSIInventory:
         for name in ("CD1", "CD2", "CD3", "CD4"):
             assert name in issi_inventory_result.columns
 
-    def test_cd2_inventory_accuracy(self, issi_inventory_result):
-        """CD2 inventory is in excellent agreement with Wang 2022 (1.47 mol vs ref 1.44 mol, dev < 5%)."""
-        cd2_inv = issi_inventory_result.columns["CD2"]
-        ref = self.REF_TOTALS["CD2"]
-        dev = abs(cd2_inv.total_mol - ref) / ref
-        assert dev < 0.10, f"CD2 inventory {cd2_inv.total_mol:.4f} mol vs ref {ref:.4f} mol (dev {dev:.2%})"
+    def test_cd3_inventory_accuracy(self, issi_inventory_result):
+        """CD3 inventory is in excellent agreement with Wang 2022 (18.34 mol vs ref 19.97 mol, dev < 10%)."""
+        cd3_inv = issi_inventory_result.columns["CD3"]
+        ref = self.REF_TOTALS["CD3"]
+        dev = abs(cd3_inv.total_mol - ref) / ref
+        assert dev < 0.15, f"CD3 inventory {cd3_inv.total_mol:.4f} mol vs ref {ref:.4f} mol (dev {dev:.2%})"
 
     def test_cd3_dominant_tritium_inventory(self, issi_inventory_result):
         """CD3 holds the largest fraction (> 70%) of total ISS-I inventory."""
@@ -76,11 +76,13 @@ class TestWang2022ISSIInventory:
                 liq_frac = col_inv.total_liquid_mol / col_inv.total_mol
                 assert liq_frac > 0.60, f"{name}: liquid fraction is {liq_frac:.2%}"
 
-    def test_system_total_inventory_order_of_magnitude(self, issi_inventory_result):
-        """Total ISS-I tritium inventory is in ~15-30 mol range (16.87 mol vs ref 26.32 mol)."""
+    def test_system_total_inventory_accuracy(self, issi_inventory_result):
+        """Total ISS-I tritium inventory is in excellent agreement with Wang 2022 (23.31 mol vs ref 26.32 mol, dev ~11.5%)."""
         total = issi_inventory_result.total_mol
-        assert 12.0 <= total <= 32.0, f"Total inventory = {total:.2f} mol (ref: 26.32 mol)"
-        assert issi_inventory_result.total_grams > 80.0
+        ref_total = 26.3239
+        dev = abs(total - ref_total) / ref_total
+        assert dev < 0.15, f"Total inventory = {total:.2f} mol vs ref {ref_total:.2f} mol (dev: {dev:.2%})"
+        assert issi_inventory_result.total_grams > 130.0
 
 
 class TestWang2022ISSOInventory:

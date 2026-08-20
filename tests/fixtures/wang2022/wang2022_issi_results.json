@@ -29,6 +29,23 @@
         "heat_loads": {
           "condenser_W": -207.98770876971483,
           "reboiler_W": 229.21828443481309
+        },
+        "inventory": {
+          "column_name": "CD1",
+          "total_mol": 2.5465350931739006,
+          "total_grams": 15.360954335534284,
+          "gas_phase_mol": {
+            "condenser": 0.004006834214415604,
+            "packed_section": 0.6379885236019555,
+            "reboiler": 0.04394523036426403,
+            "total": 0.6859405881806351
+          },
+          "liquid_phase_mol": {
+            "condenser": 0.0036115360048122112,
+            "packed_section": 1.6393685638585394,
+            "reboiler": 0.21761440512991395,
+            "total": 1.8605945049932655
+          }
         }
       },
       "comparison": [
@@ -163,6 +180,23 @@
         "heat_loads": {
           "condenser_W": -429.2141477099761,
           "reboiler_W": 478.61293914847704
+        },
+        "inventory": {
+          "column_name": "CD2",
+          "total_mol": 2.4127578320275895,
+          "total_grams": 14.553996518573623,
+          "gas_phase_mol": {
+            "condenser": 1.0799875319712142e-05,
+            "packed_section": 0.6449734834757176,
+            "reboiler": 0.044510537610264876,
+            "total": 0.6894948209613022
+          },
+          "liquid_phase_mol": {
+            "condenser": 9.781238897811056e-06,
+            "packed_section": 1.5193903714620014,
+            "reboiler": 0.20386285836538826,
+            "total": 1.7232630110662874
+          }
         }
       },
       "comparison": [
@@ -255,6 +289,23 @@
         "heat_loads": {
           "condenser_W": -965.764230185515,
           "reboiler_W": 998.2907054603862
+        },
+        "inventory": {
+          "column_name": "CD3",
+          "total_mol": 18.34155281952552,
+          "total_grams": 110.6380807626599,
+          "gas_phase_mol": {
+            "condenser": 0.16641889869111734,
+            "packed_section": 5.172868611395286,
+            "reboiler": 0.08974707349840128,
+            "total": 5.429034583584804
+          },
+          "liquid_phase_mol": {
+            "condenser": 0.15842313257401194,
+            "packed_section": 12.31927637125274,
+            "reboiler": 0.43481873211396393,
+            "total": 12.912518235940716
+          }
         }
       },
       "comparison": [
@@ -361,6 +412,23 @@
         "heat_loads": {
           "condenser_W": -34.64604550308448,
           "reboiler_W": 39.8005562556855
+        },
+        "inventory": {
+          "column_name": "CD4",
+          "total_mol": 0.00563251357128889,
+          "total_grams": 0.03397588511337171,
+          "gas_phase_mol": {
+            "condenser": 4.174565130259645e-08,
+            "packed_section": 0.0003403633188797985,
+            "reboiler": 0.0007184747195087562,
+            "total": 0.0010588797840398573
+          },
+          "liquid_phase_mol": {
+            "condenser": 3.23088520802431e-08,
+            "packed_section": 0.000828778566804313,
+            "reboiler": 0.00374482291159264,
+            "total": 0.004573633787249033
+          }
         }
       },
       "comparison": [
@@ -460,10 +528,87 @@
       "total_count": 13
     }
   },
+  "inventory": {
+    "total_mol": 23.3064782582983,
+    "total_grams": 140.58700750188117,
+    "total_gas_mol": 6.805528872510782,
+    "total_liquid_mol": 16.500949385787518,
+    "columns": {
+      "CD1": {
+        "column_name": "CD1",
+        "total_mol": 2.5465350931739006,
+        "total_grams": 15.360954335534284,
+        "gas_phase_mol": {
+          "condenser": 0.004006834214415604,
+          "packed_section": 0.6379885236019555,
+          "reboiler": 0.04394523036426403,
+          "total": 0.6859405881806351
+        },
+        "liquid_phase_mol": {
+          "condenser": 0.0036115360048122112,
+          "packed_section": 1.6393685638585394,
+          "reboiler": 0.21761440512991395,
+          "total": 1.8605945049932655
+        }
+      },
+      "CD2": {
+        "column_name": "CD2",
+        "total_mol": 2.4127578320275895,
+        "total_grams": 14.553996518573623,
+        "gas_phase_mol": {
+          "condenser": 1.0799875319712142e-05,
+          "packed_section": 0.6449734834757176,
+          "reboiler": 0.044510537610264876,
+          "total": 0.6894948209613022
+        },
+        "liquid_phase_mol": {
+          "condenser": 9.781238897811056e-06,
+          "packed_section": 1.5193903714620014,
+          "reboiler": 0.20386285836538826,
+          "total": 1.7232630110662874
+        }
+      },
+      "CD3": {
+        "column_name": "CD3",
+        "total_mol": 18.34155281952552,
+        "total_grams": 110.6380807626599,
+        "gas_phase_mol": {
+          "condenser": 0.16641889869111734,
+          "packed_section": 5.172868611395286,
+          "reboiler": 0.08974707349840128,
+          "total": 5.429034583584804
+        },
+        "liquid_phase_mol": {
+          "condenser": 0.15842313257401194,
+          "packed_section": 12.31927637125274,
+          "reboiler": 0.43481873211396393,
+          "total": 12.912518235940716
+        }
+      },
+      "CD4": {
+        "column_name": "CD4",
+        "total_mol": 0.00563251357128889,
+        "total_grams": 0.03397588511337171,
+        "gas_phase_mol": {
+          "condenser": 4.174565130259645e-08,
+          "packed_section": 0.0003403633188797985,
+          "reboiler": 0.0007184747195087562,
+          "total": 0.0010588797840398573
+        },
+        "liquid_phase_mol": {
+          "condenser": 3.23088520802431e-08,
+          "packed_section": 0.000828778566804313,
+          "reboiler": 0.00374482291159264,
+          "total": 0.004573633787249033
+        }
+      }
+    }
+  },
   "overall_pass_count": 37,
   "overall_total_count": 45,
   "notes": {
     "solver": "h2iso SequentialModularSolver with CasADi MESH",
+    "inventory_module": "h2iso.inventory (Wang 2022 6-zone formulation)",
     "topology": "Wang 2022 ISS-I four-column cascade (CD1 bottom + CD2 bottom to CD3, CD3 top to E1 recycle to CD1, CD1 top to E2 to CD4)"
   }
 }
