@@ -1,0 +1,20 @@
+// OpenModelica Simulation Script for Integrated Full-Cycle Plant Model
+// Coupled with Generic_ISS and Generic_ISS_Adapters
+
+loadFile("Generic_ISS.mo");
+loadFile("Generic_ISS_Adapters.mo");
+loadFile("example_model.mo");
+
+simulate(
+  example_model.Cycle,
+  startTime = 0,
+  stopTime = 5000,
+  numberOfIntervals = 500,
+  tolerance = 1e-6,
+  method = "dassl",
+  outputFormat = "csv",
+  simflags = "-overrideFile override_cycle.txt",
+  fileNamePrefix = "simulation_results_cycle",
+  variableFilter = "time|i_iss\\.from_TEP_FCU\\[1\\]|i_iss\\.from_NBI\\[1\\]|i_iss\\.to_SDS\\[1\\]|i_iss\\.to_WDS\\[1\\]|i_iss\\.inventory_T|o_iss\\.from_TES\\[1\\]|o_iss\\.from_WDS\\[1\\]|o_iss\\.from_CPS\\[1\\]|o_iss\\.to_SDS\\[1\\]|o_iss\\.top_CD1\\[1\\]|o_iss\\.inventory_T|sds\\.I\\[1\\]"
+);
+getErrorString();
