@@ -1,0 +1,20 @@
+// OpenModelica Simulation Script for CFEDR_3LC.Cycle_3LC
+// Integrated with Generic_ISS and Generic_ISS_Adapters (3LC High-Fidelity Adapters)
+
+loadFile("Generic_ISS.mo");
+loadFile("Generic_ISS_Adapters.mo");
+loadFile("CFEDR_2870_3lc_ssp.mo");
+
+simulate(
+  CFEDR_3LC.Cycle_3LC,
+  startTime = 0,
+  stopTime = 5000,
+  numberOfIntervals = 500,
+  tolerance = 1e-6,
+  method = "dassl",
+  outputFormat = "csv",
+  simflags = "-overrideFile override_cycle.txt",
+  fileNamePrefix = "simulation_results_ssp",
+  variableFilter = "time|sds\\.inventory|i_iss\\.from_TEP|i_iss\\.to_SDS|i_iss\\.to_WDS|i_iss\\.to_VDS|i_iss\\.to_Secondary|i_iss\\.inventory|o_iss\\.from_TES|o_iss\\.from_WDS|o_iss\\.from_CPS_PFC|o_iss\\.from_CPS_BZ|o_iss\\.to_SDS|o_iss\\.to_VDS|o_iss\\.to_Secondary|o_iss\\.inventory"
+);
+getErrorString();
