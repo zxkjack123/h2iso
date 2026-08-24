@@ -44,8 +44,9 @@ def kij_matrix() -> np.ndarray:
     return _KIJ.copy()
 
 
-def kvalue(T: float, P: float, x: np.ndarray | None = None,
-           eos: EOS | None = None) -> np.ndarray:
+def kvalue(
+    T: float, P: float, x: np.ndarray | None = None, eos: EOS | None = None
+) -> np.ndarray:
     """Compute K-values for all 6 species.
 
     Parameters
@@ -78,8 +79,9 @@ def kvalue(T: float, P: float, x: np.ndarray | None = None,
     return K
 
 
-def bubble_pressure(T: float, x: np.ndarray,
-                    eos: EOS | None = None) -> tuple[float, np.ndarray]:
+def bubble_pressure(
+    T: float, x: np.ndarray, eos: EOS | None = None
+) -> tuple[float, np.ndarray]:
     """Calculate bubble point pressure and vapor composition.
 
     Parameters
@@ -142,8 +144,9 @@ def bubble_pressure(T: float, x: np.ndarray,
     return P_bubble, y
 
 
-def bubble_temperature(P: float, x: np.ndarray,
-                       eos: EOS | None = None) -> tuple[float, np.ndarray]:
+def bubble_temperature(
+    P: float, x: np.ndarray, eos: EOS | None = None
+) -> tuple[float, np.ndarray]:
     """Calculate bubble point temperature and vapor composition.
 
     Parameters
@@ -242,8 +245,9 @@ def rachford_rice(z: np.ndarray, K: np.ndarray) -> float:
     return V
 
 
-def flash_TP(T: float, P: float, z: np.ndarray,
-             eos: EOS | None = None) -> tuple[float, np.ndarray, np.ndarray]:
+def flash_TP(
+    T: float, P: float, z: np.ndarray, eos: EOS | None = None
+) -> tuple[float, np.ndarray, np.ndarray]:
     """Isothermal-isobaric (TP) flash calculation.
 
     Parameters

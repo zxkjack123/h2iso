@@ -34,9 +34,7 @@ def test_flash_TP_overall_mass_balance(z, T):
     V, x, y = flash_TP(T, P, z)
     z_back = (1.0 - V) * x + V * y
     rel = np.max(np.abs(z_back - z) / np.maximum(z, 1e-12))
-    assert rel < 0.01, (
-        f"Mass balance error {rel:.4f} at T={T}, P={P:.3e}, V={V:.3f}"
-    )
+    assert rel < 0.01, f"Mass balance error {rel:.4f} at T={T}, P={P:.3e}, V={V:.3f}"
     assert 0.0 <= V <= 1.0 or abs(V) < 1e-9 or abs(V - 1) < 1e-9
 
 

@@ -79,10 +79,13 @@ class TestValidateTopology:
         config = load_flowsheet(FIXTURE_DIR / "wang2022_isso.json")
         # Add a bad connection
         from h2iso.flowsheet.schema import Connection
-        config.connections.append(Connection(
-            from_unit="NONEXISTENT_UNIT",
-            to_unit="ANOTHER_FAKE",
-        ))
+
+        config.connections.append(
+            Connection(
+                from_unit="NONEXISTENT_UNIT",
+                to_unit="ANOTHER_FAKE",
+            )
+        )
         errors = validate_topology(config)
         assert len(errors) > 0
         assert any("NONEXISTENT_UNIT" in e or "ANOTHER_FAKE" in e for e in errors)
@@ -99,8 +102,7 @@ class TestDetectTearStreams:
         assert len(config.tear_streams) >= 1
         # The recycle from CD2/CD3 back to CD1/CD2 should be detected
         has_recycle = any(
-            "CD1" in t.to_unit or "CD2" in t.to_unit
-            for t in config.tear_streams
+            "CD1" in t.to_unit or "CD2" in t.to_unit for t in config.tear_streams
         )
         assert has_recycle, f"No recycle detected. Tears: {tear_names}"
 

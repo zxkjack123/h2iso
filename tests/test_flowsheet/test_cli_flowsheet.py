@@ -7,7 +7,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-FIXTURE_PATH = Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_isso.json"
+FIXTURE_PATH = (
+    Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_isso.json"
+)
 
 
 class TestCLIFlowsheetHelp:
@@ -17,7 +19,9 @@ class TestCLIFlowsheetHelp:
         """h2iso flowsheet --help exits 0 and shows usage."""
         result = subprocess.run(
             [sys.executable, "-m", "h2iso", "flowsheet", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "--config" in result.stdout
@@ -28,7 +32,9 @@ class TestCLIFlowsheetHelp:
         """h2iso --help lists flowsheet subcommand."""
         result = subprocess.run(
             [sys.executable, "-m", "h2iso", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "flowsheet" in result.stdout
@@ -41,13 +47,22 @@ class TestCLIFlowsheetSolve:
         """h2iso flowsheet --config isso.json produces summary.json."""
         result = subprocess.run(
             [
-                sys.executable, "-m", "h2iso", "flowsheet",
-                "--config", str(FIXTURE_PATH),
-                "--output", str(tmp_path),
-                "--max-iter", "50",
-                "--tol", "1e-4",
+                sys.executable,
+                "-m",
+                "h2iso",
+                "flowsheet",
+                "--config",
+                str(FIXTURE_PATH),
+                "--output",
+                str(tmp_path),
+                "--max-iter",
+                "50",
+                "--tol",
+                "1e-4",
             ],
-            capture_output=True, text=True, timeout=300,
+            capture_output=True,
+            text=True,
+            timeout=300,
         )
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
         assert "CONVERGED" in result.stdout
@@ -67,7 +82,16 @@ class TestCLIFlowsheetSolve:
     def test_solve_missing_config(self):
         """CLI errors on missing config file."""
         result = subprocess.run(
-            [sys.executable, "-m", "h2iso", "flowsheet", "--config", "/nonexistent.json"],
-            capture_output=True, text=True, timeout=10,
+            [
+                sys.executable,
+                "-m",
+                "h2iso",
+                "flowsheet",
+                "--config",
+                "/nonexistent.json",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode != 0

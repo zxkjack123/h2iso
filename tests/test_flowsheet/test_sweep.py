@@ -7,7 +7,9 @@ from pathlib import Path
 from h2iso.flowsheet.schema import load_flowsheet
 from h2iso.flowsheet.sweep import ParameterSweep
 
-FIXTURE_PATH = Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_isso.json"
+FIXTURE_PATH = (
+    Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_isso.json"
+)
 
 
 class TestParameterSweepRefluxRatio:
@@ -19,12 +21,14 @@ class TestParameterSweepRefluxRatio:
         # Remove tear streams for faster sweep (no-recycle mode)
         config.tear_streams = []
         config.connections = [
-            c for c in config.connections
+            c
+            for c in config.connections
             if c.from_unit not in ("CD2_bottom_recycle", "CD3_top")
         ]
         for col in config.columns:
             col.feed_positions = {
-                k: v for k, v in col.feed_positions.items()
+                k: v
+                for k, v in col.feed_positions.items()
                 if k not in ("CD2_bottom_recycle", "CD3_top")
             }
 
@@ -40,12 +44,14 @@ class TestParameterSweepRefluxRatio:
         config = load_flowsheet(FIXTURE_PATH)
         config.tear_streams = []
         config.connections = [
-            c for c in config.connections
+            c
+            for c in config.connections
             if c.from_unit not in ("CD2_bottom_recycle", "CD3_top")
         ]
         for col in config.columns:
             col.feed_positions = {
-                k: v for k, v in col.feed_positions.items()
+                k: v
+                for k, v in col.feed_positions.items()
                 if k not in ("CD2_bottom_recycle", "CD3_top")
             }
 
@@ -63,7 +69,7 @@ class TestParameterSweepRefluxRatio:
         assert len(h2_fracs) >= 2
         for i in range(1, len(h2_fracs)):
             assert h2_fracs[i] >= h2_fracs[i - 1] - 0.001, (
-                f"H2 purity not increasing: R[{i-1}]→{h2_fracs[i-1]:.4f}, "
+                f"H2 purity not increasing: R[{i - 1}]→{h2_fracs[i - 1]:.4f}, "
                 f"R[{i}]→{h2_fracs[i]:.4f}"
             )
 
@@ -76,12 +82,14 @@ class TestSweepResultExport:
         config = load_flowsheet(FIXTURE_PATH)
         config.tear_streams = []
         config.connections = [
-            c for c in config.connections
+            c
+            for c in config.connections
             if c.from_unit not in ("CD2_bottom_recycle", "CD3_top")
         ]
         for col in config.columns:
             col.feed_positions = {
-                k: v for k, v in col.feed_positions.items()
+                k: v
+                for k, v in col.feed_positions.items()
                 if k not in ("CD2_bottom_recycle", "CD3_top")
             }
 
@@ -93,6 +101,7 @@ class TestSweepResultExport:
 
         assert out_path.exists()
         import json
+
         with open(out_path) as f:
             data = json.load(f)
         assert data["parameter_name"] == "reflux_ratio"

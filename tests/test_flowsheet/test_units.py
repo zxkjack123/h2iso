@@ -93,7 +93,9 @@ class TestColumnUnit:
         assert "distillate" in outputs
         assert "bottoms" in outputs
         total_flow = h2_feed.flow + mixed_feed.flow
-        assert outputs["distillate"].flow + outputs["bottoms"].flow == pytest.approx(total_flow)
+        assert outputs["distillate"].flow + outputs["bottoms"].flow == pytest.approx(
+            total_flow
+        )
 
 
 class TestEquilibratorUnit:
@@ -130,7 +132,10 @@ class TestMixerUnit:
         assert outputs["out"].flow == pytest.approx(h2_feed.flow + mixed_feed.flow)
         # Mass conservation per component
         for i in range(N_SPECIES):
-            expected = h2_feed.flow * h2_feed.composition[i] + mixed_feed.flow * mixed_feed.composition[i]
+            expected = (
+                h2_feed.flow * h2_feed.composition[i]
+                + mixed_feed.flow * mixed_feed.composition[i]
+            )
             actual = outputs["out"].flow * outputs["out"].composition[i]
             assert actual == pytest.approx(expected, abs=1e-10)
 

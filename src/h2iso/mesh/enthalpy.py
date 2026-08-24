@@ -68,7 +68,9 @@ def vapor_enthalpy_sx(T_sx: ca.SX, y: ca.SX) -> ca.SX:
 
         # Sensible heat: ∫_{T_ref}^T (a + b*T' + c*T'^2) dT'
         dT = T_sx - T_REF
-        sensible = a * dT + 0.5 * b * (T_sx**2 - T_REF**2) + (c / 3) * (T_sx**3 - T_REF**3)
+        sensible = (
+            a * dT + 0.5 * b * (T_sx**2 - T_REF**2) + (c / 3) * (T_sx**3 - T_REF**3)
+        )
 
         # Total: sensible + latent (vapor is above liquid reference)
         H += y[i] * (sensible + dH_vap)
@@ -102,8 +104,9 @@ def liquid_enthalpy_sx(T_sx: ca.SX, x: ca.SX) -> ca.SX:
         # Cp_L = (a + b*T + c*T²) * (1 + d/T) ≈ a + a*d/T + b*T + ...
         # Simplified integral: ∫ Cp_L dT ≈ a*(T-Tref) + a*d*ln(T/Tref) + 0.5*b*(T²-Tref²)
         dT = T_sx - T_REF
-        sensible = (a * dT + a * d * ca.log(T_sx / T_REF)
-                    + 0.5 * b * (T_sx**2 - T_REF**2))
+        sensible = (
+            a * dT + a * d * ca.log(T_sx / T_REF) + 0.5 * b * (T_sx**2 - T_REF**2)
+        )
 
         H += x[i] * sensible
 

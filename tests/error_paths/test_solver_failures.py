@@ -52,8 +52,11 @@ def test_solver_invalid_on_unit_failure():
 
 def test_column_unit_no_inputs():
     col = ColumnUnit(
-        name="C1", n_stages=10, reflux_ratio=1.5,
-        distillate_to_feed=0.5, pressure=1.0e5,
+        name="C1",
+        n_stages=10,
+        reflux_ratio=1.5,
+        distillate_to_feed=0.5,
+        pressure=1.0e5,
     )
     with pytest.raises(ValueError, match="no input streams"):
         col.solve({})

@@ -28,14 +28,16 @@ class TestWang2022CD2:
 
         # Feed composition in canonical order
         feed_comp = self.feed["composition_mole_fraction"]
-        self.z_feed = np.array([
-            feed_comp.get("H2", 0.0),
-            feed_comp.get("HD", 0.0),
-            feed_comp.get("HT", 0.0),
-            feed_comp.get("D2", 0.0),
-            feed_comp.get("DT", 0.0),
-            feed_comp.get("T2", 0.0),
-        ])
+        self.z_feed = np.array(
+            [
+                feed_comp.get("H2", 0.0),
+                feed_comp.get("HD", 0.0),
+                feed_comp.get("HT", 0.0),
+                feed_comp.get("D2", 0.0),
+                feed_comp.get("DT", 0.0),
+                feed_comp.get("T2", 0.0),
+            ]
+        )
         self.P = self.feed["pressure_Pa"]
 
     def test_kvalue_ordering_at_feed_conditions(self):
@@ -58,7 +60,7 @@ class TestWang2022CD2:
 
         # Feed bubble T should be in reasonable range of column temperatures
         assert T_top - 1.0 < T_bub < T_bot + 1.0, (
-            f"T_bubble={T_bub:.2f} not in [{T_top-1:.2f}, {T_bot+1:.2f}]"
+            f"T_bubble={T_bub:.2f} not in [{T_top - 1:.2f}, {T_bot + 1:.2f}]"
         )
 
     def test_kvalue_vs_aspen_trend(self):
@@ -140,14 +142,17 @@ class TestWang2022VLEReport:
         results = []
         for T, label in [(T_top, "Top"), (T_bot, "Bottom")]:
             K = kvalue(T, P)
-            results.append({
-                "location": label,
-                "T_K": T,
-                "P_Pa": P,
-                "K_D2": K[SPECIES_ORDER.index("D2")],
-                "K_DT": K[SPECIES_ORDER.index("DT")],
-                "alpha_D2_DT": K[SPECIES_ORDER.index("D2")] / K[SPECIES_ORDER.index("DT")],
-            })
+            results.append(
+                {
+                    "location": label,
+                    "T_K": T,
+                    "P_Pa": P,
+                    "K_D2": K[SPECIES_ORDER.index("D2")],
+                    "K_DT": K[SPECIES_ORDER.index("DT")],
+                    "alpha_D2_DT": K[SPECIES_ORDER.index("D2")]
+                    / K[SPECIES_ORDER.index("DT")],
+                }
+            )
 
         # Just verify it runs without error — actual values logged
         assert len(results) == 2

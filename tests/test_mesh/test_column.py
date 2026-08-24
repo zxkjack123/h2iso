@@ -97,7 +97,7 @@ class TestColumnSolve:
         # Allow small tolerance for adjacent stages
         for j in range(len(T) - 1):
             assert T[j + 1] >= T[j] - 0.01, (
-                f"T not monotone: T[{j}]={T[j]:.4f} > T[{j+1}]={T[j+1]:.4f}"
+                f"T not monotone: T[{j}]={T[j]:.4f} > T[{j + 1}]={T[j + 1]:.4f}"
             )
 
     def test_d2_purity_top(self, cd2_column_spec):
@@ -166,24 +166,39 @@ class TestColumnSpecInputValidation:
 
     def test_n_stages_below_two_rejected(self):
         with pytest.raises(ValueError, match="n_stages"):
-            ColumnSpec(n_stages=1, feed_stage=1, feed_flow=100.0,
-                       feed_composition=self._valid_feed(),
-                       pressure=101325.0, reflux_ratio=3.0,
-                       distillate_to_feed=0.5)
+            ColumnSpec(
+                n_stages=1,
+                feed_stage=1,
+                feed_flow=100.0,
+                feed_composition=self._valid_feed(),
+                pressure=101325.0,
+                reflux_ratio=3.0,
+                distillate_to_feed=0.5,
+            )
 
     def test_distillate_to_feed_above_one_rejected(self):
         with pytest.raises(ValueError, match="distillate_to_feed"):
-            ColumnSpec(n_stages=10, feed_stage=5, feed_flow=100.0,
-                       feed_composition=self._valid_feed(),
-                       pressure=101325.0, reflux_ratio=3.0,
-                       distillate_to_feed=1.5)
+            ColumnSpec(
+                n_stages=10,
+                feed_stage=5,
+                feed_flow=100.0,
+                feed_composition=self._valid_feed(),
+                pressure=101325.0,
+                reflux_ratio=3.0,
+                distillate_to_feed=1.5,
+            )
 
     def test_distillate_to_feed_zero_rejected(self):
         with pytest.raises(ValueError, match="distillate_to_feed"):
-            ColumnSpec(n_stages=10, feed_stage=5, feed_flow=100.0,
-                       feed_composition=self._valid_feed(),
-                       pressure=101325.0, reflux_ratio=3.0,
-                       distillate_to_feed=0.0)
+            ColumnSpec(
+                n_stages=10,
+                feed_stage=5,
+                feed_flow=100.0,
+                feed_composition=self._valid_feed(),
+                pressure=101325.0,
+                reflux_ratio=3.0,
+                distillate_to_feed=0.0,
+            )
 
 
 class TestEquilibratorUnitValidation:
@@ -192,6 +207,7 @@ class TestEquilibratorUnitValidation:
     def test_zero_temperature_raises(self):
         from h2iso.flowsheet.stream import Stream
         from h2iso.flowsheet.unit import EquilibratorUnit
+
         z = np.array([0.4, 0.0, 0.0, 0.4, 0.0, 0.2])
         s = Stream(flow=10.0, composition=z, temperature=25.0, pressure=101325.0)
         unit = EquilibratorUnit(name="EQ", temperature=0.0)
@@ -201,6 +217,7 @@ class TestEquilibratorUnitValidation:
     def test_negative_temperature_raises(self):
         from h2iso.flowsheet.stream import Stream
         from h2iso.flowsheet.unit import EquilibratorUnit
+
         z = np.array([0.4, 0.0, 0.0, 0.4, 0.0, 0.2])
         s = Stream(flow=10.0, composition=z, temperature=25.0, pressure=101325.0)
         unit = EquilibratorUnit(name="EQ", temperature=-5.0)

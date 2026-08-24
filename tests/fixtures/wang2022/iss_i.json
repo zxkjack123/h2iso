@@ -1,0 +1,90 @@
+{
+  "source": {
+    "authors": "Z. Shikun (张世坤)",
+    "supervisor": "X. Zhang",
+    "software": "Aspen Plus V14",
+    "model": "ISS-I (inner fuel cycle), T2-Threetowers4.bkp",
+    "eos": "Peng-Robinson",
+    "description": "ISS-I three-column cascade with 2 equilibrators (E1, E2). Compressors/heaters omitted — columns are the dominant separation units.",
+    "task_spec": "~/projects/h2iso/validation/aspen_plus/task_spec.docx",
+    "date": "2026-05-28"
+  },
+  "columns": {
+    "CD1": {
+      "total_stages": 90,
+      "reflux_ratio": 50,
+      "distillate_to_feed_ratio": 0.30,
+      "feed_positions": { "FROMTEP": 72, "E1": 50 },
+      "pressure_top_Pa": 90000,
+      "pressure_bottom_Pa": 100000,
+      "eos": "peng-robinson",
+      "notes": "Table 5. FROMTEP at stage 72. E1 recycle returns at stage 50."
+    },
+    "CD2": {
+      "total_stages": 100,
+      "reflux_ratio": 60,
+      "distillate_to_feed_ratio": 0.78,
+      "feed_positions": { "CD1_bottom": 45, "CD3_top": 45 },
+      "pressure_top_Pa": 90000,
+      "pressure_bottom_Pa": 100000,
+      "eos": "peng-robinson",
+      "notes": "Table 5. CD1 bottom feed at stage 45. CD3_top recycle at stage 45."
+    },
+    "CD3": {
+      "total_stages": 60,
+      "reflux_ratio": 295,
+      "distillate_to_feed_ratio": 0.085,
+      "feed_positions": { "E2": 45 },
+      "pressure_top_Pa": 80000,
+      "pressure_bottom_Pa": 100000,
+      "eos": "peng-robinson",
+      "notes": "Table 5. E2 output feeds at stage 45."
+    }
+  },
+  "equilibrators": {
+    "E1": { "temperature": 25.0, "notes": "CD2 bottom recycle equilibrator → CD1" },
+    "E2": { "temperature": 25.0, "notes": "CD2 bottom → CD3 feed equilibrator" }
+  },
+  "feeds": {
+    "FROMTEP": {
+      "total_flow_mol_h": 30.63,
+      "composition_mole_fraction": {
+        "H2": 0.1049, "HD": 0.1575, "D2": 0.05912,
+        "HT": 0.2805, "DT": 0.2106, "T2": 0.1875
+      },
+      "target_column": "CD1",
+      "feed_stage": 72,
+      "temperature_K": 23.89,
+      "pressure_Pa": 100000,
+      "notes": "TC5 intermediate case. TEP exhaust gas."
+    }
+  },
+  "splitter": {
+    "description": "CD2_bottom splits to E1 (recycle) and E2 (feed CD3). Ratio from .bkp mass balance estimates.",
+    "ratios": {
+      "CD2_bottom": {
+        "E1": 0.50,
+        "E2": 0.50,
+        "notes": "Split ratio to be refined with Aspen data"
+      }
+    }
+  },
+  "topology": {
+    "description": "ISS-I three-column cascade with two recycle loops. Compressors/heaters omitted.",
+    "connections": [
+      { "from": "FROMTEP_feed", "to": "CD1", "stage": 72 },
+      { "from": "CD1_bottom", "to": "CD2", "stage": 45 },
+      { "from": "CD2_bottom", "to": "E1" },
+      { "from": "CD2_bottom", "to": "E2" },
+      { "from": "E1", "to": "CD1", "stage": 50 },
+      { "from": "E2", "to": "CD3", "stage": 45 },
+      { "from": "CD3_top", "to": "CD2", "stage": 45 }
+    ],
+    "tear_streams": ["E1→CD1 recycle", "CD3_top→CD2 recycle"],
+    "products": {
+      "CD1_top": "WDS-H (H2-rich waste)",
+      "CD2_top": "WDS-D (D2-rich waste)",
+      "CD3_bottom": "T2-product (high purity)"
+    }
+  }
+}

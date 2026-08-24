@@ -61,9 +61,7 @@ def pvap(T: Numeric, species: str) -> Numeric:
         If T is outside the valid correlation range.
     """
     if species not in _PARAMS:
-        raise ValueError(
-            f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}"
-        )
+        raise ValueError(f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}")
 
     p = _PARAMS[species]
     T_arr = np.asarray(T, dtype=np.float64)
@@ -80,10 +78,7 @@ def pvap(T: Numeric, species: str) -> Numeric:
 
     # ln(P/Pa) = C1 + C2/T + C3*ln(T) + C4*T^C5
     ln_P = (
-        p["C1"]
-        + p["C2"] / T_arr
-        + p["C3"] * np.log(T_arr)
-        + p["C4"] * T_arr ** p["C5"]
+        p["C1"] + p["C2"] / T_arr + p["C3"] * np.log(T_arr) + p["C4"] * T_arr ** p["C5"]
     )
 
     result = np.exp(ln_P)
@@ -113,9 +108,7 @@ def dpvap_dT(T: Numeric, species: str) -> Numeric:
         dPsat/dT in Pa/K.
     """
     if species not in _PARAMS:
-        raise ValueError(
-            f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}"
-        )
+        raise ValueError(f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}")
 
     p = _PARAMS[species]
     T_arr = np.asarray(T, dtype=np.float64)
@@ -149,9 +142,7 @@ def boiling_point(species: str) -> float:
         Normal boiling point in K.
     """
     if species not in _PARAMS:
-        raise ValueError(
-            f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}"
-        )
+        raise ValueError(f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}")
     return _PARAMS[species]["T_boiling_101325Pa"]
 
 
@@ -168,9 +159,7 @@ def critical_point(species: str) -> tuple[float, float]:
     tuple of (Tc in K, Pc in Pa)
     """
     if species not in _PARAMS:
-        raise ValueError(
-            f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}"
-        )
+        raise ValueError(f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}")
     p = _PARAMS[species]
     return p["T_critical"], p["P_critical_Pa"]
 
@@ -188,9 +177,7 @@ def triple_point(species: str) -> tuple[float, float]:
     tuple of (Ttp in K, Ptp in Pa)
     """
     if species not in _PARAMS:
-        raise ValueError(
-            f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}"
-        )
+        raise ValueError(f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}")
     p = _PARAMS[species]
     return p["T_triple"], p["P_triple_Pa"]
 
@@ -220,15 +207,8 @@ def pvap_sx(T_sx, species: str):
         ) from e
 
     if species not in _PARAMS:
-        raise ValueError(
-            f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}"
-        )
+        raise ValueError(f"Unknown species '{species}'. Valid: {list(_PARAMS.keys())}")
 
     p = _PARAMS[species]
-    ln_P = (
-        p["C1"]
-        + p["C2"] / T_sx
-        + p["C3"] * ca.log(T_sx)
-        + p["C4"] * T_sx ** p["C5"]
-    )
+    ln_P = p["C1"] + p["C2"] / T_sx + p["C3"] * ca.log(T_sx) + p["C4"] * T_sx ** p["C5"]
     return ca.exp(ln_P)

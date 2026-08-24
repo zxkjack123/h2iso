@@ -60,6 +60,8 @@ class ColumnUnit(UnitOp):
         Stage indices for each feed (1-indexed). If None, single feed at middle.
     continuation_substeps : int
         Number of substeps for continuation from small N. 0 = direct solve.
+    eos : str
+        EOS to use: "souers" (default) or "peng-robinson".
     """
 
     n_stages: int = 20
@@ -68,6 +70,7 @@ class ColumnUnit(UnitOp):
     distillate_to_feed: float = 0.5
     feed_stages: list[int] | None = None
     continuation_substeps: int = 0
+    eos: str = "souers"
 
     def solve(self, inputs: dict[str, Stream]) -> dict[str, Stream]:
         """Solve column with given feed streams.
@@ -91,7 +94,12 @@ class ColumnUnit(UnitOp):
             # Default: evenly spaced
             n_feeds = len(feed_streams)
             stages = [
-                max(2, min(self.n_stages - 1, int((i + 1) * self.n_stages / (n_feeds + 1))))
+                max(
+                    2,
+                    min(
+                        self.n_stages - 1, int((i + 1) * self.n_stages / (n_feeds + 1))
+                    ),
+                )
                 for i in range(n_feeds)
             ]
 
@@ -121,6 +129,7 @@ class ColumnUnit(UnitOp):
             reflux_ratio=self.reflux_ratio,
             distillate_to_feed=self.distillate_to_feed,
             feeds=feeds if len(feeds) > 1 else None,
+            eos=self.eos,
         )
 
         # Solve with or without continuation
@@ -136,7 +145,9 @@ class ColumnUnit(UnitOp):
                     f"ContinuationSolver._scale_feeds returned None for base_N={base_N}; "
                     f"refusing to continue without scaled feeds."
                 )
-            base_feed_stage = max(2, min(base_N - 1, int(stages[0] / self.n_stages * base_N)))
+            base_feed_stage = max(
+                2, min(base_N - 1, int(stages[0] / self.n_stages * base_N))
+            )
             base_spec = ColumnSpec(
                 n_stages=base_N,
                 feed_stage=base_feed_stage,
@@ -146,9 +157,12 @@ class ColumnUnit(UnitOp):
                 reflux_ratio=self.reflux_ratio,
                 distillate_to_feed=self.distillate_to_feed,
                 feeds=base_feeds,
+                eos=self.eos,
             )
             solver = ContinuationSolver()
-            solver.add_step("N", target=self.n_stages, n_substeps=self.continuation_substeps)
+            solver.add_step(
+                "N", target=self.n_stages, n_substeps=self.continuation_substeps
+            )
             cont_result = solver.solve(base_spec)
             result = cont_result.final
         else:
@@ -314,8 +328,7 @@ class PressureChangerUnit(UnitOp):
     def solve(self, inputs: dict[str, Stream]) -> dict[str, Stream]:
         if len(inputs) != 1:
             raise ValueError(
-                f"PressureChangerUnit '{self.name}' expects 1 input, "
-                f"got {len(inputs)}"
+                f"PressureChangerUnit '{self.name}' expects 1 input, got {len(inputs)}"
             )
         source = next(iter(inputs.values()))
         T_in = float(source.temperature)

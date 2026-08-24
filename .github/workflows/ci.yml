@@ -7,6 +7,36 @@ on:
         branches: [main]
 
 jobs:
+    lint-and-fast-test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+
+            - name: Install deps
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -e ".[dev]"
+
+            - name: Lint
+              run: |
+                  ruff check src/ tests/
+                  ruff format --check src/ tests/
+
+            - name: Fast test
+              run: |
+                  pytest tests/ \
+                    --ignore=tests/benchmark --ignore=tests/e2e \
+                    --ignore=tests/test_mesh --ignore=tests/test_flowsheet \
+                    --ignore=tests/property \
+                    --ignore=tests/test_uq/test_cd2_uq.py \
+                    --ignore=tests/test_uq/test_isso_uq.py \
+                    -x --tb=short
+
     test:
         runs-on: ubuntu-latest
         strategy:
@@ -24,7 +54,7 @@ jobs:
             - name: Install dependencies
               run: |
                   python -m pip install --upgrade pip
-                  pip install -e ".[dev,solver]"
+                  pip install -c constraints/ci-3.12.txt -e ".[dev,solver]"
 
             - name: Lint with ruff
               run: ruff check src/ tests/
@@ -45,10 +75,11 @@ jobs:
             - name: Install with solver
               run: |
                   python -m pip install --upgrade pip
-                  pip install -e ".[dev,solver]"
+                  pip install -c constraints/ci-3.12.txt -e ".[dev,solver]"
 
-            - name: Run all tests including solver
-              run: pytest tests/ --tb=short
+            - name: Run all tests including solver (with coverage)
+              run: |
+                  pytest tests/ --tb=short --cov=h2iso --cov-report=term-missing
 
     test-wheel:
         runs-on: ubuntu-latest
@@ -72,6 +103,25 @@ jobs:
                   /tmp/wheel-test-env/bin/pip install dist/h2iso-*.whl pytest
                   cd /tmp && /tmp/wheel-test-env/bin/python -c "from h2iso.species import SPECIES_ORDER, N_SPECIES; from h2iso.vle.mixing import bubble_pressure; from h2iso.equilibrator.exchange import equilibrium_composition; import numpy as np; x = np.array([0.5, 0.0, 0.0, 0.5, 0.0, 0.0]); result = bubble_pressure(25.0, x); assert N_SPECIES == 6 and len(SPECIES_ORDER) == 6; print('Smoke OK, bubble_pressure type=', type(result).__name__)"
                   cd ${{ github.workspace }} && /tmp/wheel-test-env/bin/python -m pytest tests/test_data_resources.py -v -o "addopts="
+
+    security-audit:
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+
+            - name: Install with dev deps
+              run: |
+                  python -m pip install --upgrade pip pip-audit
+                  pip install -e ".[dev]"
+
+            - name: Audit dependencies
+              run: pip-audit
 
     benchmark:
         runs-on: ubuntu-latest

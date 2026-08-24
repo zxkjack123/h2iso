@@ -37,7 +37,9 @@ class TestFeedSpec:
         np.testing.assert_array_equal(f.composition, h2_dominant_composition)
 
     def test_custom_quality(self, h2_dominant_composition):
-        f = FeedSpec(stage=5, flow=50.0, composition=h2_dominant_composition, quality=0.5)
+        f = FeedSpec(
+            stage=5, flow=50.0, composition=h2_dominant_composition, quality=0.5
+        )
         assert f.quality == 0.5
 
 
@@ -64,7 +66,14 @@ class TestMultiFeedComputeFlows:
             pressure=101325.0,
             reflux_ratio=5.0,
             distillate_to_feed=0.5,
-            feeds=[FeedSpec(stage=10, flow=100.0, composition=h2_dominant_composition, quality=1.0)],
+            feeds=[
+                FeedSpec(
+                    stage=10,
+                    flow=100.0,
+                    composition=h2_dominant_composition,
+                    quality=1.0,
+                )
+            ],
         )
         col_legacy = Column(spec_legacy)
         col_multi = Column(spec_multi)
@@ -78,8 +87,12 @@ class TestMultiFeedComputeFlows:
     def test_two_feeds_creates_three_sections(self, h2_dominant_composition):
         """Two feeds should create 3 L/V sections (rectifying, middle, stripping)."""
         feeds = [
-            FeedSpec(stage=7, flow=60.0, composition=h2_dominant_composition, quality=1.0),
-            FeedSpec(stage=14, flow=40.0, composition=h2_dominant_composition, quality=1.0),
+            FeedSpec(
+                stage=7, flow=60.0, composition=h2_dominant_composition, quality=1.0
+            ),
+            FeedSpec(
+                stage=14, flow=40.0, composition=h2_dominant_composition, quality=1.0
+            ),
         ]
         spec = ColumnSpec(
             n_stages=20,
@@ -125,7 +138,9 @@ class TestMultiFeedComputeFlows:
         # V in stripping stays same for q=1 feeds
         assert V[13] == pytest.approx((R + 1) * D)
 
-    def test_symmetric_double_feed_equals_single_double_flow(self, h2_dominant_composition):
+    def test_symmetric_double_feed_equals_single_double_flow(
+        self, h2_dominant_composition
+    ):
         """Two equal feeds at same stage should give same L/V as single feed at 2x flow."""
         stage = 10
         flow = 50.0
@@ -168,8 +183,12 @@ class TestMultiFeedSolve:
     def test_dual_feed_converges(self, h2_dominant_composition, mixed_hd_composition):
         """A dual-feed column should converge."""
         feeds = [
-            FeedSpec(stage=8, flow=80.0, composition=h2_dominant_composition, quality=1.0),
-            FeedSpec(stage=15, flow=40.0, composition=mixed_hd_composition, quality=1.0),
+            FeedSpec(
+                stage=8, flow=80.0, composition=h2_dominant_composition, quality=1.0
+            ),
+            FeedSpec(
+                stage=15, flow=40.0, composition=mixed_hd_composition, quality=1.0
+            ),
         ]
         spec = ColumnSpec(
             n_stages=20,

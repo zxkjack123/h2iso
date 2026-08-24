@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -91,6 +92,7 @@ class SequentialModularSolver:
                 distillate_to_feed=col_cfg.distillate_to_feed,
                 feed_stages=feed_stages if feed_stages else None,
                 continuation_substeps=self.continuation_substeps,
+                eos=col_cfg.eos,
             )
 
         for eq_cfg in self.config.equilibrators:
@@ -158,7 +160,11 @@ class SequentialModularSolver:
                 break
 
             # Update tear estimates
-            if self.method == "wegstein" and tear_prev is not None and tear_g_prev is not None:
+            if (
+                self.method == "wegstein"
+                and tear_prev is not None
+                and tear_g_prev is not None
+            ):
                 # Save current state before update
                 x_prev_new = {
                     k: np.concatenate([[v.flow], v.composition])
@@ -188,7 +194,7 @@ class SequentialModularSolver:
         # Collect column results
         column_results = {}
         for name, unit in self.units.items():
-            if isinstance(unit, ColumnUnit) and hasattr(unit, '_last_result'):
+            if isinstance(unit, ColumnUnit) and hasattr(unit, "_last_result"):
                 column_results[name] = unit._last_result
 
         return FlowsheetResult(
@@ -339,9 +345,32 @@ class SequentialModularSolver:
                 if to_unit == unit_name:
                     stream = self._resolve_stream(conn.from_unit, unit_name)
                     if stream is not None:
+                        # Apply splitter ratio if configured
+                        stream = self._apply_split(stream, conn.from_unit, unit_name)
                         inputs[conn.from_unit] = stream
 
         return inputs
+
+    def _apply_split(
+        self,
+        stream: Stream,
+        source_name: str,
+        target_unit: str,
+    ) -> Stream:
+        """Scale a stream by splitter ratio if a splitter is configured.
+
+        Returns a new Stream with flow *= ratio. If no splitter matches,
+        returns the original stream unchanged.
+        """
+        split_config = self.config.splitter.get(source_name)
+        if split_config is None:
+            return stream
+        ratio = split_config.get(target_unit)
+        if ratio is None:
+            return stream
+        result = copy.copy(stream)
+        result.flow *= ratio
+        return result
 
     def _resolve_stream(self, source_name: str, target_unit: str) -> Stream | None:
         """Resolve a stream source name to an actual Stream object."""
@@ -384,11 +413,28 @@ class SequentialModularSolver:
                 if key == f"{base}_bottoms":
                     return stream
 
-        # Check equilibrator output
-        if source_name.startswith("equilibrator"):
-            for key, stream in self.streams.items():
-                if "equilibrator" in key and "out" in key:
-                    return stream
+        # Check equilibrator output: match by name precisely.
+        # EquilibratorUnit outputs are stored as "{name}_out".
+        for eq_cfg in self.config.equilibrators:
+            eq_name = eq_cfg.name
+            expected_key = f"{eq_name}_out"
+            if source_name == eq_name and expected_key in self.streams:
+                return self.streams[expected_key]
+            # Also try if source_name matches equilibrator name with suffix variants
+            if source_name == eq_name + "_output" and expected_key in self.streams:
+                return self.streams[expected_key]
+            if source_name == eq_name:
+                for key, stream in self.streams.items():
+                    if key == expected_key:
+                        return stream
+
+        # Backward compat: ISS-O has a single equilibrator named "equilibrator"
+        # whose output is "equilibrator_out"
+        if (
+            source_name in ("equilibrator", "equilibrator_output")
+            and "equilibrator_out" in self.streams
+        ):
+            return self.streams["equilibrator_out"]
 
         return None
 
@@ -401,7 +447,11 @@ class SequentialModularSolver:
 
         # Look for the specific output
         # e.g., tear from "CD2_bottom_recycle" -> unit is CD2, output is "bottoms"
-        suffix = tear.from_unit.replace(from_unit + "_", "") if from_unit in tear.from_unit else ""
+        suffix = (
+            tear.from_unit.replace(from_unit + "_", "")
+            if from_unit in tear.from_unit
+            else ""
+        )
 
         # Map common suffixes to unit output keys
         if "bottom" in suffix:

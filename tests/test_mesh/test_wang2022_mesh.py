@@ -35,6 +35,7 @@ def cd2_75_result(wang2022_cd2_ref):
     feed = np.zeros(6)
     comp = ref["feed"]["composition_mole_fraction"]
     from h2iso.species import SPECIES_ORDER
+
     for i, sp in enumerate(SPECIES_ORDER):
         feed[i] = comp.get(sp, 0.0)
 
@@ -70,7 +71,9 @@ class TestWang2022CD2:
 
     def test_top_d2_purity(self, cd2_75_result, wang2022_cd2_ref):
         """Top D2 purity should match Wang 2022 Table 9."""
-        ref_d2 = wang2022_cd2_ref["expected_results"]["top_composition_mole_fraction"]["D2"]
+        ref_d2 = wang2022_cd2_ref["expected_results"]["top_composition_mole_fraction"][
+            "D2"
+        ]
         calc_d2 = cd2_75_result.x_profile[0, 3]  # D2 index = 3
 
         # Accept within tolerance from fixture
@@ -83,17 +86,23 @@ class TestWang2022CD2:
 
     def test_top_dt_impurity(self, cd2_75_result, wang2022_cd2_ref):
         """Top DT impurity should be in correct order of magnitude."""
-        ref_dt = wang2022_cd2_ref["expected_results"]["top_composition_mole_fraction"]["DT"]
+        ref_dt = wang2022_cd2_ref["expected_results"]["top_composition_mole_fraction"][
+            "DT"
+        ]
         calc_dt = cd2_75_result.x_profile[0, 4]  # DT index = 4
 
         # DT is very small, check order of magnitude (within factor 10 of reference)
-        assert calc_dt < 10 * ref_dt, f"DT impurity too high: {calc_dt:.6f} vs ref {ref_dt:.6f}"
+        assert calc_dt < 10 * ref_dt, (
+            f"DT impurity too high: {calc_dt:.6f} vs ref {ref_dt:.6f}"
+        )
         # At least some DT is present
         assert calc_dt > 0, "DT should not be exactly zero"
 
     def test_bottom_composition(self, cd2_75_result, wang2022_cd2_ref):
         """Bottom composition should show DT enrichment."""
-        ref_bot = wang2022_cd2_ref["expected_results"]["bottom_composition_mole_fraction"]
+        ref_bot = wang2022_cd2_ref["expected_results"][
+            "bottom_composition_mole_fraction"
+        ]
         calc_x_bot = cd2_75_result.x_profile[-1]
 
         # DT should be enriched at bottom
@@ -148,6 +157,7 @@ class TestWang2022CD2:
         feed = np.zeros(6)
         comp = ref["feed"]["composition_mole_fraction"]
         from h2iso.species import SPECIES_ORDER
+
         for i, sp in enumerate(SPECIES_ORDER):
             feed[i] = comp.get(sp, 0.0)
 
@@ -194,7 +204,9 @@ class TestGoNoGo:
 
     def test_go_determination(self, cd2_75_result, wang2022_cd2_ref):
         """Document Go/No-Go status based on CD2 validation."""
-        ref_d2 = wang2022_cd2_ref["expected_results"]["top_composition_mole_fraction"]["D2"]
+        ref_d2 = wang2022_cd2_ref["expected_results"]["top_composition_mole_fraction"][
+            "D2"
+        ]
         calc_d2 = cd2_75_result.x_profile[0, 3]
 
         ref_T_top = wang2022_cd2_ref["expected_results"]["temperatures_K"]["top"]

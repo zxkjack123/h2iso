@@ -86,7 +86,7 @@ end PvapDemo;
     script = (
         f'loadFile("{(pvap_dir / "pvap_H2.mo").as_posix()}"); getErrorString();\n'
         f'loadFile("{model.as_posix()}"); getErrorString();\n'
-        'simulate(PvapDemo, stopTime=10.0, numberOfIntervals=50, '
+        "simulate(PvapDemo, stopTime=10.0, numberOfIntervals=50, "
         'outputFormat="csv"); getErrorString();\n'
     )
     rc, out = _run_omc_script(tmp_path, script)
@@ -140,7 +140,7 @@ end RatioDemo;
         f'loadFile("{(pvap_dir / "pvap_H2.mo").as_posix()}"); getErrorString();\n'
         f'loadFile("{(pvap_dir / "pvap_T2.mo").as_posix()}"); getErrorString();\n'
         f'loadFile("{model.as_posix()}"); getErrorString();\n'
-        'simulate(RatioDemo, stopTime=1.0, numberOfIntervals=5, '
+        "simulate(RatioDemo, stopTime=1.0, numberOfIntervals=5, "
         'outputFormat="csv"); getErrorString();\n'
     )
     rc, out = _run_omc_script(tmp_path, script)
@@ -183,7 +183,7 @@ end StepCheck;
     script = (
         f'loadFile("{(pvap_dir / "pvap_H2.mo").as_posix()}"); getErrorString();\n'
         f'loadFile("{model.as_posix()}"); getErrorString();\n'
-        'simulate(StepCheck, stopTime=5.0, numberOfIntervals=100, '
+        "simulate(StepCheck, stopTime=5.0, numberOfIntervals=100, "
         'outputFormat="csv"); getErrorString();\n'
     )
     rc, out = _run_omc_script(tmp_path, script)

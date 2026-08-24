@@ -57,7 +57,9 @@ class ContinuationSolver:
         n_substeps : int
             Number of sub-steps to reach the target
         """
-        self.steps.append(ContinuationStep(param=param, target=target, n_substeps=n_substeps))
+        self.steps.append(
+            ContinuationStep(param=param, target=target, n_substeps=n_substeps)
+        )
 
     def solve(self, base_spec: ColumnSpec) -> ContinuationResult:
         """Execute continuation from base_spec through all added steps.
@@ -174,6 +176,7 @@ class ContinuationSolver:
                 # stage so the perturbed initial guess still lives on the simplex.
                 # Layout per stage: [T (1), x (Nc), y (Nc)]; here Nc = N_SPECIES.
                 from h2iso.species import N_SPECIES as _NS
+
                 stride = 1 + 2 * _NS
                 for j in range(len(x0) // stride):
                     x_off = j * stride + 1
@@ -187,12 +190,14 @@ class ContinuationSolver:
                     if ys > 0:
                         x0[y_off : y_off + _NS] = y_blk / ys
 
-            history.append({
-                "param": "N",
-                "value": N_next,
-                "success": success,
-                "iterations": new_result.convergence_info.get("iterations", -1),
-            })
+            history.append(
+                {
+                    "param": "N",
+                    "value": N_next,
+                    "success": success,
+                    "iterations": new_result.convergence_info.get("iterations", -1),
+                }
+            )
 
             if not success:
                 raise RuntimeError(
@@ -219,12 +224,14 @@ class ContinuationSolver:
         for f in spec.feeds:
             frac = f.stage / N_old
             new_stage = max(2, min(N_new - 1, int(round(frac * N_new))))
-            scaled.append(FeedSpec(
-                stage=new_stage,
-                flow=f.flow,
-                composition=f.composition.copy(),
-                quality=f.quality,
-            ))
+            scaled.append(
+                FeedSpec(
+                    stage=new_stage,
+                    flow=f.flow,
+                    composition=f.composition.copy(),
+                    quality=f.quality,
+                )
+            )
         return scaled
 
     def _continue_R(
@@ -359,8 +366,8 @@ class ContinuationSolver:
         for j in range(N_new):
             offset = j * (1 + Nc + Nc)
             x0[offset] = T_new[j]
-            x0[offset + 1: offset + 1 + Nc] = x_new[j]
-            x0[offset + 1 + Nc: offset + 1 + 2 * Nc] = y_new[j]
+            x0[offset + 1 : offset + 1 + Nc] = x_new[j]
+            x0[offset + 1 + Nc : offset + 1 + 2 * Nc] = y_new[j]
 
         return x0
 
@@ -372,6 +379,6 @@ class ContinuationSolver:
         for j in range(N):
             offset = j * (1 + Nc + Nc)
             x0[offset] = result.T_profile[j]
-            x0[offset + 1: offset + 1 + Nc] = result.x_profile[j]
-            x0[offset + 1 + Nc: offset + 1 + 2 * Nc] = result.y_profile[j]
+            x0[offset + 1 : offset + 1 + Nc] = result.x_profile[j]
+            x0[offset + 1 + Nc : offset + 1 + 2 * Nc] = result.y_profile[j]
         return x0

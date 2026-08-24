@@ -72,14 +72,20 @@ class TestNoRecycleFlowsheet:
                 Connection(from_unit="FEED_feed", to_unit="CD1", stage=8),
                 Connection(from_unit="CD1_bottom", to_unit="CD2", stage=8),
             ],
-            products={"CD1_top": "H2 rich", "CD2_top": "HD rich", "CD2_bottom": "Heavy"},
+            products={
+                "CD1_top": "H2 rich",
+                "CD2_top": "HD rich",
+                "CD2_bottom": "Heavy",
+            },
             tear_streams=[],  # No recycle
         )
 
     def test_no_recycle_converges_one_iteration(self):
         """Without tear streams, solver should converge in 1 iteration."""
         config = self._build_linear_config()
-        solver = SequentialModularSolver(config, method="direct", continuation_substeps=0)
+        solver = SequentialModularSolver(
+            config, method="direct", continuation_substeps=0
+        )
         result = solver.solve(max_iter=5)
 
         assert result.converged
@@ -88,7 +94,9 @@ class TestNoRecycleFlowsheet:
     def test_no_recycle_mass_balance(self):
         """Total product flow should equal feed flow."""
         config = self._build_linear_config()
-        solver = SequentialModularSolver(config, method="direct", continuation_substeps=0)
+        solver = SequentialModularSolver(
+            config, method="direct", continuation_substeps=0
+        )
         result = solver.solve()
 
         # Find all output streams
@@ -160,7 +168,9 @@ class TestRecycleFlowsheet:
     def test_recycle_converges(self):
         """Recycle loop should converge within max_iter."""
         config = self._build_recycle_config()
-        solver = SequentialModularSolver(config, method="wegstein", continuation_substeps=0)
+        solver = SequentialModularSolver(
+            config, method="wegstein", continuation_substeps=0
+        )
         result = solver.solve(max_iter=50, tol=1e-3)
 
         assert result.converged, (
@@ -173,10 +183,14 @@ class TestRecycleFlowsheet:
         """Wegstein should converge in fewer iterations than direct substitution."""
         config = self._build_recycle_config()
 
-        solver_weg = SequentialModularSolver(config, method="wegstein", continuation_substeps=0)
+        solver_weg = SequentialModularSolver(
+            config, method="wegstein", continuation_substeps=0
+        )
         result_weg = solver_weg.solve(max_iter=50, tol=1e-3)
 
-        solver_dir = SequentialModularSolver(config, method="direct", continuation_substeps=0)
+        solver_dir = SequentialModularSolver(
+            config, method="direct", continuation_substeps=0
+        )
         result_dir = solver_dir.solve(max_iter=50, tol=1e-3)
 
         # Both should converge
@@ -191,15 +205,27 @@ class TestOnUnitFailurePolicy:
 
     def test_invalid_policy_rejected(self):
         """Constructor must reject unknown on_unit_failure values."""
-        cfg = FlowsheetConfig(feeds=[], columns=[], equilibrators=[],
-                              connections=[], products={}, tear_streams=[])
+        cfg = FlowsheetConfig(
+            feeds=[],
+            columns=[],
+            equilibrators=[],
+            connections=[],
+            products={},
+            tear_streams=[],
+        )
         with pytest.raises(ValueError, match="on_unit_failure"):
             SequentialModularSolver(cfg, on_unit_failure="bogus")
 
     def test_default_is_raise(self):
         """Default policy must be 'raise' so failures are not silenced."""
-        cfg = FlowsheetConfig(feeds=[], columns=[], equilibrators=[],
-                              connections=[], products={}, tear_streams=[])
+        cfg = FlowsheetConfig(
+            feeds=[],
+            columns=[],
+            equilibrators=[],
+            connections=[],
+            products={},
+            tear_streams=[],
+        )
         solver = SequentialModularSolver(cfg)
         assert solver.on_unit_failure == "raise"
 
@@ -210,21 +236,37 @@ class TestOnUnitFailurePolicy:
 
         def boom(self, inputs):
             raise RuntimeError(f"forced failure in {self.name}")
+
         monkeypatch.setattr(ColumnUnit, "solve", boom)
 
         cfg = FlowsheetConfig(
-            feeds=[FeedConfig(name="F", flow=10.0, composition=_make_h2_comp(),
-                              target_column="C1", feed_stage=5)],
-            columns=[ColumnConfig(name="C1", n_stages=10, pressure=101325.0,
-                                  reflux_ratio=2.0, distillate_to_feed=0.5,
-                                  feed_positions={"F": 5})],
+            feeds=[
+                FeedConfig(
+                    name="F",
+                    flow=10.0,
+                    composition=_make_h2_comp(),
+                    target_column="C1",
+                    feed_stage=5,
+                )
+            ],
+            columns=[
+                ColumnConfig(
+                    name="C1",
+                    n_stages=10,
+                    pressure=101325.0,
+                    reflux_ratio=2.0,
+                    distillate_to_feed=0.5,
+                    feed_positions={"F": 5},
+                )
+            ],
             equilibrators=[],
             connections=[Connection(from_unit="F", to_unit="C1")],
             products={},
             tear_streams=[],
         )
-        s = solver_mod.SequentialModularSolver(cfg, on_unit_failure="raise",
-                                               continuation_substeps=0)
+        s = solver_mod.SequentialModularSolver(
+            cfg, on_unit_failure="raise", continuation_substeps=0
+        )
         with pytest.raises(RuntimeError, match="forced failure"):
             s.solve(max_iter=2)
 
@@ -235,21 +277,37 @@ class TestOnUnitFailurePolicy:
 
         def boom(self, inputs):
             raise RuntimeError(f"forced failure in {self.name}")
+
         monkeypatch.setattr(ColumnUnit, "solve", boom)
 
         cfg = FlowsheetConfig(
-            feeds=[FeedConfig(name="F", flow=10.0, composition=_make_h2_comp(),
-                              target_column="C1", feed_stage=5)],
-            columns=[ColumnConfig(name="C1", n_stages=10, pressure=101325.0,
-                                  reflux_ratio=2.0, distillate_to_feed=0.5,
-                                  feed_positions={"F": 5})],
+            feeds=[
+                FeedConfig(
+                    name="F",
+                    flow=10.0,
+                    composition=_make_h2_comp(),
+                    target_column="C1",
+                    feed_stage=5,
+                )
+            ],
+            columns=[
+                ColumnConfig(
+                    name="C1",
+                    n_stages=10,
+                    pressure=101325.0,
+                    reflux_ratio=2.0,
+                    distillate_to_feed=0.5,
+                    feed_positions={"F": 5},
+                )
+            ],
             equilibrators=[],
             connections=[Connection(from_unit="F", to_unit="C1")],
             products={},
             tear_streams=[],
         )
-        s = solver_mod.SequentialModularSolver(cfg, on_unit_failure="stale",
-                                               continuation_substeps=0)
+        s = solver_mod.SequentialModularSolver(
+            cfg, on_unit_failure="stale", continuation_substeps=0
+        )
         result = s.solve(max_iter=2)
         assert "C1" in result.unit_failures
         assert "forced failure" in result.unit_failures["C1"]
