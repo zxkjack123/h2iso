@@ -37,3 +37,8 @@ site/
 uq_runs/
 .benchmarks/
 *.prof
+
+# Agent config & generated artifacts (must not be versioned)
+.opencode/
+figures/
+h2iso_results.json
