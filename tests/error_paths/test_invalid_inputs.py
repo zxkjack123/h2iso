@@ -92,5 +92,3 @@ def test_liquid_enthalpy_nonpositive_T(x_uniform):
         liquid_enthalpy_numeric(0.0, x_uniform)
     with pytest.raises(ValueError):
         liquid_enthalpy_numeric(-5.0, x_uniform)
-
-

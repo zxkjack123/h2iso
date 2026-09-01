@@ -56,15 +56,11 @@ def test_species_records_compile(tmp_path):
         for fname in files
     )
     check_lines = "\n".join(
-        f'print(checkModel(HydrogenIsotope_{fname.removesuffix(".mo").split("_")[-1]})); '
+        f"print(checkModel(HydrogenIsotope_{fname.removesuffix('.mo').split('_')[-1]})); "
         f'print("\\n"); getErrorString();'
         for fname in files
     )
-    script = (
-        "loadModel(Modelica); getErrorString();\n"
-        f"{load_lines}\n"
-        f"{check_lines}\n"
-    )
+    script = f"loadModel(Modelica); getErrorString();\n{load_lines}\n{check_lines}\n"
     rc, out = _run_omc_script(tmp_path, script)
     assert rc == 0, f"omc failed (rc={rc}):\n{out}"
     lowered = out.lower()
@@ -88,11 +84,7 @@ def test_pvap_functions_compile(tmp_path):
         f'print(checkModel(pvap_{f})); print("\\n"); getErrorString();'
         for f in formulas
     )
-    script = (
-        "loadModel(Modelica); getErrorString();\n"
-        f"{load_lines}\n"
-        f"{check_lines}\n"
-    )
+    script = f"loadModel(Modelica); getErrorString();\n{load_lines}\n{check_lines}\n"
     rc, out = _run_omc_script(tmp_path, script)
     assert rc == 0, f"omc failed (rc={rc}):\n{out}"
     assert "error" not in out.lower() or "0 errors" in out.lower(), (
@@ -110,7 +102,7 @@ def test_pvap_evaluation_numerical_consistency(tmp_path):
     script = (
         "loadModel(Modelica); getErrorString();\n"
         f'loadFile("{(out_dir / "pvap_H2.mo").as_posix()}"); getErrorString();\n'
-        "print(String(pvap_H2(25.0))); print(\"\\n\"); getErrorString();\n"
+        'print(String(pvap_H2(25.0))); print("\\n"); getErrorString();\n'
     )
     rc, out = _run_omc_script(tmp_path, script)
     assert rc == 0, f"omc failed:\n{out}"

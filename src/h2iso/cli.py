@@ -24,7 +24,9 @@ def _parse_composition(spec: str) -> np.ndarray:
     for pair in spec.split(","):
         parts = pair.strip().split(":")
         if len(parts) != 2:
-            raise ValueError(f"Invalid composition pair: '{pair}'. Use 'Species:fraction'.")
+            raise ValueError(
+                f"Invalid composition pair: '{pair}'. Use 'Species:fraction'."
+            )
         name, val = parts[0].strip(), float(parts[1].strip())
         if name not in SPECIES_ORDER:
             raise ValueError(f"Unknown species '{name}'. Valid: {SPECIES_ORDER}")
@@ -61,7 +63,9 @@ def cmd_flash(args: argparse.Namespace) -> None:
         print("-" * 46)
         for i, sp in enumerate(SPECIES_ORDER):
             if z[i] > 1e-12 or x_liq[i] > 1e-12:
-                print(f"{sp:<6} {z[i]:<10.6f} {x_liq[i]:<10.6f} {y_vap[i]:<10.6f} {K[i]:<10.4f}")
+                print(
+                    f"{sp:<6} {z[i]:<10.6f} {x_liq[i]:<10.6f} {y_vap[i]:<10.6f} {K[i]:<10.4f}"
+                )
     else:
         # Subcooled liquid
         print("State: subcooled liquid (P > P_bubble)")
@@ -107,7 +111,9 @@ def cmd_column(args: argparse.Namespace) -> None:
     feed_stage = col_cfg.get("feed_stage", n_stages // 2)
     pressure = col_cfg.get("pressure_Pa", col_cfg.get("pressure_top_Pa", 101325))
     reflux_ratio = col_cfg.get("reflux_ratio", 10.0)
-    df_ratio = col_cfg.get("distillate_to_feed", col_cfg.get("distillate_to_feed_ratio", 0.5))
+    df_ratio = col_cfg.get(
+        "distillate_to_feed", col_cfg.get("distillate_to_feed_ratio", 0.5)
+    )
     feed_flow = feed_data.get("total_flow_mol_h", cfg.get("feed_flow_mol_per_h", 100.0))
 
     spec = ColumnSpec(
@@ -139,8 +145,12 @@ def cmd_column(args: argparse.Namespace) -> None:
     print(f"\nStatus: {col_result.convergence_info['status']}")
     print(f"Top composition:    {_format_comp(col_result.x_profile[0])}")
     print(f"Bottom composition: {_format_comp(col_result.x_profile[-1])}")
-    print(f"T_top = {col_result.T_profile[0]:.2f} K, T_bot = {col_result.T_profile[-1]:.2f} K")
-    print(f"Q_cond = {col_result.condenser_duty:.1f} W, Q_reb = {col_result.reboiler_duty:.1f} W")
+    print(
+        f"T_top = {col_result.T_profile[0]:.2f} K, T_bot = {col_result.T_profile[-1]:.2f} K"
+    )
+    print(
+        f"Q_cond = {col_result.condenser_duty:.1f} W, Q_reb = {col_result.reboiler_duty:.1f} W"
+    )
 
     # Export
     out_dir = Path(args.output) if args.output else Path(".")
@@ -190,7 +200,9 @@ def cmd_export(args: argparse.Namespace) -> None:
             convergence_info=data.get("convergence_info", {}),
         )
 
-    output = Path(args.output) if args.output else input_path.with_suffix(f".{args.format}")
+    output = (
+        Path(args.output) if args.output else input_path.with_suffix(f".{args.format}")
+    )
 
     fmt = args.format
     if fmt == "csv":
@@ -218,8 +230,10 @@ def cmd_flowsheet(args: argparse.Namespace) -> None:
         raise SystemExit(1)
 
     config = load_flowsheet(config_path)
-    print(f"Flowsheet: {len(config.columns)} columns, {len(config.feeds)} feeds, "
-          f"{len(config.tear_streams)} tear streams")
+    print(
+        f"Flowsheet: {len(config.columns)} columns, {len(config.feeds)} feeds, "
+        f"{len(config.tear_streams)} tear streams"
+    )
 
     solver = SequentialModularSolver(
         config,
@@ -239,7 +253,9 @@ def cmd_flowsheet(args: argparse.Namespace) -> None:
     for name, stream in sorted(result.streams.items()):
         if name.endswith("_distillate") or name.endswith("_bottoms"):
             comp_str = _format_comp(stream.composition)
-            print(f"  {name}: flow={stream.flow:.2f} mol/h, T={stream.temperature:.2f} K")
+            print(
+                f"  {name}: flow={stream.flow:.2f} mol/h, T={stream.temperature:.2f} K"
+            )
             print(f"    composition: {comp_str}")
 
     # Export
@@ -311,7 +327,9 @@ def cmd_sweep(args: argparse.Namespace) -> None:
     elif args.parameter == "n_stages":
         result = sweep.sweep_n_stages(values, max_iter=args.max_iter, tol=args.tol)
     elif args.parameter == "distillate_to_feed":
-        result = sweep.sweep_distillate_to_feed(values, max_iter=args.max_iter, tol=args.tol)
+        result = sweep.sweep_distillate_to_feed(
+            values, max_iter=args.max_iter, tol=args.tol
+        )
     else:
         print(f"Error: unknown parameter '{args.parameter}'", file=sys.stderr)
         raise SystemExit(1)
@@ -341,46 +359,97 @@ def main():
         prog="h2iso",
         description="Hydrogen isotope cryogenic VLE and distillation solver",
     )
+    parser.add_argument("--version", action="version", version="h2iso 0.1.0")
     subparsers = parser.add_subparsers(dest="command")
 
     # flash subcommand
     flash_p = subparsers.add_parser("flash", help="Isothermal flash calculation")
     flash_p.add_argument("--T", type=float, required=True, help="Temperature (K)")
     flash_p.add_argument("--P", type=float, required=True, help="Pressure (Pa)")
-    flash_p.add_argument("--z", type=str, required=True, help="Composition, e.g. 'D2:0.98,DT:0.02'")
+    flash_p.add_argument(
+        "--z", type=str, required=True, help="Composition, e.g. 'D2:0.98,DT:0.02'"
+    )
 
     # column subcommand
-    col_p = subparsers.add_parser("column", help="Solve distillation column from JSON config")
-    col_p.add_argument("--config", type=str, required=True, help="Column config JSON file")
-    col_p.add_argument("--output", type=str, default=None, help="Output directory (default: current)")
+    col_p = subparsers.add_parser(
+        "column", help="Solve distillation column from JSON config"
+    )
+    col_p.add_argument(
+        "--config", type=str, required=True, help="Column config JSON file"
+    )
+    col_p.add_argument(
+        "--output", type=str, default=None, help="Output directory (default: current)"
+    )
 
     # flowsheet subcommand
-    fs_p = subparsers.add_parser("flowsheet", help="Solve multi-column flowsheet from JSON config")
-    fs_p.add_argument("--config", type=str, required=True, help="Flowsheet config JSON file")
-    fs_p.add_argument("--output", type=str, default=None, help="Output directory (default: current)")
-    fs_p.add_argument("--max-iter", type=int, default=50, help="Max tear stream iterations (default: 50)")
-    fs_p.add_argument("--tol", type=float, default=1e-4, help="Convergence tolerance (default: 1e-4)")
-    fs_p.add_argument("--method", type=str, choices=["wegstein", "direct"], default="wegstein",
-                      help="Convergence method (default: wegstein)")
+    fs_p = subparsers.add_parser(
+        "flowsheet", help="Solve multi-column flowsheet from JSON config"
+    )
+    fs_p.add_argument(
+        "--config", type=str, required=True, help="Flowsheet config JSON file"
+    )
+    fs_p.add_argument(
+        "--output", type=str, default=None, help="Output directory (default: current)"
+    )
+    fs_p.add_argument(
+        "--max-iter",
+        type=int,
+        default=50,
+        help="Max tear stream iterations (default: 50)",
+    )
+    fs_p.add_argument(
+        "--tol", type=float, default=1e-4, help="Convergence tolerance (default: 1e-4)"
+    )
+    fs_p.add_argument(
+        "--method",
+        type=str,
+        choices=["wegstein", "direct"],
+        default="wegstein",
+        help="Convergence method (default: wegstein)",
+    )
 
     # sweep subcommand
-    sw_p = subparsers.add_parser("sweep", help="Parameter sweep over a flowsheet column")
-    sw_p.add_argument("--config", type=str, required=True, help="Flowsheet config JSON file")
-    sw_p.add_argument("--column", type=str, required=True, help="Target column name (e.g., CD2)")
-    sw_p.add_argument("--parameter", type=str, required=True,
-                      choices=["reflux_ratio", "n_stages", "distillate_to_feed"],
-                      help="Parameter to sweep")
+    sw_p = subparsers.add_parser(
+        "sweep", help="Parameter sweep over a flowsheet column"
+    )
+    sw_p.add_argument(
+        "--config", type=str, required=True, help="Flowsheet config JSON file"
+    )
+    sw_p.add_argument(
+        "--column", type=str, required=True, help="Target column name (e.g., CD2)"
+    )
+    sw_p.add_argument(
+        "--parameter",
+        type=str,
+        required=True,
+        choices=["reflux_ratio", "n_stages", "distillate_to_feed"],
+        help="Parameter to sweep",
+    )
     sw_p.add_argument("--start", type=float, required=True, help="Start value")
     sw_p.add_argument("--stop", type=float, required=True, help="Stop value")
     sw_p.add_argument("--step", type=float, required=True, help="Step size")
-    sw_p.add_argument("--output", type=str, default=None, help="Output directory (default: current)")
-    sw_p.add_argument("--max-iter", type=int, default=50, help="Max iterations per solve")
+    sw_p.add_argument(
+        "--output", type=str, default=None, help="Output directory (default: current)"
+    )
+    sw_p.add_argument(
+        "--max-iter", type=int, default=50, help="Max iterations per solve"
+    )
     sw_p.add_argument("--tol", type=float, default=1e-4, help="Convergence tolerance")
 
     # export subcommand
-    exp_p = subparsers.add_parser("export", help="Convert column results between formats")
-    exp_p.add_argument("--input", type=str, required=True, help="Input JSON results file")
-    exp_p.add_argument("--format", type=str, choices=["csv", "json", "mat"], default="csv", help="Output format")
+    exp_p = subparsers.add_parser(
+        "export", help="Convert column results between formats"
+    )
+    exp_p.add_argument(
+        "--input", type=str, required=True, help="Input JSON results file"
+    )
+    exp_p.add_argument(
+        "--format",
+        type=str,
+        choices=["csv", "json", "mat"],
+        default="csv",
+        help="Output format",
+    )
     exp_p.add_argument("--output", type=str, default=None, help="Output file path")
 
     args = parser.parse_args()
