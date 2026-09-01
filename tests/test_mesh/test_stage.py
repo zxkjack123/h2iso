@@ -70,10 +70,19 @@ class TestStageResidualAtSteadyState:
         H_V = vapor_enthalpy_numeric(T, y)
 
         return {
-            "T": T, "P": P, "x": x, "y": y,
-            "L": L, "V": V, "F": F, "z": z, "Q": Q,
-            "x_in": x_in, "y_in": y_in,
-            "H_L": H_L, "H_V": H_V,
+            "T": T,
+            "P": P,
+            "x": x,
+            "y": y,
+            "L": L,
+            "V": V,
+            "F": F,
+            "z": z,
+            "Q": Q,
+            "x_in": x_in,
+            "y_in": y_in,
+            "H_L": H_L,
+            "H_V": H_V,
         }
 
     def test_residual_at_steady_state(self):
@@ -102,38 +111,72 @@ class TestStageResidualAtSteadyState:
 
         # Build residual
         res = stage.build_residual(
-            T, x, y, L_in, L_out, V_in, V_out,
-            x_in, y_in, F, z, Q,
-            H_L_in, H_V_in, H_L_out, H_V_out, H_F,
+            T,
+            x,
+            y,
+            L_in,
+            L_out,
+            V_in,
+            V_out,
+            x_in,
+            y_in,
+            F,
+            z,
+            Q,
+            H_L_in,
+            H_V_in,
+            H_L_out,
+            H_V_out,
+            H_F,
         )
 
         assert res.shape == (15, 1)
 
         # Create function and evaluate at known solution
         all_inputs = ca.vertcat(
-            T, x, y, L_in, L_out, V_in, V_out,
-            x_in, y_in, F, z, Q,
-            H_L_in, H_V_in, H_L_out, H_V_out, H_F,
+            T,
+            x,
+            y,
+            L_in,
+            L_out,
+            V_in,
+            V_out,
+            x_in,
+            y_in,
+            F,
+            z,
+            Q,
+            H_L_in,
+            H_V_in,
+            H_L_out,
+            H_V_out,
+            H_F,
         )
         f = ca.Function("stage", [all_inputs], [res])
 
         # Pack values
-        input_vals = np.concatenate([
-            [vals["T"]], vals["x"], vals["y"],
-            [vals["L"], vals["L"], vals["V"], vals["V"]],
-            vals["x_in"], vals["y_in"],
-            [vals["F"]], vals["z"], [vals["Q"]],
-            [vals["H_L"], vals["H_V"], vals["H_L"], vals["H_V"]],
-            [0.0],  # H_F (no feed)
-        ])
+        input_vals = np.concatenate(
+            [
+                [vals["T"]],
+                vals["x"],
+                vals["y"],
+                [vals["L"], vals["L"], vals["V"], vals["V"]],
+                vals["x_in"],
+                vals["y_in"],
+                [vals["F"]],
+                vals["z"],
+                [vals["Q"]],
+                [vals["H_L"], vals["H_V"], vals["H_L"], vals["H_V"]],
+                [0.0],  # H_F (no feed)
+            ]
+        )
 
         res_val = np.array(f(input_vals)).flatten()
 
         # All residuals should be near zero
         # Note: summation may have small error due to y normalization
         assert np.max(np.abs(res_val)) < 1e-8, (
-            f"Max residual: {np.max(np.abs(res_val)):.2e}\n"
-            f"Residuals: {res_val}"
+            f"Max residual: {np.max(np.abs(res_val)):.2e}\nResiduals: {res_val}"
         )
 
     def test_jacobian_nonsingular(self):
@@ -165,9 +208,23 @@ class TestStageResidualAtSteadyState:
         H_F = ca.SX(0.0)
 
         res = stage.build_residual(
-            T, x, y, L_in, L_out, V_in, V_out,
-            x_in, y_in, F, z, Q,
-            H_L_in, H_V_in, H_L_out, H_V_out, H_F,
+            T,
+            x,
+            y,
+            L_in,
+            L_out,
+            V_in,
+            V_out,
+            x_in,
+            y_in,
+            F,
+            z,
+            Q,
+            H_L_in,
+            H_V_in,
+            H_L_out,
+            H_V_out,
+            H_F,
         )
 
         # Jacobian w.r.t. T, x, y (13 variables → 15 equations)
@@ -214,10 +271,19 @@ class TestStageResidualAtSteadyState:
         H_L = liquid_enthalpy_numeric(T, x)
         H_V = vapor_enthalpy_numeric(T, y)
         return {
-            "T": T, "P": P, "x": x, "y": y,
-            "L": L, "V": V, "F": 0.0, "z": np.zeros(6), "Q": 0.0,
-            "x_in": x_in, "y_in": y_in,
-            "H_L": H_L, "H_V": H_V,
+            "T": T,
+            "P": P,
+            "x": x,
+            "y": y,
+            "L": L,
+            "V": V,
+            "F": 0.0,
+            "z": np.zeros(6),
+            "Q": 0.0,
+            "x_in": x_in,
+            "y_in": y_in,
+            "H_L": H_L,
+            "H_V": H_V,
         }
 
 
@@ -248,15 +314,33 @@ class TestSymbolicGraphTiming:
         H_F = ca.SX(0.0)
 
         res = stage.build_residual(
-            T, x, y, L_in, L_out, V_in, V_out,
-            x_in, y_in, F, z, Q,
-            H_L_in, H_V_in, H_L_out, H_V_out, H_F,
+            T,
+            x,
+            y,
+            L_in,
+            L_out,
+            V_in,
+            V_out,
+            x_in,
+            y_in,
+            F,
+            z,
+            Q,
+            H_L_in,
+            H_V_in,
+            H_L_out,
+            H_V_out,
+            H_F,
         )
 
         # Also build Jacobian
         vars_vec = ca.vertcat(T, x, y)
         J = ca.jacobian(res, vars_vec)
-        ca.Function("stage_with_jac", [vars_vec, x_in, y_in, L_in, V_in, L_out, V_out, F, z, Q], [res, J])
+        ca.Function(
+            "stage_with_jac",
+            [vars_vec, x_in, y_in, L_in, V_in, L_out, V_out, F, z, Q],
+            [res, J],
+        )
 
         elapsed = time.perf_counter() - t0
         assert elapsed < 1.0, f"Build time: {elapsed:.2f}s (should be < 1s)"
@@ -276,6 +360,7 @@ class TestEnthalpy:
     def test_liquid_enthalpy_near_zero_at_ref(self):
         """Liquid enthalpy at T_ref should be ~0."""
         from h2iso.mesh.enthalpy import T_REF
+
         x = np.array([0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         H_L = liquid_enthalpy_numeric(T_REF, x)
         assert abs(H_L) < 1.0  # Should be ~0 at reference

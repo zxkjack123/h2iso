@@ -40,11 +40,16 @@ class Stage:
 
     @staticmethod
     def material_balance(
-        L_in: ca.SX, x_in: ca.SX,
-        V_in: ca.SX, y_in: ca.SX,
-        L_out: ca.SX, x_out: ca.SX,
-        V_out: ca.SX, y_out: ca.SX,
-        F: ca.SX, z: ca.SX,
+        L_in: ca.SX,
+        x_in: ca.SX,
+        V_in: ca.SX,
+        y_in: ca.SX,
+        L_out: ca.SX,
+        x_out: ca.SX,
+        V_out: ca.SX,
+        y_out: ca.SX,
+        F: ca.SX,
+        z: ca.SX,
     ) -> ca.SX:
         """Material balance for all components.
 
@@ -55,8 +60,7 @@ class Stage:
         casadi.SX of shape (6, 1)
             Residual vector.
         """
-        residual = (L_in * x_in + V_in * y_in + F * z
-                    - L_out * x_out - V_out * y_out)
+        residual = L_in * x_in + V_in * y_in + F * z - L_out * x_out - V_out * y_out
         return residual
 
     @staticmethod
@@ -93,11 +97,16 @@ class Stage:
 
     @staticmethod
     def energy_balance(
-        L_in: ca.SX, H_L_in: ca.SX,
-        V_in: ca.SX, H_V_in: ca.SX,
-        L_out: ca.SX, H_L_out: ca.SX,
-        V_out: ca.SX, H_V_out: ca.SX,
-        F: ca.SX, H_F: ca.SX,
+        L_in: ca.SX,
+        H_L_in: ca.SX,
+        V_in: ca.SX,
+        H_V_in: ca.SX,
+        L_out: ca.SX,
+        H_L_out: ca.SX,
+        V_out: ca.SX,
+        H_V_out: ca.SX,
+        F: ca.SX,
+        H_F: ca.SX,
         Q: ca.SX,
     ) -> ca.SX:
         """Energy balance equation.
@@ -109,18 +118,33 @@ class Stage:
         casadi.SX (scalar)
             Energy residual.
         """
-        return (L_in * H_L_in + V_in * H_V_in + F * H_F
-                - L_out * H_L_out - V_out * H_V_out - Q)
+        return (
+            L_in * H_L_in
+            + V_in * H_V_in
+            + F * H_F
+            - L_out * H_L_out
+            - V_out * H_V_out
+            - Q
+        )
 
     def build_residual(
         self,
-        T: ca.SX, x: ca.SX, y: ca.SX,
-        L_in: ca.SX, L_out: ca.SX,
-        V_in: ca.SX, V_out: ca.SX,
-        x_in: ca.SX, y_in: ca.SX,
-        F: ca.SX, z: ca.SX, Q: ca.SX,
-        H_L_in: ca.SX, H_V_in: ca.SX,
-        H_L_out: ca.SX, H_V_out: ca.SX,
+        T: ca.SX,
+        x: ca.SX,
+        y: ca.SX,
+        L_in: ca.SX,
+        L_out: ca.SX,
+        V_in: ca.SX,
+        V_out: ca.SX,
+        x_in: ca.SX,
+        y_in: ca.SX,
+        F: ca.SX,
+        z: ca.SX,
+        Q: ca.SX,
+        H_L_in: ca.SX,
+        H_V_in: ca.SX,
+        H_L_out: ca.SX,
+        H_V_out: ca.SX,
         H_F: ca.SX,
     ) -> ca.SX:
         """Build the full 15-equation residual vector.
@@ -137,8 +161,8 @@ class Stage:
         # Summation (2 eq)
         S = self.summation(x, y)
         # Energy/Heat (1 eq)
-        H = self.energy_balance(L_in, H_L_in, V_in, H_V_in,
-                                L_out, H_L_out, V_out, H_V_out,
-                                F, H_F, Q)
+        H = self.energy_balance(
+            L_in, H_L_in, V_in, H_V_in, L_out, H_L_out, V_out, H_V_out, F, H_F, Q
+        )
 
         return ca.vertcat(M, E, S, H)

@@ -86,7 +86,7 @@ class TestContinuationN:
         T = result.final.T_profile
         for j in range(len(T) - 1):
             assert T[j + 1] >= T[j] - 0.01, (
-                f"T not monotone at stage {j}: T[{j}]={T[j]:.4f} > T[{j+1}]={T[j+1]:.4f}"
+                f"T not monotone at stage {j}: T[{j}]={T[j]:.4f} > T[{j + 1}]={T[j + 1]:.4f}"
             )
 
     def test_100_stages_converges(self, cd2_base_spec):
