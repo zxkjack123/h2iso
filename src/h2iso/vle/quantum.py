@@ -151,9 +151,7 @@ def quantum_alpha_correction(T: Numeric, species: str) -> Numeric:
     alpha_K2 = alphas[species]
     T_arr = np.asarray(T, dtype=np.float64)
     if np.any(T_arr <= 0):
-        raise ValueError(
-            f"quantum_alpha_correction requires T > 0; got T={T}"
-        )
+        raise ValueError(f"quantum_alpha_correction requires T > 0; got T={T}")
     correction = 1.0 + alpha_K2 / T_arr**2
     if np.ndim(T) == 0:
         return float(correction)

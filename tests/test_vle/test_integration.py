@@ -50,7 +50,7 @@ class TestVLEConsistency:
             for i in range(5):
                 assert K[i] >= K[i + 1] * 0.95, (
                     f"T={T}: K[{SPECIES_ORDER[i]}]={K[i]:.3f} "
-                    f"< K[{SPECIES_ORDER[i+1]}]={K[i+1]:.3f}"
+                    f"< K[{SPECIES_ORDER[i + 1]}]={K[i + 1]:.3f}"
                 )
 
     def test_eos_models_agree_trend(self):

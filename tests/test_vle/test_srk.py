@@ -33,7 +33,7 @@ def test_srk_low_pressure_matches_ideal(srk, ideal, uniform_x):
     K_ideal = ideal.kvalue(T, P_low, uniform_x)
     rel = np.max(np.abs(K_srk - K_ideal) / K_ideal)
     assert rel < 0.01, (
-        f"SRK should match IdealVLE at low P; max rel deviation = {rel*100:.3f}%"
+        f"SRK should match IdealVLE at low P; max rel deviation = {rel * 100:.3f}%"
     )
 
 
@@ -46,7 +46,7 @@ def test_srk_high_pressure_deviates_from_ideal(srk, ideal, uniform_x):
     rel = np.max(np.abs(K_srk - K_ideal) / K_ideal)
     assert rel > 0.05, (
         f"SRK should deviate from IdealVLE at high P; max rel deviation = "
-        f"{rel*100:.3f}%"
+        f"{rel * 100:.3f}%"
     )
 
 

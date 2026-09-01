@@ -78,7 +78,7 @@ class TestBoilingPoints:
         for i in range(len(nbps) - 1):
             # HT ≈ D2 (very close), allow equal
             assert nbps[i] <= nbps[i + 1] + 0.01, (
-                f"{SPECIES_ORDER[i]} Tb={nbps[i]} >= {SPECIES_ORDER[i+1]} Tb={nbps[i+1]}"
+                f"{SPECIES_ORDER[i]} Tb={nbps[i]} >= {SPECIES_ORDER[i + 1]} Tb={nbps[i + 1]}"
             )
 
 
