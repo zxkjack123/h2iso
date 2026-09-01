@@ -16,7 +16,9 @@ from h2iso.species import N_SPECIES
 
 def _uniform_stream(flow: float = 10.0, T: float = 25.0, P: float = 2.0e5) -> Stream:
     comp = np.ones(N_SPECIES) / N_SPECIES
-    return Stream(flow=flow, composition=comp, temperature=T, pressure=P, phase="liquid")
+    return Stream(
+        flow=flow, composition=comp, temperature=T, pressure=P, phase="liquid"
+    )
 
 
 class TestPressureChangerModeValidation:
@@ -30,7 +32,9 @@ class TestPressureChangerModeValidation:
 
     def test_gamma_at_one_raises(self):
         with pytest.raises(ValueError, match="gamma"):
-            PressureChangerUnit(name="C1", target_pressure=1e5, mode="compressor", gamma=1.0)
+            PressureChangerUnit(
+                name="C1", target_pressure=1e5, mode="compressor", gamma=1.0
+            )
 
 
 class TestThrottleIsenthalpic:
@@ -82,7 +86,9 @@ class TestCompressor:
 
 class TestSchemaValidation:
     def test_pressure_changer_section_in_schema(self):
-        schema_path = Path(__file__).parents[2] / "src/h2iso/data/schemas/flowsheet_v1.json"
+        schema_path = (
+            Path(__file__).parents[2] / "src/h2iso/data/schemas/flowsheet_v1.json"
+        )
         schema = json.loads(schema_path.read_text())
         props = schema["properties"]
         assert "pressure_changers" in props
@@ -91,12 +97,16 @@ class TestSchemaValidation:
         inner = pc["additionalProperties"]
         assert set(inner["required"]) == {"target_pressure_Pa", "mode"}
         assert set(inner["properties"]["mode"]["enum"]) == {
-            "throttle", "pump", "compressor"
+            "throttle",
+            "pump",
+            "compressor",
         }
         assert inner["properties"]["target_pressure_Pa"]["exclusiveMinimum"] == 0
 
     def test_pressure_changer_mode_enum_complete(self):
-        schema_path = Path(__file__).parents[2] / "src/h2iso/data/schemas/flowsheet_v1.json"
+        schema_path = (
+            Path(__file__).parents[2] / "src/h2iso/data/schemas/flowsheet_v1.json"
+        )
         schema = json.loads(schema_path.read_text())
         modes = schema["properties"]["pressure_changers"]["additionalProperties"][
             "properties"
@@ -125,7 +135,11 @@ class TestLoadFlowsheetWithPressureChanger:
             "topology": {"connections": [{"from": "F1_feed", "to": "C1"}]},
             "pressure_changers": {
                 "V1": {"target_pressure_Pa": 5.0e4, "mode": "throttle"},
-                "C1k": {"target_pressure_Pa": 5.0e5, "mode": "compressor", "gamma": 1.3},
+                "C1k": {
+                    "target_pressure_Pa": 5.0e5,
+                    "mode": "compressor",
+                    "gamma": 1.3,
+                },
             },
         }
         cfg_path = tmp_path / "fs.json"

@@ -57,8 +57,7 @@ def keq(T: float, reaction: str) -> float:
     rxns = _EQ_PARAMS["reactions"]
     if reaction not in rxns:
         raise ValueError(
-            f"Unknown reaction '{reaction}'. "
-            f"Available: {list(rxns.keys())}"
+            f"Unknown reaction '{reaction}'. Available: {list(rxns.keys())}"
         )
     p = rxns[reaction]
     return float(np.exp(p["a"] + p["b"] / T))
@@ -92,8 +91,7 @@ def atom_fractions(x: np.ndarray) -> tuple[float, float, float]:
 
 
 def equilibrium_composition(
-    alpha_H: float, alpha_D: float, alpha_T: float,
-    T: float = 25.0
+    alpha_H: float, alpha_D: float, alpha_T: float, T: float = 25.0
 ) -> np.ndarray:
     """Compute equilibrium mole fractions given atom fractions.
 
@@ -166,9 +164,7 @@ def equilibrium_composition(
     d0 = np.sqrt(max(alpha_D, 1e-20))
     t0 = np.sqrt(max(alpha_T, 1e-20))
 
-    params, info, ier, mesg = fsolve(
-        residuals, [h0, d0, t0], full_output=True
-    )
+    params, info, ier, mesg = fsolve(residuals, [h0, d0, t0], full_output=True)
     if ier != 1:
         raise RuntimeError(
             f"Equilibrium solve failed (ier={ier}): {mesg.strip()} | "
@@ -179,12 +175,12 @@ def equilibrium_composition(
 
     # Compute final mole fractions
     x = np.zeros(N_SPECIES)
-    x[0] = h * h                     # H2
-    x[1] = np.sqrt(K1) * h * d      # HD
-    x[2] = np.sqrt(K2) * h * t      # HT
-    x[3] = d * d                     # D2
-    x[4] = np.sqrt(K3) * d * t      # DT
-    x[5] = t * t                     # T2
+    x[0] = h * h  # H2
+    x[1] = np.sqrt(K1) * h * d  # HD
+    x[2] = np.sqrt(K2) * h * t  # HT
+    x[3] = d * d  # D2
+    x[4] = np.sqrt(K3) * d * t  # DT
+    x[5] = t * t  # T2
 
     # Normalize
     x /= np.sum(x)

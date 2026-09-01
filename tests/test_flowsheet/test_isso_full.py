@@ -18,7 +18,9 @@ import pytest
 from h2iso.flowsheet.schema import load_flowsheet
 from h2iso.flowsheet.solver import SequentialModularSolver
 
-FIXTURE_PATH = Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_isso.json"
+FIXTURE_PATH = (
+    Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_isso.json"
+)
 
 
 @pytest.fixture
@@ -127,9 +129,7 @@ class TestISSOFullProducts:
         assert bot is not None, "CD3_bottoms not in results"
         # HT(2) + DT(4) + T2(5) should be dominant
         heavy = bot.composition[2] + bot.composition[4] + bot.composition[5]
-        assert heavy > 0.5, (
-            f"CD3 bottom heavy isotopes = {heavy:.4f}, expected > 0.5"
-        )
+        assert heavy > 0.5, f"CD3 bottom heavy isotopes = {heavy:.4f}, expected > 0.5"
 
 
 class TestISSOFullMassBalance:
@@ -193,9 +193,11 @@ class TestISSOFullColumnResults:
             assert cr.T_profile.shape == (N,), (
                 f"{name}: T_profile shape {cr.T_profile.shape}, expected ({N},)"
             )
-            assert cr.x_profile.shape == (N, 6), (
-                f"{name}: x_profile shape {cr.x_profile.shape}, expected ({N}, 6)"
-            )
-            assert cr.y_profile.shape == (N, 6), (
-                f"{name}: y_profile shape {cr.y_profile.shape}, expected ({N}, 6)"
-            )
+            assert cr.x_profile.shape == (
+                N,
+                6,
+            ), f"{name}: x_profile shape {cr.x_profile.shape}, expected ({N}, 6)"
+            assert cr.y_profile.shape == (
+                N,
+                6,
+            ), f"{name}: y_profile shape {cr.y_profile.shape}, expected ({N}, 6)"

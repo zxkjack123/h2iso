@@ -14,7 +14,9 @@ import pytest
 from h2iso.flowsheet.schema import FlowsheetConfig, load_flowsheet
 from h2iso.flowsheet.solver import SequentialModularSolver
 
-FIXTURE_PATH = Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_isso.json"
+FIXTURE_PATH = (
+    Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_isso.json"
+)
 
 
 @pytest.fixture
@@ -25,13 +27,15 @@ def isso_no_recycle_config() -> FlowsheetConfig:
     config.tear_streams = []
     # Remove recycle connections from topology
     config.connections = [
-        conn for conn in config.connections
+        conn
+        for conn in config.connections
         if conn.from_unit not in ("CD2_bottom_recycle", "CD3_top")
     ]
     # Remove recycle feed positions from columns
     for col in config.columns:
         col.feed_positions = {
-            k: v for k, v in col.feed_positions.items()
+            k: v
+            for k, v in col.feed_positions.items()
             if k not in ("CD2_bottom_recycle", "CD3_top")
         }
     return config
@@ -102,9 +106,7 @@ class TestISSONoRecycle:
         assert dist is not None, "CD1_distillate stream not found"
         # H2 is species index 0
         h2_frac = dist.composition[0]
-        assert h2_frac > 0.99, (
-            f"CD1 top H2 fraction = {h2_frac:.5f}, expected > 0.99"
-        )
+        assert h2_frac > 0.99, f"CD1 top H2 fraction = {h2_frac:.5f}, expected > 0.99"
 
     def test_cd3_bottom_heavy_isotopes(self, isso_no_recycle_config):
         """CD3 bottoms should be enriched in HT/DT/T2 (heavy isotopes).
@@ -122,7 +124,9 @@ class TestISSONoRecycle:
         bottoms = result.streams.get("CD3_bottoms")
         if bottoms is not None:
             # HT(idx=2) + DT(idx=4) + T2(idx=5) should dominate
-            heavy_frac = bottoms.composition[2] + bottoms.composition[4] + bottoms.composition[5]
+            heavy_frac = (
+                bottoms.composition[2] + bottoms.composition[4] + bottoms.composition[5]
+            )
             assert heavy_frac > 0.5, (
                 f"CD3 bottom heavy isotope fraction = {heavy_frac:.4f}, expected > 0.5"
             )

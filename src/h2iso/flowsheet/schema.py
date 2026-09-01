@@ -32,6 +32,7 @@ class ColumnConfig:
     distillate_to_feed: float
     feed_positions: dict[str, int]  # feed_name -> stage
     pressure: float  # Pa (average of top/bottom)
+    eos: str = "souers"  # "souers" or "peng-robinson"
 
 
 @dataclass
@@ -81,6 +82,7 @@ class FlowsheetConfig:
     products: dict[str, str]  # product_name -> description
     tear_streams: list[TearStream] = field(default_factory=list)
     pressure_changers: list[PressureChangerConfig] = field(default_factory=list)
+    splitter: dict = field(default_factory=dict)  # source_name -> {target_name: ratio}
 
 
 def load_flowsheet(path: str | Path) -> FlowsheetConfig:
@@ -111,50 +113,65 @@ def load_flowsheet(path: str | Path) -> FlowsheetConfig:
         if s > 0:
             comp /= s
 
-        feeds.append(FeedConfig(
-            name=name,
-            flow=fdata["total_flow_mol_h"],
-            composition=comp,
-            target_column=fdata.get("target_column", ""),
-            feed_stage=fdata.get("feed_stage", 1),
-        ))
+        feeds.append(
+            FeedConfig(
+                name=name,
+                flow=fdata["total_flow_mol_h"],
+                composition=comp,
+                target_column=fdata.get("target_column", ""),
+                feed_stage=fdata.get("feed_stage", 1),
+            )
+        )
 
     # Parse columns
     columns = []
     for name, cdata in data.get("columns", {}).items():
         p_top = cdata.get("pressure_top_Pa", 101325.0)
         p_bot = cdata.get("pressure_bottom_Pa", 101325.0)
-        columns.append(ColumnConfig(
-            name=name,
-            n_stages=cdata["total_stages"],
-            reflux_ratio=cdata["reflux_ratio"],
-            distillate_to_feed=cdata["distillate_to_feed_ratio"],
-            feed_positions=cdata.get("feed_positions", {}),
-            pressure=(p_top + p_bot) / 2.0,
-        ))
+        columns.append(
+            ColumnConfig(
+                name=name,
+                n_stages=cdata["total_stages"],
+                reflux_ratio=cdata["reflux_ratio"],
+                distillate_to_feed=cdata["distillate_to_feed_ratio"],
+                feed_positions=cdata.get("feed_positions", {}),
+                pressure=(p_top + p_bot) / 2.0,
+                eos=cdata.get("eos", "souers"),
+            )
+        )
 
-    # Parse equilibrators (implicit from topology)
+    # Parse equilibrators (from top-level section AND implicit from topology)
     equilibrators = []
+    # 1. Explicit equilibrators section (e.g., ISS-I)
+    for name, edata in data.get("equilibrators", {}).items():
+        equilibrators.append(
+            EquilibratorConfig(
+                name=name,
+                temperature=edata.get("temperature", 25.0),
+            )
+        )
+    eq_names = {e.name for e in equilibrators}
+    # 2. Implicit from topology connections (e.g., ISS-O)
     topo = data.get("topology", {})
     connections_raw = topo.get("connections", [])
     for conn in connections_raw:
-        if "equilibrator" in conn.get("to", ""):
-            eq_name = conn["to"]
-            if not any(e.name == eq_name for e in equilibrators):
-                equilibrators.append(EquilibratorConfig(name=eq_name))
-        if "equilibrator" in conn.get("from", ""):
-            eq_name = conn["from"]
-            if not any(e.name == eq_name for e in equilibrators):
-                equilibrators.append(EquilibratorConfig(name=eq_name))
+        if "equilibrator" in conn.get("to", "") and conn["to"] not in eq_names:
+            eq_names.add(conn["to"])
+            equilibrators.append(EquilibratorConfig(name=conn["to"]))
+        if "equilibrator" in conn.get("from", "") and conn["from"] not in eq_names:
+            eq_names.add(conn["from"])
+            equilibrators.append(EquilibratorConfig(name=conn["from"]))
 
     # Parse connections
     connections = []
     for conn in connections_raw:
-        connections.append(Connection(
-            from_unit=conn["from"],
-            to_unit=conn["to"],
-            stage=conn.get("stage"),
-        ))
+        connections.append(
+            Connection(
+                from_unit=conn["from"],
+                to_unit=conn["to"],
+                stage=conn.get("stage"),
+            )
+        )
 
     # Parse products
     products = topo.get("products", {})
@@ -162,12 +179,14 @@ def load_flowsheet(path: str | Path) -> FlowsheetConfig:
     # Parse pressure changers (optional section)
     pressure_changers = []
     for name, pdata in data.get("pressure_changers", {}).items():
-        pressure_changers.append(PressureChangerConfig(
-            name=name,
-            target_pressure=pdata["target_pressure_Pa"],
-            mode=pdata["mode"],
-            gamma=pdata.get("gamma", 1.4),
-        ))
+        pressure_changers.append(
+            PressureChangerConfig(
+                name=name,
+                target_pressure=pdata["target_pressure_Pa"],
+                mode=pdata["mode"],
+                gamma=pdata.get("gamma", 1.4),
+            )
+        )
 
     config = FlowsheetConfig(
         feeds=feeds,
@@ -176,6 +195,7 @@ def load_flowsheet(path: str | Path) -> FlowsheetConfig:
         connections=connections,
         products=products,
         pressure_changers=pressure_changers,
+        splitter=data.get("splitter", {}).get("ratios", {}),
     )
 
     # Detect tear streams
@@ -218,9 +238,8 @@ def validate_topology(config: FlowsheetConfig) -> list[str]:
         if not from_known:
             errors.append(f"Unknown source unit: '{conn.from_unit}'")
 
-        to_known = (
-            conn.to_unit in unit_names
-            or any(conn.to_unit == c.name for c in config.columns)
+        to_known = conn.to_unit in unit_names or any(
+            conn.to_unit == c.name for c in config.columns
         )
         if not to_known:
             errors.append(f"Unknown target unit: '{conn.to_unit}'")
@@ -230,9 +249,12 @@ def validate_topology(config: FlowsheetConfig) -> list[str]:
         for feed_name in col.feed_positions:
             has_conn = any(
                 conn.to_unit == col.name
-                and (conn.from_unit == feed_name
-                     or conn.from_unit.endswith("_feed") and conn.from_unit.replace("_feed", "") == feed_name
-                     or feed_name in conn.from_unit)
+                and (
+                    conn.from_unit == feed_name
+                    or conn.from_unit.endswith("_feed")
+                    and conn.from_unit.replace("_feed", "") == feed_name
+                    or feed_name in conn.from_unit
+                )
                 for conn in config.connections
             )
             if not has_conn:
@@ -290,11 +312,13 @@ def detect_tear_streams(config: FlowsheetConfig) -> list[TearStream]:
             fn = _normalize_node(conn.from_unit, config)
             tn = _normalize_node(conn.to_unit, config)
             if fn == from_n and tn == to_n:
-                tear_streams.append(TearStream(
-                    from_unit=conn.from_unit,
-                    to_unit=conn.to_unit,
-                    name=f"{conn.from_unit} → {conn.to_unit}",
-                ))
+                tear_streams.append(
+                    TearStream(
+                        from_unit=conn.from_unit,
+                        to_unit=conn.to_unit,
+                        name=f"{conn.from_unit} → {conn.to_unit}",
+                    )
+                )
                 break
 
     return tear_streams

@@ -34,7 +34,12 @@ class TestStream:
 
     def test_invalid_composition_shape(self):
         with pytest.raises(ValueError, match="shape"):
-            Stream(flow=10.0, composition=np.array([0.5, 0.5]), temperature=20.0, pressure=101325.0)
+            Stream(
+                flow=10.0,
+                composition=np.array([0.5, 0.5]),
+                temperature=20.0,
+                pressure=101325.0,
+            )
 
 
 class TestStreamMix:

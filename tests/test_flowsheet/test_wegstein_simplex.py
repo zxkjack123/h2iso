@@ -149,9 +149,7 @@ class TestWegsteinSimplexPreservation:
             pressure=101325.0,
         )
 
-        updated = solver._wegstein_update(
-            {"S": x2}, {"S": g2}, x_prev, g_prev
-        )
+        updated = solver._wegstein_update({"S": x2}, {"S": g2}, x_prev, g_prev)
         out = updated["S"]
         assert (out.composition >= 0).all()
         assert abs(out.composition.sum() - 1.0) < 1e-12
@@ -161,22 +159,31 @@ class TestWegsteinSimplexPreservation:
         rng = np.random.default_rng(20260102)
         solver = _make_solver()
 
-        x = Stream(flow=10.0, composition=_make_simplex(rng),
-                   temperature=25.0, pressure=101325.0)
+        x = Stream(
+            flow=10.0,
+            composition=_make_simplex(rng),
+            temperature=25.0,
+            pressure=101325.0,
+        )
         x_prev = {"S": np.concatenate([[x.flow], x.composition])}
         g_prev = {"S": np.concatenate([[x.flow], x.composition])}
 
         for _ in range(100):
             g_comp = _make_simplex(rng)
-            g = Stream(flow=10.0 + rng.uniform(-0.5, 0.5),
-                       composition=g_comp,
-                       temperature=25.0, pressure=101325.0)
+            g = Stream(
+                flow=10.0 + rng.uniform(-0.5, 0.5),
+                composition=g_comp,
+                temperature=25.0,
+                pressure=101325.0,
+            )
             updated = solver._wegstein_update({"S": x}, {"S": g}, x_prev, g_prev)
             out = updated["S"]
-            assert (out.composition >= 0).all(), \
+            assert (out.composition >= 0).all(), (
                 f"Negative composition emerged: {out.composition}"
-            assert abs(out.composition.sum() - 1.0) < 1e-12, \
+            )
+            assert abs(out.composition.sum() - 1.0) < 1e-12, (
                 f"Simplex broken: sum={out.composition.sum()}"
+            )
             # Advance state
             x_prev = dict(solver._last_x_prev)
             g_prev = dict(solver._last_g_prev)

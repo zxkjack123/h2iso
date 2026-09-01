@@ -162,24 +162,29 @@ class ParameterSweep:
                     continuation_substeps=self.continuation_substeps,
                 )
                 solve_result = solver.solve(max_iter=max_iter, tol=tol)
-                result.points.append(SweepPoint(
-                    parameters=params,
-                    result=solve_result,
-                    converged=solve_result.converged,
-                ))
+                result.points.append(
+                    SweepPoint(
+                        parameters=params,
+                        result=solve_result,
+                        converged=solve_result.converged,
+                    )
+                )
             except Exception as e:
-                result.points.append(SweepPoint(
-                    parameters=params,
-                    result=None,
-                    converged=False,
-                    error=str(e),
-                ))
+                result.points.append(
+                    SweepPoint(
+                        parameters=params,
+                        result=None,
+                        converged=False,
+                        error=str(e),
+                    )
+                )
 
         return result
 
     def _modify_config(self, param_name: str, value) -> FlowsheetConfig:
         """Create a copy of config with one parameter modified."""
         import copy
+
         config = copy.deepcopy(self.base_config)
 
         # Find target column
@@ -191,7 +196,8 @@ class ParameterSweep:
                     col.n_stages = int(value)
                     # Scale feed positions proportionally
                     old_n = next(
-                        c.n_stages for c in self.base_config.columns
+                        c.n_stages
+                        for c in self.base_config.columns
                         if c.name == self.target_column
                     )
                     scale = int(value) / old_n
