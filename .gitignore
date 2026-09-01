@@ -32,3 +32,8 @@ Thumbs.db
 site/
 *.docx
 *.ffmeta.json
+
+# UQ output
+uq_runs/
+.benchmarks/
+*.prof

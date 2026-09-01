@@ -1,0 +1,11 @@
+[run]
+source = src/h2iso
+branch = true
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    def __str__
+    if __name__ == .__main__.:
+    raise NotImplementedError
