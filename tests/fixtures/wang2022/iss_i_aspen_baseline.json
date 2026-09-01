@@ -1,0 +1,240 @@
+{
+  "source": {
+    "authors": "Z. Shikun (张世坤)",
+    "supervisor": "X. Zhang (张小康)",
+    "software": "Aspen Plus V14",
+    "model": "ISS-I (inner fuel cycle), T2-Threetowers4.bkp",
+    "eos": "Peng-Robinson",
+    "description": "5-case validation baseline for h2iso ISS-I 3-column system",
+    "notes": "Task spec: ~/projects/h2iso/validation/aspen_plus/task_spec.docx"
+  },
+  "column_config": {
+    "CD1": {
+      "n_stages": 90,
+      "feed_stages": [
+        72,
+        50
+      ],
+      "P_kPa": [
+        90.0,
+        100.0
+      ],
+      "RR": 50,
+      "DF": 0.3,
+      "condenser": "partial-vapor"
+    },
+    "CD2": {
+      "n_stages": 100,
+      "feed_stages": [
+        45
+      ],
+      "P_kPa": [
+        90.0,
+        100.0
+      ],
+      "RR": 60,
+      "DF": 0.78,
+      "condenser": "partial-vapor"
+    },
+    "CD3": {
+      "n_stages": 60,
+      "feed_stages": [
+        45
+      ],
+      "P_kPa": [
+        80.0,
+        100.0
+      ],
+      "RR": 295,
+      "DF": 0.085,
+      "condenser": "partial-vapor"
+    }
+  },
+  "equilibrators": [
+    "E1",
+    "E2"
+  ],
+  "feed_stream_name": "FROMTEP",
+  "test_cases": [
+    {
+      "case_id": "TC1",
+      "description": "Nominal (high T enrichment)",
+      "feed_atom_flow_g_h": {
+        "T": 100.0,
+        "D": 50.0,
+        "H": 10.0
+      },
+      "feed_composition": {
+        "H2": 0.02135,
+        "HD": 0.1068,
+        "D2": 0.1337,
+        "HT": 0.1427,
+        "DT": 0.357,
+        "T2": 0.2384
+      },
+      "feed_total_mol_h": 33.95,
+      "products_atom_flow_g_h": {
+        "WDS": {
+          "H": 2.882,
+          "D": 0.9809,
+          "T": 3.7e-13
+        },
+        "SDST2": {
+          "H": 7.61e-06,
+          "D": 1.437,
+          "T": 83.92
+        },
+        "SDSD2": {
+          "H": 7.118,
+          "D": 47.58,
+          "T": 16.08
+        }
+      },
+      "mass_balance_rel_err": 4.95e-06
+    },
+    {
+      "case_id": "TC2",
+      "description": "Equimolar feed",
+      "feed_atom_flow_g_h": {
+        "T": 50.0,
+        "D": 50.0,
+        "H": 50.0
+      },
+      "feed_composition": {
+        "H2": 0.2971,
+        "HD": 0.2974,
+        "D2": 0.07442,
+        "HT": 0.1986,
+        "DT": 0.09939,
+        "T2": 0.03318
+      },
+      "feed_total_mol_h": 45.5,
+      "products_atom_flow_g_h": {
+        "WDS": {
+          "H": 7.142,
+          "D": 4.49e-11,
+          "T": 2.47e-22
+        },
+        "SDST2": {
+          "H": 9.23e-06,
+          "D": 0.385,
+          "T": 22.49
+        },
+        "SDSD2": {
+          "H": 42.86,
+          "D": 49.61,
+          "T": 27.51
+        }
+      },
+      "mass_balance_rel_err": 7.05e-07
+    },
+    {
+      "case_id": "TC3",
+      "description": "Near-pure T feed",
+      "feed_atom_flow_g_h": {
+        "T": 150.0,
+        "D": 10.0,
+        "H": 5.0
+      },
+      "feed_composition": {
+        "H2": 0.006913,
+        "HD": 0.01384,
+        "D2": 0.006926,
+        "HT": 0.1386,
+        "DT": 0.1388,
+        "T2": 0.6949
+      },
+      "feed_total_mol_h": 29.83,
+      "products_atom_flow_g_h": {
+        "WDS": {
+          "H": 1.192,
+          "D": 3.8e-12,
+          "T": 7.96e-23
+        },
+        "SDST2": {
+          "H": 8.04e-05,
+          "D": 2.303,
+          "T": 134.5
+        },
+        "SDSD2": {
+          "H": 3.808,
+          "D": 7.697,
+          "T": 15.47
+        }
+      },
+      "mass_balance_rel_err": 3.72e-08
+    },
+    {
+      "case_id": "TC4",
+      "description": "Low T high D feed",
+      "feed_atom_flow_g_h": {
+        "T": 10.0,
+        "D": 100.0,
+        "H": 50.0
+      },
+      "feed_composition": {
+        "H2": 0.2339,
+        "HD": 0.4682,
+        "D2": 0.2343,
+        "HT": 0.03126,
+        "DT": 0.0313,
+        "T2": 0.001045
+      },
+      "feed_total_mol_h": 51.29,
+      "products_atom_flow_g_h": {
+        "WDS": {
+          "H": 8.64,
+          "D": 7.44e-11,
+          "T": 4.85e-23
+        },
+        "SDST2": {
+          "H": 1e-06,
+          "D": 0.08721,
+          "T": 5.093
+        },
+        "SDSD2": {
+          "H": 41.36,
+          "D": 99.91,
+          "T": 4.907
+        }
+      },
+      "mass_balance_rel_err": 8.42e-08
+    },
+    {
+      "case_id": "TC5",
+      "description": "Intermediate case",
+      "feed_atom_flow_g_h": {
+        "T": 80.0,
+        "D": 30.0,
+        "H": 20.0
+      },
+      "feed_composition": {
+        "H2": 0.1049,
+        "HD": 0.1575,
+        "D2": 0.05912,
+        "HT": 0.2805,
+        "DT": 0.2106,
+        "T2": 0.1875
+      },
+      "feed_total_mol_h": 30.63,
+      "products_atom_flow_g_h": {
+        "WDS": {
+          "H": 3.689,
+          "D": 2.18e-11,
+          "T": 1.79e-22
+        },
+        "SDST2": {
+          "H": 1.64e-05,
+          "D": 0.9165,
+          "T": 53.53
+        },
+        "SDSD2": {
+          "H": 16.31,
+          "D": 29.08,
+          "T": 26.47
+        }
+      },
+      "mass_balance_rel_err": 1.73e-06
+    }
+  ]
+}
