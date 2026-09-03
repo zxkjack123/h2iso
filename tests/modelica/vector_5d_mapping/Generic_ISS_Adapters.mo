@@ -4,6 +4,7 @@ package Generic_ISS_Adapters
   // ========================================================================
   // 1. 多组分 5D/6D 适配器外壳 (Multi-Component 5D/6D Adapter Shells)
   // 将 5 维原子质量流 [T, D, H, He, Imp] (g/h) 映射为 6 维分子流 [H2..T2]
+  // 工程假设：He (组分4) 与 Imp (组分5) 假设在前级净化系统已脱除，ISS 内部仅追踪同位素，出口恒置0
   // ========================================================================
 
   model ISS_I_Adapter "ISS-I 多组分 5D/6D 双向适配器 (兼容 example_model.I_ISS 接口)"
@@ -231,8 +232,6 @@ package Generic_ISS_Adapters
     parameter Real Decay(unit="1/h") = 6.42e-6 "氚衰变常数 (1/h)";
     parameter Real T(unit="h") = 6.0 "水力学特征时间常数 (h)";
     parameter Real Threshold(unit="g") = 300 "门限阈值 (兼容 CFEDR)";
-    parameter Real Fraction_T_to_SDS(unit="1") = 0.999 "产物分配系数 (兼容 CFEDR)";
-    parameter Real Fraction_D_to_SDS(unit="1") = 0.001 "产物分配系数 (兼容 CFEDR)";
 
     // 实例化 6 组分机理核心
     Generic_ISS.ISS_I_Core core;
@@ -323,7 +322,7 @@ package Generic_ISS_Adapters
     Real m_T_tes, n_tes_T, n_tes_tot;
 
   equation
-    // 1. WDS 进料适配 (进 CD1): 氢同位素载体中微量氚提取 (a_H ~ 0.99, a_T ~ 0.01)
+    // 1. WDS 进料适配 (进 CD1): 氢同位素载体中微量氚提取 (a_H ~ 0.99, a_T ~ 0.01 工程假设)
     m_T_wds = max(0.0, from_WDS);
     n_wds_T = m_T_wds / MW_T;
     n_wds_tot = 100.0 * n_wds_T;
