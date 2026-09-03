@@ -97,7 +97,24 @@
         }
       ],
       "pass_count": 6,
-      "total_count": 9
+      "total_count": 9,
+      "inventory": {
+        "column_name": "CD1",
+        "total_mol": 6.4520421700806665,
+        "total_grams": 38.91936357414359,
+        "gas_phase_mol": {
+          "condenser": 1.915399507761124e-05,
+          "packed_section": 2.0463162819302316,
+          "reboiler": 0.050346376784715936,
+          "total": 2.0966818127100253
+        },
+        "liquid_phase_mol": {
+          "condenser": 1.2264124273640523e-05,
+          "packed_section": 4.157412861398163,
+          "reboiler": 0.19793523184820377,
+          "total": 4.355360357370641
+        }
+      }
     },
     "CD2": {
       "converged": true,
@@ -203,7 +220,24 @@
         }
       ],
       "pass_count": 6,
-      "total_count": 10
+      "total_count": 10,
+      "inventory": {
+        "column_name": "CD2",
+        "total_mol": 9.272354079711867,
+        "total_grams": 55.93176704422995,
+        "gas_phase_mol": {
+          "condenser": 0.003830170120901645,
+          "packed_section": 2.952991581894092,
+          "reboiler": 0.05034818695453298,
+          "total": 3.0071699389695263
+        },
+        "liquid_phase_mol": {
+          "condenser": 0.0024598189822132633,
+          "packed_section": 6.064782841718929,
+          "reboiler": 0.19794148004119702,
+          "total": 6.26518414074234
+        }
+      }
     },
     "CD3": {
       "converged": true,
@@ -309,7 +343,24 @@
         }
       ],
       "pass_count": 7,
-      "total_count": 10
+      "total_count": 10,
+      "inventory": {
+        "column_name": "CD3",
+        "total_mol": 1.3862348277743837,
+        "total_grams": 8.36190710461786,
+        "gas_phase_mol": {
+          "condenser": 0.16239585997414235,
+          "packed_section": 0.18582968016116955,
+          "reboiler": 0.0884379907244723,
+          "total": 0.4366635308597842
+        },
+        "liquid_phase_mol": {
+          "condenser": 0.12268643856802061,
+          "packed_section": 0.39604526119972056,
+          "reboiler": 0.43083959714685843,
+          "total": 0.9495712969145995
+        }
+      }
     }
   },
   "overall_pass_count": 19,
@@ -317,5 +368,64 @@
   "notes": {
     "solver": "h2iso SequentialModularSolver with CasADi MESH",
     "topology": "Wang 2022 ISS-O three-column cascade (CD2 top recycled to CD1, CD3 top to CD2, CD2 bottom to equilibrator to CD3)"
+  },
+  "inventory": {
+    "total_mol": 17.110631077566918,
+    "total_grams": 103.2130377229914,
+    "total_gas_mol": 5.540515282539336,
+    "total_liquid_mol": 11.570115795027581,
+    "columns": {
+      "CD1": {
+        "column_name": "CD1",
+        "total_mol": 6.4520421700806665,
+        "total_grams": 38.91936357414359,
+        "gas_phase_mol": {
+          "condenser": 1.915399507761124e-05,
+          "packed_section": 2.0463162819302316,
+          "reboiler": 0.050346376784715936,
+          "total": 2.0966818127100253
+        },
+        "liquid_phase_mol": {
+          "condenser": 1.2264124273640523e-05,
+          "packed_section": 4.157412861398163,
+          "reboiler": 0.19793523184820377,
+          "total": 4.355360357370641
+        }
+      },
+      "CD2": {
+        "column_name": "CD2",
+        "total_mol": 9.272354079711867,
+        "total_grams": 55.93176704422995,
+        "gas_phase_mol": {
+          "condenser": 0.003830170120901645,
+          "packed_section": 2.952991581894092,
+          "reboiler": 0.05034818695453298,
+          "total": 3.0071699389695263
+        },
+        "liquid_phase_mol": {
+          "condenser": 0.0024598189822132633,
+          "packed_section": 6.064782841718929,
+          "reboiler": 0.19794148004119702,
+          "total": 6.26518414074234
+        }
+      },
+      "CD3": {
+        "column_name": "CD3",
+        "total_mol": 1.3862348277743837,
+        "total_grams": 8.36190710461786,
+        "gas_phase_mol": {
+          "condenser": 0.16239585997414235,
+          "packed_section": 0.18582968016116955,
+          "reboiler": 0.0884379907244723,
+          "total": 0.4366635308597842
+        },
+        "liquid_phase_mol": {
+          "condenser": 0.12268643856802061,
+          "packed_section": 0.39604526119972056,
+          "reboiler": 0.43083959714685843,
+          "total": 0.9495712969145995
+        }
+      }
+    }
   }
 }

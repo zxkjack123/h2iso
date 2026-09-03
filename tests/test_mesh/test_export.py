@@ -17,6 +17,8 @@ import numpy as np
 import pytest
 from scipy.io import loadmat
 
+pytest.importorskip("casadi")
+
 from h2iso.codegen.modelica_init import generate_init_script
 from h2iso.mesh.column import Column, ColumnSpec
 from h2iso.mesh.export import export_csv, export_json, export_mat

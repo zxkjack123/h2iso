@@ -113,6 +113,16 @@
       "notes": "Table 5. CD4 receives equilibrator 2 (E2) effluent at stage 55."
     }
   },
+  "equilibrators": {
+    "equilibrator1": {
+      "temperature_K": 298.0,
+      "notes": "Catalytic reactor E1 operating at room temperature (298K) for 2DT <=> D2 + T2"
+    },
+    "equilibrator2": {
+      "temperature_K": 298.0,
+      "notes": "Catalytic reactor E2 operating at room temperature (298K) for 2HT <=> H2 + T2, HT + D2 <=> HD + DT"
+    }
+  },
   "topology": {
     "description": "ISS-I four-column cascade with two catalytic equilibrators and recycle",
     "connections": [

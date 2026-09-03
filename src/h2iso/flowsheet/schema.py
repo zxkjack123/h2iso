@@ -33,6 +33,12 @@ class ColumnConfig:
     feed_positions: dict[str, int]  # feed_name -> stage
     pressure: float  # Pa (average of top/bottom)
     eos: str = "souers"  # "souers" or "peng-robinson"
+    pressure_top_Pa: float = 101325.0
+    pressure_bottom_Pa: float = 101325.0
+    inside_diameter_m: float = 0.05
+    HETP_m: float = 0.05
+    condenser_volume_m3: float = 1.0e-3
+    reboiler_volume_m3: float = 2.0e-4
 
 
 @dataclass
@@ -40,7 +46,7 @@ class EquilibratorConfig:
     """Equilibrator specification from JSON."""
 
     name: str
-    temperature: float = 25.0  # K
+    temperature: float = 298.0  # K (standard room temperature for catalytic exchange)
 
 
 @dataclass
@@ -137,30 +143,37 @@ def load_flowsheet(path: str | Path) -> FlowsheetConfig:
                 feed_positions=cdata.get("feed_positions", {}),
                 pressure=(p_top + p_bot) / 2.0,
                 eos=cdata.get("eos", "souers"),
+                pressure_top_Pa=p_top,
+                pressure_bottom_Pa=p_bot,
+                inside_diameter_m=cdata.get("inside_diameter_m", 0.05),
+                HETP_m=cdata.get("HETP_m", 0.05),
+                condenser_volume_m3=cdata.get("condenser_volume_m3", 1.0e-3),
+                reboiler_volume_m3=cdata.get("reboiler_volume_m3", 2.0e-4),
             )
         )
 
-    # Parse equilibrators (from top-level section AND implicit from topology)
+    # Parse equilibrators (from explicit "equilibrators" block or implicit from topology)
     equilibrators = []
-    # 1. Explicit equilibrators section (e.g., ISS-I)
-    for name, edata in data.get("equilibrators", {}).items():
-        equilibrators.append(
-            EquilibratorConfig(
-                name=name,
-                temperature=edata.get("temperature", 25.0),
-            )
-        )
-    eq_names = {e.name for e in equilibrators}
-    # 2. Implicit from topology connections (e.g., ISS-O)
+    eq_data_map = data.get("equilibrators", {})
     topo = data.get("topology", {})
     connections_raw = topo.get("connections", [])
+
+    discovered_names = []
     for conn in connections_raw:
-        if "equilibrator" in conn.get("to", "") and conn["to"] not in eq_names:
-            eq_names.add(conn["to"])
-            equilibrators.append(EquilibratorConfig(name=conn["to"]))
-        if "equilibrator" in conn.get("from", "") and conn["from"] not in eq_names:
-            eq_names.add(conn["from"])
-            equilibrators.append(EquilibratorConfig(name=conn["from"]))
+        for key in ("to", "from"):
+            unit_name = conn.get(key, "")
+            if "equilibrator" in unit_name and unit_name not in discovered_names:
+                discovered_names.append(unit_name)
+
+    all_eq_names = list(discovered_names)
+    for name in eq_data_map.keys():
+        if name not in all_eq_names:
+            all_eq_names.append(name)
+
+    for eq_name in all_eq_names:
+        cfg_item = eq_data_map.get(eq_name, {}) if isinstance(eq_data_map, dict) else {}
+        temp = cfg_item.get("temperature_K", cfg_item.get("temperature", 298.0))
+        equilibrators.append(EquilibratorConfig(name=eq_name, temperature=float(temp)))
 
     # Parse connections
     connections = []
