@@ -413,6 +413,10 @@ class SequentialModularSolver:
                 if key == f"{base}_bottoms":
                     return stream
 
+        # Check unit generic output (e.g., equilibrator1_out, mixer_out)
+        if f"{source_name}_out" in self.streams:
+            return self.streams[f"{source_name}_out"]
+
         # Check equilibrator output: match by name precisely.
         # EquilibratorUnit outputs are stored as "{name}_out".
         for eq_cfg in self.config.equilibrators:
@@ -423,10 +427,16 @@ class SequentialModularSolver:
             # Also try if source_name matches equilibrator name with suffix variants
             if source_name == eq_name + "_output" and expected_key in self.streams:
                 return self.streams[expected_key]
-            if source_name == eq_name:
-                for key, stream in self.streams.items():
-                    if key == expected_key:
-                        return stream
+
+        # Single equilibrator / legacy fallback
+        if "equilibrator" in source_name:
+            # First try matching specific equilibrator prefix
+            for key, stream in self.streams.items():
+                if key.startswith(source_name) and key.endswith("_out"):
+                    return stream
+            for key, stream in self.streams.items():
+                if "equilibrator" in key and "out" in key:
+                    return stream
 
         # Backward compat: ISS-O has a single equilibrator named "equilibrator"
         # whose output is "equilibrator_out"
