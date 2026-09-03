@@ -5,6 +5,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+pytest.importorskip("casadi")
+
 from h2iso.flowsheet.schema import (
     ColumnConfig,
     Connection,

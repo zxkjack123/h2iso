@@ -3,7 +3,7 @@
 Validates the h2iso MESH solver against Wang et al. 2022 Aspen Plus
 results for the CFETR ISS-I CD2 column (75 stages).
 
-Reference: Wang et al., Fusion Engineering and Design 184 (2022) 113078.
+Reference: Wang et al., Fusion Engineering and Design 177 (2022) 113078.
 """
 
 from __future__ import annotations
@@ -13,6 +13,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+
+pytest.importorskip("casadi")
 
 from h2iso.mesh.column import ColumnSpec
 from h2iso.mesh.continuation import ContinuationSolver

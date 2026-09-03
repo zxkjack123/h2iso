@@ -1,14 +1,18 @@
 """Tritium inventory calculation algorithms for distillation columns.
 
 Implements the 6-zone (VC, VP, VR, LC, LP, LR) inventory evaluation from:
-    X. Wang et al., "Hydrogen isotope inventory evaluation of hydrogen isotopes
-    separation system of CFETR using Aspen Plus simulator", Fusion Eng. Des. 184 (2022) 113078.
+    X. Wang, Q. Zeng, W. Shi, H. Chen, "Hydrogen isotope inventory evaluation of
+    hydrogen isotopes separation system of CFETR using Aspen Plus simulator",
+    Fusion Engineering and Design, vol. 177 (2022) 113078.
+    DOI: https://doi.org/10.1016/j.fusengdes.2022.113078
 """
 
 from __future__ import annotations
 
 import math
+import warnings
 from typing import Any
+
 import numpy as np
 
 from h2iso.inventory.models import (
@@ -19,7 +23,7 @@ from h2iso.inventory.models import (
     FlowsheetInventoryResult,
     InventoryGeometry,
 )
-from h2iso.mesh.column import ColumnResult, ColumnSpec
+from h2iso.mesh.column import ColumnResult
 from h2iso.species import SPECIES_ORDER
 
 
@@ -198,9 +202,22 @@ def evaluate_flowsheet_inventory(
                 reboiler_volume_m3=getattr(cfg, "reboiler_volume_m3", 2.0e-4),
             )
         elif geom is None:
+            warnings.warn(
+                f"Column '{name}' not found in flowsheet config and no custom geometry provided; "
+                f"falling back to default InventoryGeometry (D=0.05m, HETP=0.05m).",
+                UserWarning,
+                stacklevel=2,
+            )
             geom = InventoryGeometry()
 
         # Pressure
+        if cfg is None:
+            warnings.warn(
+                f"Column '{name}' not found in flowsheet config; "
+                f"falling back to default pressure (101325 Pa).",
+                UserWarning,
+                stacklevel=2,
+            )
         p_top = getattr(cfg, "pressure_top_Pa", getattr(cfg, "pressure", 101325.0))
         p_bot = getattr(cfg, "pressure_bottom_Pa", getattr(cfg, "pressure", 101325.0))
         pressure = (p_top, p_bot)

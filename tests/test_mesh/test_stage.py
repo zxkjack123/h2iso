@@ -2,6 +2,10 @@
 
 import time
 
+import pytest
+
+pytest.importorskip("casadi")
+
 import casadi as ca
 import numpy as np
 

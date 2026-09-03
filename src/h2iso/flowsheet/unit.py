@@ -196,7 +196,7 @@ class EquilibratorUnit(UnitOp):
     at the given temperature.
     """
 
-    temperature: float = 25.0  # K
+    temperature: float = 298.0  # K (standard room temperature for catalytic exchange)
 
     def solve(self, inputs: dict[str, Stream]) -> dict[str, Stream]:
         """Equilibrate the mixed input stream."""

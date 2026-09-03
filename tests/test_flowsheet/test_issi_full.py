@@ -18,6 +18,8 @@ from pathlib import Path
 
 import pytest
 
+pytest.importorskip("casadi")
+
 from h2iso.flowsheet.schema import load_flowsheet
 from h2iso.flowsheet.solver import SequentialModularSolver
 

@@ -3,6 +3,8 @@
 import numpy as np
 import pytest
 
+pytest.importorskip("casadi")
+
 from h2iso.mesh.column import Column, ColumnSpec, FeedSpec
 from h2iso.species import N_SPECIES
 

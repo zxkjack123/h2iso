@@ -15,6 +15,8 @@ import time
 import numpy as np
 import pytest
 
+pytest.importorskip("casadi")
+
 from h2iso.mesh.column import Column, ColumnSpec
 
 

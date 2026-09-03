@@ -1,22 +1,24 @@
 """Data models and parameters for tritium inventory evaluation in distillation columns.
 
 Based on the inventory formulation in:
-    X. Wang et al., "Hydrogen isotope inventory evaluation of hydrogen isotopes
-    separation system of CFETR using Aspen Plus simulator", Fusion Eng. Des. 184 (2022) 113078.
+    X. Wang, Q. Zeng, W. Shi, H. Chen, "Hydrogen isotope inventory evaluation of
+    hydrogen isotopes separation system of CFETR using Aspen Plus simulator",
+    Fusion Engineering and Design, vol. 177 (2022) 113078.
+    DOI: https://doi.org/10.1016/j.fusengdes.2022.113078
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import numpy as np
 
-from h2iso.species import SPECIES_ORDER
+import numpy as np
 
 # Gas constant [J/(mol·K)]
 R_GAS = 8.314462618
 
-# Liquid molar volumes [m^3/mol] at NBP from Wang 2022 Table 7
+# Liquid molar volumes [m^3/mol] at normal boiling point (NBP) from Wang et al. (2022) Table 7
 # (H2=2.924E-5, HD=2.635E-5, HT=2.526E-5, D2=2.415E-5, DT=2.326E-5, T2=2.245E-5)
+# DOI: 10.1016/j.fusengdes.2022.113078
 DEFAULT_MOLAR_VOLUMES: dict[str, float] = {
     "H2": 2.924e-5,
     "HD": 2.635e-5,
@@ -27,7 +29,7 @@ DEFAULT_MOLAR_VOLUMES: dict[str, float] = {
 }
 
 # Tritium equivalence factor alpha_i (moles equivalent T2 per mole of species)
-# (H2=0, HD=0, HT=0.5, D2=0, DT=0.5, T2=1.0)
+# from Wang et al. (2022) Table 7 (H2=0, HD=0, HT=0.5, D2=0, DT=0.5, T2=1.0)
 DEFAULT_TRITIUM_EQUIVALENCE: dict[str, float] = {
     "H2": 0.0,
     "HD": 0.0,
@@ -66,7 +68,7 @@ class ColumnInventoryResult:
     liquid_condenser_mol: float  # H_LC
     liquid_packed_mol: float     # H_LP
     liquid_reboiler_mol: float   # H_LR
-    
+
     stage_gas_inventory_mol: np.ndarray = field(default_factory=lambda: np.zeros(0))
     stage_liquid_inventory_mol: np.ndarray = field(default_factory=lambda: np.zeros(0))
 

@@ -93,6 +93,12 @@
       "notes": "Table 5. CD3 receives equilibrator output at stage 30."
     }
   },
+  "equilibrators": {
+    "equilibrator": {
+      "temperature_K": 298.0,
+      "notes": "Catalytic reactor E operating at room temperature (298K) for 2HT <=> H2 + T2"
+    }
+  },
   "topology": {
     "description": "ISS-O three-column cascade with inter-column recycle streams and one equilibrator",
     "connections": [

@@ -45,7 +45,7 @@ class EquilibratorConfig:
     """Equilibrator specification from JSON."""
 
     name: str
-    temperature: float = 25.0  # K
+    temperature: float = 298.0  # K (standard room temperature for catalytic exchange)
 
 
 @dataclass
@@ -145,19 +145,28 @@ def load_flowsheet(path: str | Path) -> FlowsheetConfig:
             reboiler_volume_m3=cdata.get("reboiler_volume_m3", 2.0e-4),
         ))
 
-    # Parse equilibrators (implicit from topology)
+    # Parse equilibrators (from explicit "equilibrators" block or implicit from topology)
     equilibrators = []
+    eq_data_map = data.get("equilibrators", {})
     topo = data.get("topology", {})
     connections_raw = topo.get("connections", [])
+
+    discovered_names = []
     for conn in connections_raw:
-        if "equilibrator" in conn.get("to", ""):
-            eq_name = conn["to"]
-            if not any(e.name == eq_name for e in equilibrators):
-                equilibrators.append(EquilibratorConfig(name=eq_name))
-        if "equilibrator" in conn.get("from", ""):
-            eq_name = conn["from"]
-            if not any(e.name == eq_name for e in equilibrators):
-                equilibrators.append(EquilibratorConfig(name=eq_name))
+        for key in ("to", "from"):
+            unit_name = conn.get(key, "")
+            if "equilibrator" in unit_name and unit_name not in discovered_names:
+                discovered_names.append(unit_name)
+
+    all_eq_names = list(discovered_names)
+    for name in eq_data_map.keys():
+        if name not in all_eq_names:
+            all_eq_names.append(name)
+
+    for eq_name in all_eq_names:
+        cfg_item = eq_data_map.get(eq_name, {}) if isinstance(eq_data_map, dict) else {}
+        temp = cfg_item.get("temperature_K", cfg_item.get("temperature", 298.0))
+        equilibrators.append(EquilibratorConfig(name=eq_name, temperature=float(temp)))
 
     # Parse connections
     connections = []

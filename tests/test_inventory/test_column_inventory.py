@@ -5,6 +5,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+# Ensure CasADi is available for ColumnResult import
+pytest.importorskip("casadi")
+
 from h2iso.inventory.calculator import evaluate_column_inventory
 from h2iso.inventory.models import InventoryGeometry
 from h2iso.mesh.column import ColumnResult
@@ -52,6 +55,7 @@ def dummy_tritium_column_result():
     )
 
 
+@pytest.mark.slow
 class TestColumnInventoryUnit:
     """Test column inventory calculation under controlled boundary conditions."""
 

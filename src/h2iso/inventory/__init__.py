@@ -12,10 +12,10 @@ from h2iso.inventory.calculator import (
     evaluate_flowsheet_inventory,
 )
 from h2iso.inventory.models import (
+    TRITIUM_MOLAR_MASS_T2_G_PER_MOL,
     ColumnInventoryResult,
     FlowsheetInventoryResult,
     InventoryGeometry,
-    TRITIUM_MOLAR_MASS_T2_G_PER_MOL,
 )
 
 __all__ = [
