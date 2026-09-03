@@ -14,7 +14,7 @@ import sys
 
 def main():
     base_dir = Path(__file__).parent
-    h2iso_root = base_dir.parent.parent
+    h2iso_root = base_dir.parent.parent.parent
 
     # 1. Export Modelica libraries and overrides
     print("[INFO] Exporting Modelica libraries and parameter override files...")

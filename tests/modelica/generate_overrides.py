@@ -36,10 +36,35 @@ from h2iso.codegen.modelica_0d import (
 
 def generate_from_solver(fixtures_dir: Path) -> tuple[dict, dict]:
     """Solve Wang 2022 ISS-I and ISS-O flowsheets in real time using h2iso solver."""
-    from h2iso.io.flowsheet_io import load_flowsheet
-    from h2iso.solver.sequential import SequentialModularSolver
+    from h2iso.flowsheet.schema import load_flowsheet
+    from h2iso.flowsheet.solver import SequentialModularSolver
+    from h2iso.species import SPECIES_ORDER
 
     print("[INFO] Running h2iso SequentialModularSolver on Wang (2022) flowsheets...")
+
+    def _extract_flowsheet_data(solver: SequentialModularSolver, res) -> dict:
+        data = {"columns": {}}
+        for col_name, col_res in res.column_results.items():
+            dist = solver.streams.get(f"{col_name}_distillate")
+            bot = solver.streams.get(f"{col_name}_bottoms")
+            top_flow = dist.flow if dist else 1.0
+            bot_flow = bot.flow if bot else 1.0
+            top_comp = {sp: float(dist.composition[i]) for i, sp in enumerate(SPECIES_ORDER)} if dist else {}
+            bot_comp = {sp: float(bot.composition[i]) for i, sp in enumerate(SPECIES_ORDER)} if bot else {}
+            data["columns"][col_name] = {
+                "actual_results": {
+                    "top_flow_mol_h": top_flow,
+                    "bottom_flow_mol_h": bot_flow,
+                    "top_composition": top_comp,
+                    "bottom_composition": bot_comp,
+                    "temperatures": {
+                        "top_K": float(col_res.T_profile[0]),
+                        "bottom_K": float(col_res.T_profile[-1]),
+                    },
+                    "inventory": {"total_grams": 0.0},
+                }
+            }
+        return data
 
     # Solve ISS-O (3 columns)
     isso_file = fixtures_dir / "wang2022_isso.json"
@@ -49,18 +74,7 @@ def generate_from_solver(fixtures_dir: Path) -> tuple[dict, dict]:
     isso_res = isso_solver.solve(max_iter=50, tol=1e-4)
     if not isso_res.converged:
         print("[WARNING] ISS-O solve did not strictly converge. Using last iteration state.")
-
-    # Convert solver state to override dictionary
-    isso_data = {}
-    for col_name, col_obj in isso_solver.columns.items():
-        tau = getattr(col_obj, "tau", 1.0)
-        isso_data[col_name] = {
-            "T_top": float(col_obj.T[0]),
-            "T_bottom": float(col_obj.T[-1]),
-            "tau": float(tau),
-            "m_top": [float(m) for m in col_obj.m_top],
-            "m_bottom": [float(m) for m in col_obj.m_bottom],
-        }
+    isso_data = _extract_flowsheet_data(isso_solver, isso_res)
 
     # Solve ISS-I (4 columns)
     issi_file = fixtures_dir / "wang2022_issi.json"
@@ -70,17 +84,7 @@ def generate_from_solver(fixtures_dir: Path) -> tuple[dict, dict]:
     issi_res = issi_solver.solve(max_iter=50, tol=1e-4)
     if not issi_res.converged:
         print("[WARNING] ISS-I solve did not strictly converge. Using last iteration state.")
-
-    issi_data = {}
-    for col_name, col_obj in issi_solver.columns.items():
-        tau = getattr(col_obj, "tau", 1.0)
-        issi_data[col_name] = {
-            "T_top": float(col_obj.T[0]),
-            "T_bottom": float(col_obj.T[-1]),
-            "tau": float(tau),
-            "m_top": [float(m) for m in col_obj.m_top],
-            "m_bottom": [float(m) for m in col_obj.m_bottom],
-        }
+    issi_data = _extract_flowsheet_data(issi_solver, issi_res)
 
     return issi_data, isso_data
 

@@ -31,4 +31,5 @@ Thumbs.db
 # Docs build
 site/
 *.docx
+*.pdf
 *.ffmeta.json

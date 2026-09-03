@@ -97,7 +97,7 @@ package Generic_ISS
     a_D = if n_atom_tot > 1e-12 then n_D / n_atom_tot else 0.0;
     a_T = if n_atom_tot > 1e-12 then n_T / n_atom_tot else 0.0;
 
-    // 3. 统计热力学同位素重组平衡分配
+    // 3. 统计热力学同位素重组平衡分配 (高温统计极限 K_eq=4 近似，满足整体同位素原子守恒)
     x_eq[1] = a_H * a_H;         // H2
     x_eq[2] = 2.0 * a_H * a_D;   // HD
     x_eq[3] = 2.0 * a_H * a_T;   // HT
