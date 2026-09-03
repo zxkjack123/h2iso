@@ -151,13 +151,13 @@ def make_build_fn(full: bool = False, n_stages: int | None = None):
         base_config.connections = [
             c
             for c in base_config.connections
-            if c.from_unit not in ("CD2_bottom_recycle", "CD3_top")
+            if c.from_unit not in ("CD2_top", "CD3_top")
         ]
         for col in base_config.columns:
             col.feed_positions = {
                 k: v
                 for k, v in col.feed_positions.items()
-                if k not in ("CD2_bottom_recycle", "CD3_top")
+                if k not in ("CD2_top", "CD3_top")
             }
 
     param_names = build_parameter_space(full).names
