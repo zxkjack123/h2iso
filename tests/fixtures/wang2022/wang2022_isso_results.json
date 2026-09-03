@@ -5,98 +5,98 @@
       "actual_results": {
         "converged": true,
         "top_composition": {
-          "H2": 0.9988964228340329,
-          "HD": 0.0011003287499389443,
-          "D2": 1.1103823384874576e-16,
-          "HT": 3.2484160278496332e-06,
-          "DT": 3.0168625560279583e-17,
-          "T2": 1.1170485990118539e-17
+          "H2": 0.9983613665805514,
+          "HD": 0.0015674486491058985,
+          "HT": 7.118846483395278e-05,
+          "D2": -3.5970145462043324e-09,
+          "DT": -7.815716386992736e-11,
+          "T2": -9.89002600967726e-09
         },
         "bottom_composition": {
-          "H2": 0.6425740444552582,
-          "HD": 0.35186291512363926,
-          "D2": 3.288300460399591e-12,
-          "HT": 0.005563040411191164,
-          "DT": 3.3090820109741735e-12,
-          "T2": 3.3139640773849027e-12
+          "H2": -3.241358110099117e-11,
+          "HD": 3.0147809242942867e-05,
+          "HT": 0.9999698721060775,
+          "D2": -1.4246585250235054e-09,
+          "DT": -9.303054956682684e-09,
+          "T2": -9.147485881324188e-09
         },
-        "top_flow_mol_h": 278.54399964001084,
-        "bottom_flow_mol_h": 1.455999999999976,
+        "top_flow_mol_h": 439.3964170323648,
+        "bottom_flow_mol_h": 2.2968047532853575,
         "temperatures": {
-          "top_K": 20.170809073297654,
-          "bottom_K": 20.964104202949077
+          "top_K": 20.059795686714185,
+          "bottom_K": 22.693681307299837
         },
         "heat_loads": {
-          "condenser_W": -485.3880960033315,
-          "reboiler_W": 407.1606392330393
+          "condenser_W": -787.6021906591156,
+          "reboiler_W": 962.6133035888047
         }
       },
       "comparison": [
         {
           "metric": "top_H2",
           "expected": 0.99843,
-          "actual": 0.9988964228340329,
-          "deviation": 0.00046715626937578463,
+          "actual": 0.9983613665805514,
+          "deviation": 6.874134335769869e-05,
           "pass": true
         },
         {
           "metric": "top_HD",
           "expected": 0.00157,
-          "actual": 0.0011003287499389443,
-          "deviation": 0.29915366245927116,
-          "pass": false
+          "actual": 0.0015674486491058985,
+          "deviation": 2.5513508941014777e-06,
+          "pass": true
         },
         {
           "metric": "top_HT",
           "expected": 0.0,
-          "actual": 3.2484160278496332e-06,
-          "deviation": 3.2484160278496332e-06,
+          "actual": 7.118846483395278e-05,
+          "deviation": 7.118846483395278e-05,
           "pass": true
         },
         {
           "metric": "bottom_HD",
           "expected": 0.99696,
-          "actual": 0.35186291512363926,
-          "deviation": 0.6470641599225252,
+          "actual": 3.0147809242942867e-05,
+          "deviation": 0.9999697602619534,
           "pass": false
         },
         {
           "metric": "bottom_HT",
           "expected": 0.00304,
-          "actual": 0.005563040411191164,
-          "deviation": 0.8299475036813037,
+          "actual": 0.9999698721060775,
+          "deviation": 0.9969298721060774,
           "pass": false
         },
         {
           "metric": "T_top",
           "expected": 20.0641,
-          "actual": 20.170809073297654,
-          "deviation": 0.10670907329765456,
+          "actual": 20.059795686714185,
+          "deviation": 0.004304313285814487,
           "pass": true
         },
         {
           "metric": "T_bottom",
           "expected": 22.2032,
-          "actual": 20.964104202949077,
-          "deviation": 1.239095797050922,
+          "actual": 22.693681307299837,
+          "deviation": 0.49048130729983797,
           "pass": true
         },
         {
           "metric": "Q_condenser",
           "expected": -801.141,
-          "actual": -485.3880960033315,
-          "deviation": 0.3941290035045872,
-          "pass": false
+          "actual": -787.6021906591156,
+          "deviation": 0.016899408894170083,
+          "pass": true
         },
         {
           "metric": "Q_reboiler",
           "expected": 723.899,
-          "actual": 407.1606392330393,
-          "deviation": 0.4375449624422201,
+          "actual": 962.6133035888047,
+          "deviation": 0.32976189162963987,
           "pass": false
         }
       ],
-      "pass_count": 4,
+      "pass_count": 6,
       "total_count": 9
     },
     "CD2": {
@@ -104,102 +104,102 @@
       "actual_results": {
         "converged": true,
         "top_composition": {
-          "H2": 0.9993302823491187,
-          "HD": 0.00036714813408826916,
-          "D2": 1.5367622149368052e-16,
-          "HT": 0.0003025695167928918,
-          "DT": 5.720770322329197e-17,
-          "T2": 2.580142957890963e-17
+          "H2": 0.9856426583418169,
+          "HD": 4.4540110302844324e-07,
+          "HT": 0.014356904557129452,
+          "D2": -8.051233530255992e-09,
+          "DT": 1.3358581626364484e-11,
+          "T2": -3.6769663700928776e-10
         },
         "bottom_composition": {
-          "H2": 0.28173908280610616,
-          "HD": 0.20200262909744035,
-          "D2": 3.722319456284482e-12,
-          "HT": 0.5162582880852403,
-          "DT": 3.742622402744496e-12,
-          "T2": 3.7480116091018035e-12
+          "H2": 2.3851837302612638e-11,
+          "HD": 1.377377016039809e-10,
+          "HT": 0.9999994470822724,
+          "D2": 5.704818470914825e-07,
+          "DT": -7.725491939982395e-09,
+          "T2": -9.999999768973415e-09
         },
-        "top_flow_mol_h": 159.23597964001436,
-        "bottom_flow_mol_h": 2.2200200000000208,
+        "top_flow_mol_h": 161.69322178565014,
+        "bottom_flow_mol_h": 2.254278123754318,
         "temperatures": {
-          "top_K": 20.17028598359085,
-          "bottom_K": 21.806993441557815
+          "top_K": 20.084291404297666,
+          "bottom_K": 22.693707970601096
         },
         "heat_loads": {
-          "condenser_W": -397.76032256951186,
-          "reboiler_W": 352.7144260848963
+          "condenser_W": -374.12410495749486,
+          "reboiler_W": 455.44116820282557
         }
       },
       "comparison": [
         {
           "metric": "top_H2",
           "expected": 0.98584,
-          "actual": 0.9993302823491187,
-          "deviation": 0.013684048475532179,
+          "actual": 0.9856426583418169,
+          "deviation": 0.00020017615250262938,
           "pass": true
         },
         {
           "metric": "top_HD",
           "expected": 0.01416,
-          "actual": 0.00036714813408826916,
-          "deviation": 0.9740714594570431,
+          "actual": 4.4540110302844324e-07,
+          "deviation": 0.9999685451198426,
           "pass": false
         },
         {
           "metric": "top_HT",
           "expected": 0.0,
-          "actual": 0.0003025695167928918,
-          "deviation": 0.0003025695167928918,
-          "pass": true
+          "actual": 0.014356904557129452,
+          "deviation": 0.014356904557129452,
+          "pass": false
         },
         {
           "metric": "bottom_HD",
           "expected": 0.03538,
-          "actual": 0.20200262909744035,
-          "deviation": 4.7095146720588,
+          "actual": 1.377377016039809e-10,
+          "deviation": 0.9999999961069049,
           "pass": false
         },
         {
           "metric": "bottom_HT",
           "expected": 0.96439,
-          "actual": 0.5162582880852403,
-          "deviation": 0.4646789285608101,
-          "pass": false
+          "actual": 0.9999994470822724,
+          "deviation": 0.03692432219565988,
+          "pass": true
         },
         {
           "metric": "bottom_T2",
           "expected": 0.00023,
-          "actual": 3.7480116091018035e-12,
-          "deviation": 0.9999999837042973,
-          "pass": false
+          "actual": -9.999999768973415e-09,
+          "deviation": 0.00023000999999976899,
+          "pass": true
         },
         {
           "metric": "T_top",
           "expected": 20.0813,
-          "actual": 20.17028598359085,
-          "deviation": 0.08898598359085241,
+          "actual": 20.084291404297666,
+          "deviation": 0.0029914042976670885,
           "pass": true
         },
         {
           "metric": "T_bottom",
           "expected": 23.4077,
-          "actual": 21.806993441557815,
-          "deviation": 1.6007065584421838,
+          "actual": 22.693707970601096,
+          "deviation": 0.7139920293989022,
           "pass": true
         },
         {
           "metric": "Q_condenser",
           "expected": -379.879,
-          "actual": -397.76032256951186,
-          "deviation": 0.04707110045438636,
+          "actual": -374.12410495749486,
+          "deviation": 0.015149284489285151,
           "pass": true
         },
         {
           "metric": "Q_reboiler",
           "expected": 335.68,
-          "actual": 352.7144260848963,
-          "deviation": 0.0507460262300294,
-          "pass": true
+          "actual": 455.44116820282557,
+          "deviation": 0.35677183091880826,
+          "pass": false
         }
       ],
       "pass_count": 6,
@@ -210,111 +210,112 @@
       "actual_results": {
         "converged": true,
         "top_composition": {
-          "H2": 0.3845585073187226,
-          "HD": 0.24019224357178104,
-          "D2": 1.225804303199289e-13,
-          "HT": 0.3752492491093577,
-          "DT": 1.350422684041853e-14,
-          "T2": 2.522904177023887e-15
+          "H2": 0.34636273810864004,
+          "HD": 7.688664266546397e-07,
+          "HT": 0.6536364921278838,
+          "D2": 4.869931544051834e-13,
+          "DT": 1.2734959824307237e-12,
+          "T2": 8.952892209306758e-10
         },
         "bottom_composition": {
-          "H2": 0.0005829619240819866,
-          "HD": 0.09757452031455992,
-          "D2": 1.3565676926208187e-11,
-          "HT": 0.9018425177198629,
-          "DT": 1.3939762493738863e-11,
-          "T2": 1.3989916321647509e-11
+          "H2": -1.782016104484175e-13,
+          "HD": 6.700102269307164e-12,
+          "HT": 0.05275567858427726,
+          "D2": -1.099900470736798e-13,
+          "DT": 2.1302338683668584e-06,
+          "T2": 0.9472421911754425
         },
-        "top_flow_mol_h": 1.6256092850000143,
-        "bottom_flow_mol_h": 0.5944103550000056,
+        "top_flow_mol_h": 1.6506951561190994,
+        "bottom_flow_mol_h": 0.6035829676352187,
         "temperatures": {
-          "top_K": 21.23036010457627,
-          "bottom_K": 22.615768597261244
+          "top_K": 21.566275668124263,
+          "bottom_K": 24.6794501343391
         },
         "heat_loads": {
-          "condenser_W": -9.610796107473506,
-          "reboiler_W": 9.625415832967139
+          "condenser_W": -9.319102941217732,
+          "reboiler_W": 11.946864509424005
         }
       },
       "comparison": [
         {
           "metric": "top_H2",
           "expected": 0.36552,
-          "actual": 0.3845585073187226,
-          "deviation": 0.05208608918451134,
+          "actual": 0.34636273810864004,
+          "deviation": 0.052410981318012605,
           "pass": true
         },
         {
           "metric": "top_HD",
           "expected": 0.04833,
-          "actual": 0.24019224357178104,
-          "deviation": 3.969837441998367,
+          "actual": 7.688664266546397e-07,
+          "deviation": 0.9999840913216086,
           "pass": false
         },
         {
           "metric": "top_HT",
           "expected": 0.58585,
-          "actual": 0.3752492491093577,
-          "deviation": 0.3594789637119438,
-          "pass": false
+          "actual": 0.6536364921278838,
+          "deviation": 0.11570622536124228,
+          "pass": true
         },
         {
           "metric": "top_T2",
           "expected": 0.00031,
-          "actual": 2.522904177023887e-15,
-          "deviation": 0.9999999999918616,
-          "pass": false
+          "actual": 8.952892209306758e-10,
+          "deviation": 0.0003099991047107791,
+          "pass": true
         },
         {
           "metric": "bottom_HT",
           "expected": 0.00368,
-          "actual": 0.9018425177198629,
-          "deviation": 244.06590155431056,
+          "actual": 0.05275567858427726,
+          "deviation": 0.049075678584277256,
           "pass": false
         },
         {
           "metric": "bottom_T2",
           "expected": 0.99963,
-          "actual": 1.3989916321647509e-11,
-          "deviation": 0.9999999999860049,
-          "pass": false
+          "actual": 0.9472421911754425,
+          "deviation": 0.05240719948836821,
+          "pass": true
         },
         {
           "metric": "T_top",
           "expected": 21.5636,
-          "actual": 21.23036010457627,
-          "deviation": 0.33323989542373056,
+          "actual": 21.566275668124263,
+          "deviation": 0.0026756681242616764,
           "pass": true
         },
         {
           "metric": "T_bottom",
           "expected": 24.6236,
-          "actual": 22.615768597261244,
-          "deviation": 2.0078314027387556,
-          "pass": false
+          "actual": 24.6794501343391,
+          "deviation": 0.055850134339099355,
+          "pass": true
         },
         {
           "metric": "Q_condenser",
           "expected": -9.922,
-          "actual": -9.610796107473506,
-          "deviation": 0.031365036537643054,
+          "actual": -9.319102941217732,
+          "deviation": 0.060763662445300175,
           "pass": true
         },
         {
           "metric": "Q_reboiler",
           "expected": 3.773,
-          "actual": 9.625415832967139,
-          "deviation": 1.5511306209825442,
+          "actual": 11.946864509424005,
+          "deviation": 2.1664098885300835,
           "pass": false
         }
       ],
-      "pass_count": 3,
+      "pass_count": 7,
       "total_count": 10
     }
   },
-  "overall_pass_count": 13,
+  "overall_pass_count": 19,
   "overall_total_count": 29,
   "notes": {
-    "dwsim_limitation": "DWSIM bubble-point solver cannot converge >15 stages for close-boiling H-isotope systems. ISS-O columns degraded from 60/70/60 to ~15/17/15 stages. Equilibrator (2HT\u2192H2+T2) not modeled; CD2 bottom fed directly to CD3. CD2\u2192CD1 recycle loop included."
+    "solver": "h2iso SequentialModularSolver with CasADi MESH",
+    "topology": "Wang 2022 ISS-O three-column cascade (CD2 top recycled to CD1, CD3 top to CD2, CD2 bottom to equilibrator to CD3)"
   }
 }

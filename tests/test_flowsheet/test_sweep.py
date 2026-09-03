@@ -21,15 +21,13 @@ class TestParameterSweepRefluxRatio:
         # Remove tear streams for faster sweep (no-recycle mode)
         config.tear_streams = []
         config.connections = [
-            c
-            for c in config.connections
-            if c.from_unit not in ("CD2_bottom_recycle", "CD3_top")
+            c for c in config.connections if c.from_unit not in ("CD2_top", "CD3_top")
         ]
         for col in config.columns:
             col.feed_positions = {
                 k: v
                 for k, v in col.feed_positions.items()
-                if k not in ("CD2_bottom_recycle", "CD3_top")
+                if k not in ("CD2_top", "CD3_top")
             }
 
         sweep = ParameterSweep(config, target_column="CD2", continuation_substeps=3)
@@ -44,15 +42,13 @@ class TestParameterSweepRefluxRatio:
         config = load_flowsheet(FIXTURE_PATH)
         config.tear_streams = []
         config.connections = [
-            c
-            for c in config.connections
-            if c.from_unit not in ("CD2_bottom_recycle", "CD3_top")
+            c for c in config.connections if c.from_unit not in ("CD2_top", "CD3_top")
         ]
         for col in config.columns:
             col.feed_positions = {
                 k: v
                 for k, v in col.feed_positions.items()
-                if k not in ("CD2_bottom_recycle", "CD3_top")
+                if k not in ("CD2_top", "CD3_top")
             }
 
         sweep = ParameterSweep(config, target_column="CD2", continuation_substeps=3)
@@ -82,15 +78,13 @@ class TestSweepResultExport:
         config = load_flowsheet(FIXTURE_PATH)
         config.tear_streams = []
         config.connections = [
-            c
-            for c in config.connections
-            if c.from_unit not in ("CD2_bottom_recycle", "CD3_top")
+            c for c in config.connections if c.from_unit not in ("CD2_top", "CD3_top")
         ]
         for col in config.columns:
             col.feed_positions = {
                 k: v
                 for k, v in col.feed_positions.items()
-                if k not in ("CD2_bottom_recycle", "CD3_top")
+                if k not in ("CD2_top", "CD3_top")
             }
 
         sweep = ParameterSweep(config, target_column="CD1", continuation_substeps=3)

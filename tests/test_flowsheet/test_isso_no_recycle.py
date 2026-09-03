@@ -29,14 +29,14 @@ def isso_no_recycle_config() -> FlowsheetConfig:
     config.connections = [
         conn
         for conn in config.connections
-        if conn.from_unit not in ("CD2_bottom_recycle", "CD3_top")
+        if conn.from_unit not in ("CD2_top", "CD3_top")
     ]
     # Remove recycle feed positions from columns
     for col in config.columns:
         col.feed_positions = {
             k: v
             for k, v in col.feed_positions.items()
-            if k not in ("CD2_bottom_recycle", "CD3_top")
+            if k not in ("CD2_top", "CD3_top")
         }
     return config
 
