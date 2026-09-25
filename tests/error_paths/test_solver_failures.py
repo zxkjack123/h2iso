@@ -16,6 +16,9 @@ from h2iso.flowsheet.unit import (
 from h2iso.species import N_SPECIES
 from h2iso.vle.eos import SRKQuantum
 
+# This module exercises the CasADi solver; skip (not fail) when it is absent.
+pytest.importorskip("casadi", reason="error-path tests exercise the CasADi solver")
+
 
 @pytest.fixture
 def uniform_stream():

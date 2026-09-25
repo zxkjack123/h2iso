@@ -9,6 +9,9 @@ import pytest
 from h2iso.mesh.column import Column, ColumnResult, ColumnSpec
 from h2iso.uq import Parameter, ParameterSpace, UQStudy, qoi_default, qoi_labels
 
+# This module runs the CasADi column solver; skip (not fail) when it is absent.
+pytest.importorskip("casadi", reason="UQ integration tests run the CasADi solver")
+
 
 def _build_column(params: np.ndarray) -> ColumnSpec:
     """Build a small ColumnSpec from parameter vector.

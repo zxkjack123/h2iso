@@ -51,10 +51,10 @@ class InventoryGeometry:
     HETP_m: float = 0.05
     condenser_volume_m3: float = 1.0e-3
     reboiler_volume_m3: float = 2.0e-4
-    eps_condenser: float = 0.01   # epsilon_1: liquid ratio against condenser volume (1%)
-    eps_stage: float = 0.10       # epsilon_j: liquid ratio against stage volume (10%)
-    eps_reboiler: float = 0.05    # epsilon_N: liquid ratio against reboiler volume (5%)
-    eps_packing: float = 0.20     # epsilon: ratio of packing volume (20%)
+    eps_condenser: float = 0.01  # epsilon_1: liquid ratio against condenser volume (1%)
+    eps_stage: float = 0.10  # epsilon_j: liquid ratio against stage volume (10%)
+    eps_reboiler: float = 0.05  # epsilon_N: liquid ratio against reboiler volume (5%)
+    eps_packing: float = 0.20  # epsilon: ratio of packing volume (20%)
 
 
 @dataclass
@@ -62,12 +62,12 @@ class ColumnInventoryResult:
     """Tritium inventory breakdown for a single distillation column."""
 
     column_name: str
-    gas_condenser_mol: float     # H_VC
-    gas_packed_mol: float        # H_VP
-    gas_reboiler_mol: float      # H_VR
+    gas_condenser_mol: float  # H_VC
+    gas_packed_mol: float  # H_VP
+    gas_reboiler_mol: float  # H_VR
     liquid_condenser_mol: float  # H_LC
-    liquid_packed_mol: float     # H_LP
-    liquid_reboiler_mol: float   # H_LR
+    liquid_packed_mol: float  # H_LP
+    liquid_reboiler_mol: float  # H_LR
 
     stage_gas_inventory_mol: np.ndarray = field(default_factory=lambda: np.zeros(0))
     stage_liquid_inventory_mol: np.ndarray = field(default_factory=lambda: np.zeros(0))
@@ -80,7 +80,11 @@ class ColumnInventoryResult:
     @property
     def total_liquid_mol(self) -> float:
         """Total liquid-phase tritium inventory in moles of equivalent T2."""
-        return self.liquid_condenser_mol + self.liquid_packed_mol + self.liquid_reboiler_mol
+        return (
+            self.liquid_condenser_mol
+            + self.liquid_packed_mol
+            + self.liquid_reboiler_mol
+        )
 
     @property
     def total_mol(self) -> float:

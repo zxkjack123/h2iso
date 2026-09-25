@@ -5,6 +5,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 from pathlib import Path
+
 import pytest
 
 from h2iso.codegen.modelica_0d import export_modelica_package
@@ -88,7 +89,9 @@ simulate(PlantCycle.FullCycleTest, startTime=0, stopTime=100, numberOfIntervals=
 """
     rc, out = _run_omc_script(tmp_path, script)
     assert rc == 0, f"omc failed (rc={rc}):\n{out}"
-    assert "error" not in out.lower() or "0 errors" in out.lower(), f"omc errors:\n{out}"
+    assert "error" not in out.lower() or "0 errors" in out.lower(), (
+        f"omc errors:\n{out}"
+    )
 
     # 4. Verify CSV results
     csv_file = tmp_path / "PlantCycle.FullCycleTest_res.csv"

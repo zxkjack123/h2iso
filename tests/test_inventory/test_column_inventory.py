@@ -74,7 +74,9 @@ class TestColumnInventoryUnit:
     def test_pure_t2_inventory_positive(self, dummy_tritium_column_result):
         """A column containing T2 must yield strictly positive inventory."""
         geom = InventoryGeometry(inside_diameter_m=0.06, HETP_m=0.05)
-        inv = evaluate_column_inventory(dummy_tritium_column_result, geometry=geom, pressure=100000.0)
+        inv = evaluate_column_inventory(
+            dummy_tritium_column_result, geometry=geom, pressure=100000.0
+        )
         assert inv.total_mol > 0.0
         assert inv.total_grams > 0.0
         assert inv.total_liquid_mol > inv.total_gas_mol  # Liquid density >> gas density
@@ -94,7 +96,9 @@ class TestColumnInventoryUnit:
 
     def test_to_dict_structure(self, dummy_tritium_column_result):
         """to_dict produces proper JSON-serializable structure."""
-        inv = evaluate_column_inventory(dummy_tritium_column_result, column_name="CD_Test")
+        inv = evaluate_column_inventory(
+            dummy_tritium_column_result, column_name="CD_Test"
+        )
         d = inv.to_dict()
         assert d["column_name"] == "CD_Test"
         assert "total_mol" in d

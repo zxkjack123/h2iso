@@ -16,10 +16,15 @@ Total: 15 equations per stage, 15 unknowns (6 x_i + 6 y_i + T + L + V).
 
 from __future__ import annotations
 
-import casadi as ca
+from typing import TYPE_CHECKING
 
 from h2iso.species import N_SPECIES, SPECIES_ORDER
 from h2iso.vle.souers import pvap_sx
+
+if TYPE_CHECKING:
+    import casadi as ca
+else:
+    from h2iso._casadi import ca
 
 
 class Stage:

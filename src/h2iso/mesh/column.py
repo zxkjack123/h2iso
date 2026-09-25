@@ -19,9 +19,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-import casadi as ca
 import numpy as np
 
+from h2iso._casadi import ca
 from h2iso.mesh.enthalpy import (
     liquid_enthalpy_numeric,
     vapor_enthalpy_numeric,
@@ -553,7 +553,7 @@ class ColumnPR:
 
             # --- Step 4: Check convergence ---
             dT = np.abs(T - T_new).max()
-            dx = np.abs(x_new - self._x if hasattr(self, '_x') else x_new).max()
+            dx = np.abs(x_new - self._x if hasattr(self, "_x") else x_new).max()
             T = T_new
             self._x = x_new.copy()
 
@@ -571,7 +571,9 @@ class ColumnPR:
                 T_top = T[0]
                 T_bot = T[-1]
 
-                H_V_top = vapor_enthalpy_numeric(T[1] if N > 1 else T_top, x_prof[1] if N > 1 else x_top)
+                H_V_top = vapor_enthalpy_numeric(
+                    T[1] if N > 1 else T_top, x_prof[1] if N > 1 else x_top
+                )
                 H_L_top = liquid_enthalpy_numeric(T_top, x_top)
                 Q_cond = -V[1] * (H_V_top - H_L_top) / 3600.0
 
@@ -587,7 +589,11 @@ class ColumnPR:
                     V_profile=V,
                     condenser_duty=Q_cond,
                     reboiler_duty=Q_reb,
-                    convergence_info={"status": "Converged", "success": True, "iterations": it + 1},
+                    convergence_info={
+                        "status": "Converged",
+                        "success": True,
+                        "iterations": it + 1,
+                    },
                 )
 
         # Did not converge
@@ -599,7 +605,11 @@ class ColumnPR:
             V_profile=V,
             condenser_duty=0.0,
             reboiler_duty=0.0,
-            convergence_info={"status": "Not converged", "success": False, "iterations": self.max_iter},
+            convergence_info={
+                "status": "Not converged",
+                "success": False,
+                "iterations": self.max_iter,
+            },
         )
 
 
@@ -651,7 +661,9 @@ def _bubble_temperature(T_guess, x, P, eos, K_old):
         else:
             K_plus = np.zeros(6)
             for i, sp in enumerate(SPECIES_ORDER):
-                K_plus[i] = pvap(float(T + dT), sp) * fugacity_correction(float(T + dT), sp) / P
+                K_plus[i] = (
+                    pvap(float(T + dT), sp) * fugacity_correction(float(T + dT), sp) / P
+                )
         df = (np.sum(K_plus * x) - 1.0 - f) / dT
 
         if abs(df) < 1e-10:

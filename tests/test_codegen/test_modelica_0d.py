@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import re
+from pathlib import Path
+
 import pytest
 
 from h2iso.codegen.modelica_0d import (
     export_modelica_package,
-    generate_column_override_lines,
     generate_generic_iss_mo,
     generate_iss_adapters_mo,
     generate_override_from_results,

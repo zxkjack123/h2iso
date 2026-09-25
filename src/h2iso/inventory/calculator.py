@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 import warnings
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -23,8 +23,10 @@ from h2iso.inventory.models import (
     FlowsheetInventoryResult,
     InventoryGeometry,
 )
-from h2iso.mesh.column import ColumnResult
 from h2iso.species import SPECIES_ORDER
+
+if TYPE_CHECKING:
+    from h2iso.mesh.column import ColumnResult
 
 
 def evaluate_column_inventory(
@@ -66,10 +68,14 @@ def evaluate_column_inventory(
         tritium_equivalence = DEFAULT_TRITIUM_EQUIVALENCE
 
     # Vector of alpha_i in canonical order (H2, HD, HT, D2, DT, T2)
-    alpha = np.array([tritium_equivalence.get(sp, 0.0) for sp in SPECIES_ORDER], dtype=np.float64)
+    alpha = np.array(
+        [tritium_equivalence.get(sp, 0.0) for sp in SPECIES_ORDER], dtype=np.float64
+    )
 
     # Vector of liquid molar volumes v_i in canonical order
-    v_mol = np.array([molar_volumes.get(sp, 2.5e-5) for sp in SPECIES_ORDER], dtype=np.float64)
+    v_mol = np.array(
+        [molar_volumes.get(sp, 2.5e-5) for sp in SPECIES_ORDER], dtype=np.float64
+    )
 
     N = len(result.T_profile)
     if N < 2:
@@ -98,13 +104,19 @@ def evaluate_column_inventory(
     # --- 1. Condenser (Stage index 0) ---
     # Gas phase (Eq. 8): H_VC = sum_i [ P1 * V1 * (1 - eps1) / (R * T1) * y1,i * alpha_i ]
     sum_y_alpha_0 = float(np.dot(y_prof[0], alpha))
-    H_VC = (P_prof[0] * geometry.condenser_volume_m3 * (1.0 - geometry.eps_condenser)
-            / (R_GAS * T_prof[0])) * sum_y_alpha_0
+    H_VC = (
+        P_prof[0]
+        * geometry.condenser_volume_m3
+        * (1.0 - geometry.eps_condenser)
+        / (R_GAS * T_prof[0])
+    ) * sum_y_alpha_0
 
     # Liquid phase (Eq. 12): H_LC = [ V1 * eps1 / (sum_k x1,k * v_k) ] * (sum_i x1,i * alpha_i)
     v_avg_0 = max(float(np.dot(x_prof[0], v_mol)), 1e-10)
     sum_x_alpha_0 = float(np.dot(x_prof[0], alpha))
-    H_LC = (geometry.condenser_volume_m3 * geometry.eps_condenser / v_avg_0) * sum_x_alpha_0
+    H_LC = (
+        geometry.condenser_volume_m3 * geometry.eps_condenser / v_avg_0
+    ) * sum_x_alpha_0
 
     stage_gas_inv[0] = H_VC
     stage_liq_inv[0] = H_LC
@@ -122,7 +134,9 @@ def evaluate_column_inventory(
     for j in range(1, N - 1):
         # Gas (Eq. 9)
         sum_y_alpha_j = float(np.dot(y_prof[j], alpha))
-        H_VP_j = (P_prof[j] * V_stage * gas_void_factor / (R_GAS * T_prof[j])) * sum_y_alpha_j
+        H_VP_j = (
+            P_prof[j] * V_stage * gas_void_factor / (R_GAS * T_prof[j])
+        ) * sum_y_alpha_j
         H_VP += H_VP_j
         stage_gas_inv[j] = H_VP_j
 
@@ -136,13 +150,19 @@ def evaluate_column_inventory(
     # --- 3. Reboiler (Stage index N-1) ---
     # Gas phase (Eq. 10): H_VR = sum_i [ PN * VN * (1 - epsN) / (R * TN) * yN,i * alpha_i ]
     sum_y_alpha_N = float(np.dot(y_prof[-1], alpha))
-    H_VR = (P_prof[-1] * geometry.reboiler_volume_m3 * (1.0 - geometry.eps_reboiler)
-            / (R_GAS * T_prof[-1])) * sum_y_alpha_N
+    H_VR = (
+        P_prof[-1]
+        * geometry.reboiler_volume_m3
+        * (1.0 - geometry.eps_reboiler)
+        / (R_GAS * T_prof[-1])
+    ) * sum_y_alpha_N
 
     # Liquid phase (Eq. 14): H_LR = [ VN * epsN / (sum_k xN,k * v_k) ] * (sum_i xN,i * alpha_i)
     v_avg_N = max(float(np.dot(x_prof[-1], v_mol)), 1e-10)
     sum_x_alpha_N = float(np.dot(x_prof[-1], alpha))
-    H_LR = (geometry.reboiler_volume_m3 * geometry.eps_reboiler / v_avg_N) * sum_x_alpha_N
+    H_LR = (
+        geometry.reboiler_volume_m3 * geometry.eps_reboiler / v_avg_N
+    ) * sum_x_alpha_N
 
     stage_gas_inv[-1] = H_VR
     stage_liq_inv[-1] = H_LR

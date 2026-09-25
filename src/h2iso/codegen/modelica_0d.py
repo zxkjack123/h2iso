@@ -38,7 +38,7 @@ def generate_generic_iss_mo() -> str:
     mw_t2 = SPECIES["T2"].molar_mass
     mw_t_atom = 3.016049
 
-    return f'''\
+    return f"""\
 package Generic_ISS
   "Generic Hydrogen Isotope Separation System (ISS) High-Fidelity Physics Core Library"
 
@@ -259,7 +259,7 @@ package Generic_ISS
   end ISS_O_Core;
 
 end Generic_ISS;
-'''
+"""
 
 
 def generate_iss_adapters_mo(adapter_mode: str = "all") -> str:
@@ -288,7 +288,7 @@ def generate_iss_adapters_mo(adapter_mode: str = "all") -> str:
     mw_d_atom = 2.014102
     mw_h_atom = 1.007825
 
-    code_5d = f'''\
+    code_5d = f"""\
   // ========================================================================
   // 1. 多组分 5D/6D 适配器外壳 (Multi-Component 5D/6D Adapter Shells)
   // 将 5 维原子质量流 [T, D, H, He, Imp] (g/h) 映射为 6 维分子流 [H2..T2]
@@ -485,9 +485,9 @@ def generate_iss_adapters_mo(adapter_mode: str = "all") -> str:
     // 5. 动态总储氚滞留量
     inventory_T = total_inventory_5D[1];
   end ISS_O_Adapter;
-'''
+"""
 
-    code_3lc = f'''\
+    code_3lc = f"""\
   // ========================================================================
   // 3-Level Confinement (3LC) 标量氚流适配器 (针对 CFEDR_3LC 系统)
   // 将 1 维标量纯氚质量流量 (g/h) 映射为 6 维分子流 [H2..T2] 并实现三级包容安全审计
@@ -651,7 +651,7 @@ def generate_iss_adapters_mo(adapter_mode: str = "all") -> str:
     inv_HTO = 0.0;
     decay_rate = inventory * Decay;
   end ISS_O_3LC_Adapter;
-'''
+"""
 
     if adapter_mode == "5d":
         body = code_5d
@@ -670,7 +670,6 @@ package Generic_ISS_Adapters
 {body}
 end Generic_ISS_Adapters;
 '''
-
 
 
 def generate_column_override_lines(
@@ -739,7 +738,9 @@ def generate_column_override_lines(
     return lines
 
 
-def generate_override_from_results(results_data: dict[str, Any], prefix: str = "") -> str:
+def generate_override_from_results(
+    results_data: dict[str, Any], prefix: str = ""
+) -> str:
     """Generate override.txt content from benchmark/solver results dict."""
     lines = [
         "// Auto-generated override parameters by h2iso",
@@ -749,7 +750,9 @@ def generate_override_from_results(results_data: dict[str, Any], prefix: str = "
     columns = results_data.get("columns", results_data)
     for col_name, col_data in columns.items():
         if isinstance(col_data, dict):
-            lines.extend(generate_column_override_lines(col_name, col_data, prefix=prefix))
+            lines.extend(
+                generate_column_override_lines(col_name, col_data, prefix=prefix)
+            )
             lines.append("")
 
     return "\n".join(lines)
@@ -768,11 +771,15 @@ def generate_cycle_override_file(
         "",
     ]
     if isso_results:
-        lines.append("// ==================== O-ISS (ISS-O) Parameters ====================")
+        lines.append(
+            "// ==================== O-ISS (ISS-O) Parameters ===================="
+        )
         lines.append(generate_override_from_results(isso_results, prefix=o_iss_prefix))
         lines.append("")
     if issi_results:
-        lines.append("// ==================== I-ISS (ISS-I) Parameters ====================")
+        lines.append(
+            "// ==================== I-ISS (ISS-I) Parameters ===================="
+        )
         lines.append(generate_override_from_results(issi_results, prefix=i_iss_prefix))
         lines.append("")
     return "\n".join(lines)
@@ -808,7 +815,9 @@ def export_modelica_package(output_dir: str | Path) -> dict[str, Path]:
     }
 
     # 3. Try loading standard fixtures if available
-    fixtures_dir = Path(__file__).parent.parent.parent.parent / "tests" / "fixtures" / "wang2022"
+    fixtures_dir = (
+        Path(__file__).parent.parent.parent.parent / "tests" / "fixtures" / "wang2022"
+    )
     if fixtures_dir.exists():
         issi_json = fixtures_dir / "wang2022_issi_results.json"
         isso_json = fixtures_dir / "wang2022_isso_results.json"

@@ -6,10 +6,10 @@ Workflow:
 3. Invoke plot_results.py to generate 4-panel figures and print steady-state table
 """
 
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 
 def main():
@@ -21,6 +21,7 @@ def main():
     sys.path.insert(0, str(h2iso_root / "src"))
     try:
         from h2iso.codegen.modelica_0d import export_modelica_package
+
         export_modelica_package(base_dir)
     except Exception as e:
         print(f"[WARNING] Could not auto-export from Python package: {e}")
@@ -32,7 +33,9 @@ def main():
         if default_omc.exists():
             omc_path = str(default_omc)
         else:
-            print("[ERROR] OpenModelica compiler 'omc' not found in PATH or standard location.")
+            print(
+                "[ERROR] OpenModelica compiler 'omc' not found in PATH or standard location."
+            )
             sys.exit(1)
 
     mos_file = base_dir / "simulate_ssp.mos"
@@ -57,7 +60,9 @@ def main():
     plot_script = base_dir / "plot_results.py"
     subprocess.run([sys.executable, str(plot_script)], cwd=base_dir, check=True)
 
-    print("\n[DONE] Generic_ISS & Generic_ISS_Adapters integration verification in CFEDR_2870_3lc_ssp.mo finished successfully.")
+    print(
+        "\n[DONE] Generic_ISS & Generic_ISS_Adapters integration verification in CFEDR_2870_3lc_ssp.mo finished successfully."
+    )
 
 
 if __name__ == "__main__":

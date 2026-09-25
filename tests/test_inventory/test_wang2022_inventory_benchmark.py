@@ -109,21 +109,27 @@ class TestWang2022ISSIInventory:
         cd2_inv = issi_inventory_result.columns["CD2"]
         ref = self.REF_TOTALS["CD2"]
         dev = abs(cd2_inv.total_mol - ref) / ref
-        assert dev < 0.10, f"CD2 inventory {cd2_inv.total_mol:.4f} mol vs ref {ref:.4f} mol (dev {dev:.2%})"
+        assert dev < 0.10, (
+            f"CD2 inventory {cd2_inv.total_mol:.4f} mol vs ref {ref:.4f} mol (dev {dev:.2%})"
+        )
 
     def test_cd3_inventory_accuracy(self, issi_inventory_result):
         """CD3 inventory matches Wang 2022 Table 10 (14.25 mol vs ref 19.97 mol, dev -28.7% < 35%)."""
         cd3_inv = issi_inventory_result.columns["CD3"]
         ref = self.REF_TOTALS["CD3"]
         dev = abs(cd3_inv.total_mol - ref) / ref
-        assert dev < 0.35, f"CD3 inventory {cd3_inv.total_mol:.4f} mol vs ref {ref:.4f} mol (dev {dev:.2%})"
+        assert dev < 0.35, (
+            f"CD3 inventory {cd3_inv.total_mol:.4f} mol vs ref {ref:.4f} mol (dev {dev:.2%})"
+        )
 
     def test_cd4_trace_inventory_accuracy(self, issi_inventory_result):
         """CD4 trace column absolute inventory matches reference within 0.10 mol (0.6 g tritium)."""
         cd4_inv = issi_inventory_result.columns["CD4"]
         ref = self.REF_TOTALS["CD4"]
         abs_diff = abs(cd4_inv.total_mol - ref)
-        assert abs_diff < 0.10, f"CD4 absolute difference {abs_diff:.4f} mol exceeds 0.10 mol"
+        assert abs_diff < 0.10, (
+            f"CD4 absolute difference {abs_diff:.4f} mol exceeds 0.10 mol"
+        )
 
     @pytest.mark.xfail(strict=False, reason=KNOWN_ISSUES_ISSI["CD1"])
     def test_cd1_inventory_known_deviation(self, issi_inventory_result):
@@ -131,17 +137,23 @@ class TestWang2022ISSIInventory:
         cd1_inv = issi_inventory_result.columns["CD1"]
         ref = self.REF_TOTALS["CD1"]
         # Basic physical sanity
-        assert 0.5 < cd1_inv.total_mol < 3.0, f"CD1 inventory out of physical range: {cd1_inv.total_mol}"
+        assert 0.5 < cd1_inv.total_mol < 3.0, (
+            f"CD1 inventory out of physical range: {cd1_inv.total_mol}"
+        )
         # Strict benchmark tolerance
         dev = abs(cd1_inv.total_mol - ref) / ref
-        assert dev < 0.15, f"CD1 inventory {cd1_inv.total_mol:.4f} mol vs ref {ref:.4f} mol (dev {dev:.2%})"
+        assert dev < 0.15, (
+            f"CD1 inventory {cd1_inv.total_mol:.4f} mol vs ref {ref:.4f} mol (dev {dev:.2%})"
+        )
 
     def test_cd3_dominant_tritium_inventory(self, issi_inventory_result):
         """CD3 holds the largest fraction (> 75%) of total ISS-I inventory."""
         cd3_inv = issi_inventory_result.columns["CD3"]
         total_inv = issi_inventory_result.total_mol
         fraction = cd3_inv.total_mol / total_inv
-        assert fraction > 0.75, f"CD3 holds {fraction:.2%} of total inventory (expected > 75%)"
+        assert fraction > 0.75, (
+            f"CD3 holds {fraction:.2%} of total inventory (expected > 75%)"
+        )
 
     def test_liquid_phase_dominance(self, issi_inventory_result):
         """Liquid-phase inventory accounts for > 60% of total inventory across dominant columns."""
@@ -153,7 +165,9 @@ class TestWang2022ISSIInventory:
     def test_system_total_inventory_accuracy(self, issi_inventory_result):
         """Total ISS-I tritium inventory matches expected physical order (16.88 mol vs ref 26.32 mol, dev 35.9%)."""
         total = issi_inventory_result.total_mol
-        assert 14.0 < total < 30.0, f"Total inventory out of expected range: {total:.2f} mol"
+        assert 14.0 < total < 30.0, (
+            f"Total inventory out of expected range: {total:.2f} mol"
+        )
         assert issi_inventory_result.total_grams > 90.0
 
 
@@ -178,7 +192,9 @@ class TestWang2022ISSOInventory:
         cd3_inv = isso_inventory_result.columns["CD3"]
         ref_cd3 = self.REF_TOTALS["CD3"]
         dev = abs(cd3_inv.total_mol - ref_cd3) / ref_cd3
-        assert dev < 0.25, f"CD3 inventory {cd3_inv.total_mol:.4f} mol vs ref {ref_cd3:.4f} mol (dev {dev:.2%})"
+        assert dev < 0.25, (
+            f"CD3 inventory {cd3_inv.total_mol:.4f} mol vs ref {ref_cd3:.4f} mol (dev {dev:.2%})"
+        )
 
     @pytest.mark.xfail(strict=False, reason=KNOWN_ISSUES_ISSO["CD1"])
     def test_isso_cd1_inventory_standard_condition(self, isso_inventory_result):
@@ -187,7 +203,9 @@ class TestWang2022ISSOInventory:
         ref_cd1 = self.REF_TOTALS["CD1"]
         assert cd1_inv.total_mol > 0.0
         dev = abs(cd1_inv.total_mol - ref_cd1) / ref_cd1
-        assert dev < 0.25, f"CD1 inventory {cd1_inv.total_mol:.4f} mol vs ref {ref_cd1:.4f} mol (dev {dev:.2%})"
+        assert dev < 0.25, (
+            f"CD1 inventory {cd1_inv.total_mol:.4f} mol vs ref {ref_cd1:.4f} mol (dev {dev:.2%})"
+        )
 
     @pytest.mark.xfail(strict=False, reason=KNOWN_ISSUES_ISSO["CD2"])
     def test_isso_cd2_inventory_standard_condition(self, isso_inventory_result):
@@ -196,11 +214,15 @@ class TestWang2022ISSOInventory:
         ref_cd2 = self.REF_TOTALS["CD2"]
         assert cd2_inv.total_mol > 0.0
         dev = abs(cd2_inv.total_mol - ref_cd2) / ref_cd2
-        assert dev < 0.25, f"CD2 inventory {cd2_inv.total_mol:.4f} mol vs ref {ref_cd2:.4f} mol (dev {dev:.2%})"
+        assert dev < 0.25, (
+            f"CD2 inventory {cd2_inv.total_mol:.4f} mol vs ref {ref_cd2:.4f} mol (dev {dev:.2%})"
+        )
 
     def test_isso_liquid_phase_dominance(self, isso_inventory_result):
         """Liquid phase accounts for > 50% of inventory in dominant columns."""
         for name in ("CD2", "CD3"):
             col_inv = isso_inventory_result.columns[name]
             liq_frac = col_inv.total_liquid_mol / col_inv.total_mol
-            assert liq_frac > 0.50, f"{name}: liquid fraction {liq_frac:.2%} expected > 50%"
+            assert liq_frac > 0.50, (
+                f"{name}: liquid fraction {liq_frac:.2%} expected > 50%"
+            )

@@ -8,12 +8,17 @@ liquid at the normal boiling point of D2 (23.661 K).
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
-import casadi as ca
 import numpy as np
 
 from h2iso._data import data_path
 from h2iso.species import SPECIES_ORDER
+
+if TYPE_CHECKING:
+    import casadi as ca
+else:
+    from h2iso._casadi import ca
 
 
 def _load_enthalpy_params() -> dict:

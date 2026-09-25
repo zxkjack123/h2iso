@@ -139,6 +139,10 @@ class TestResolvePropertyParams:
 class TestPropertyInSolve:
     """Verify that property overrides affect the column solution."""
 
+    @pytest.fixture(autouse=True)
+    def _require_casadi(self):
+        pytest.importorskip("casadi", reason="runs the CasADi column solver")
+
     def test_souers_C1_shift_affects_temperature(self, monkeypatch):
         """Increasing C1 (higher vapor pressure) should lower T_top."""
         from h2iso.mesh.column import Column, ColumnSpec

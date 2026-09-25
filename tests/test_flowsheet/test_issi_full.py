@@ -23,7 +23,9 @@ pytest.importorskip("casadi")
 from h2iso.flowsheet.schema import load_flowsheet
 from h2iso.flowsheet.solver import SequentialModularSolver
 
-FIXTURE_PATH = Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_issi.json"
+FIXTURE_PATH = (
+    Path(__file__).parent.parent / "fixtures" / "wang2022" / "wang2022_issi.json"
+)
 
 
 @pytest.fixture(scope="module")
@@ -134,7 +136,9 @@ class TestISSIFullMassBalance:
     def test_mass_balance(self, issi_full_result):
         """Total feed flow = total product flow within 0.1%."""
         config = load_flowsheet(FIXTURE_PATH)
-        total_feed = sum(f.flow for f in config.feeds)  # TEP(22.32) + NBI(80.357) = 102.677 mol/h
+        total_feed = sum(
+            f.flow for f in config.feeds
+        )  # TEP(22.32) + NBI(80.357) = 102.677 mol/h
 
         # In ISS-I: products are CD2_distillate, CD3_bottoms, CD4_distillate, CD4_bottoms
         cd2_d = issi_full_result.streams.get("CD2_distillate")

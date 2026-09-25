@@ -20,14 +20,14 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add src to path
 H2ISO_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(H2ISO_ROOT / "src"))
 
-from h2iso.codegen.modelica_0d import (
+from h2iso.codegen.modelica_0d import (  # noqa: E402
     export_modelica_package,
     generate_cycle_override_file,
     generate_override_from_results,
@@ -49,8 +49,16 @@ def generate_from_solver(fixtures_dir: Path) -> tuple[dict, dict]:
             bot = solver.streams.get(f"{col_name}_bottoms")
             top_flow = dist.flow if dist else 1.0
             bot_flow = bot.flow if bot else 1.0
-            top_comp = {sp: float(dist.composition[i]) for i, sp in enumerate(SPECIES_ORDER)} if dist else {}
-            bot_comp = {sp: float(bot.composition[i]) for i, sp in enumerate(SPECIES_ORDER)} if bot else {}
+            top_comp = (
+                {sp: float(dist.composition[i]) for i, sp in enumerate(SPECIES_ORDER)}
+                if dist
+                else {}
+            )
+            bot_comp = (
+                {sp: float(bot.composition[i]) for i, sp in enumerate(SPECIES_ORDER)}
+                if bot
+                else {}
+            )
             data["columns"][col_name] = {
                 "actual_results": {
                     "top_flow_mol_h": top_flow,
@@ -70,20 +78,28 @@ def generate_from_solver(fixtures_dir: Path) -> tuple[dict, dict]:
     isso_file = fixtures_dir / "wang2022_isso.json"
     print(f"  -> Solving ISS-O flowsheet: {isso_file.name}")
     isso_config = load_flowsheet(isso_file)
-    isso_solver = SequentialModularSolver(isso_config, method="wegstein", continuation_substeps=3)
+    isso_solver = SequentialModularSolver(
+        isso_config, method="wegstein", continuation_substeps=3
+    )
     isso_res = isso_solver.solve(max_iter=50, tol=1e-4)
     if not isso_res.converged:
-        print("[WARNING] ISS-O solve did not strictly converge. Using last iteration state.")
+        print(
+            "[WARNING] ISS-O solve did not strictly converge. Using last iteration state."
+        )
     isso_data = _extract_flowsheet_data(isso_solver, isso_res)
 
     # Solve ISS-I (4 columns)
     issi_file = fixtures_dir / "wang2022_issi.json"
     print(f"  -> Solving ISS-I flowsheet: {issi_file.name}")
     issi_config = load_flowsheet(issi_file)
-    issi_solver = SequentialModularSolver(issi_config, method="wegstein", continuation_substeps=3)
+    issi_solver = SequentialModularSolver(
+        issi_config, method="wegstein", continuation_substeps=3
+    )
     issi_res = issi_solver.solve(max_iter=50, tol=1e-4)
     if not issi_res.converged:
-        print("[WARNING] ISS-I solve did not strictly converge. Using last iteration state.")
+        print(
+            "[WARNING] ISS-I solve did not strictly converge. Using last iteration state."
+        )
     issi_data = _extract_flowsheet_data(issi_solver, issi_res)
 
     return issi_data, isso_data

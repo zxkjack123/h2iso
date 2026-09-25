@@ -20,7 +20,7 @@ jobs:
             - name: Install deps
               run: |
                   python -m pip install --upgrade pip
-                  pip install -e ".[dev]"
+                  pip install -c constraints/ci-3.12.txt -e ".[dev]"
 
             - name: Lint
               run: |
@@ -41,7 +41,13 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                python-version: ["3.9", "3.11", "3.12"]
+                include:
+                    - python-version: "3.9"
+                      constraints: constraints/py3.9.txt
+                    - python-version: "3.11"
+                      constraints: constraints/py3.11.txt
+                    - python-version: "3.12"
+                      constraints: constraints/ci-3.12.txt
 
         steps:
             - uses: actions/checkout@v4
@@ -54,7 +60,7 @@ jobs:
             - name: Install dependencies
               run: |
                   python -m pip install --upgrade pip
-                  pip install -c constraints/ci-3.12.txt -e ".[dev,solver]"
+                  pip install -c ${{ matrix.constraints }} -e ".[dev,solver]"
 
             - name: Lint with ruff
               run: ruff check src/ tests/
@@ -75,7 +81,7 @@ jobs:
             - name: Install with solver
               run: |
                   python -m pip install --upgrade pip
-                  pip install -c constraints/ci-3.12.txt -e ".[dev,solver]"
+                  pip install -c constraints/py3.11.txt -e ".[dev,solver]"
 
             - name: Run all tests including solver (with coverage)
               run: |
@@ -137,7 +143,7 @@ jobs:
             - name: Install with dev deps
               run: |
                   python -m pip install --upgrade pip
-                  pip install -e ".[dev]"
+                  pip install -c constraints/ci-3.12.txt -e ".[dev,solver]"
 
             - name: Run performance benchmarks
               run: |
@@ -167,10 +173,8 @@ jobs:
 
             - name: Install OpenModelica
               run: |
-                  for keyfile in deb.openmodelica.org.gpg.key build.openmodelica.org.key; do
-                      wget -qO- "https://openmodelica.org/$keyfile" \
-                          | sudo gpg --dearmor -o /etc/apt/keyrings/openmodelica.gpg && break
-                  done
+                  curl -fsSL https://build.openmodelica.org/apt/openmodelica.asc \
+                      | sudo gpg --dearmor -o /etc/apt/keyrings/openmodelica.gpg
                   echo "deb [signed-by=/etc/apt/keyrings/openmodelica.gpg] https://build.openmodelica.org/apt $(lsb_release -cs) release" \
                       | sudo tee /etc/apt/sources.list.d/openmodelica.list
                   sudo apt-get update
@@ -179,7 +183,7 @@ jobs:
             - name: Install h2iso with dev deps
               run: |
                   python -m pip install --upgrade pip
-                  pip install -e ".[dev]"
+                  pip install -c constraints/ci-3.12.txt -e ".[dev,solver]"
 
             - name: Run Modelica E2E pytest suite
               run: pytest tests/e2e/ -v --override-ini="addopts=--benchmark-disable"

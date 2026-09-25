@@ -25,7 +25,9 @@ def run_omc_script(script_name: str, work_dir: Path) -> bool:
         if default_omc.exists():
             omc = str(default_omc)
         else:
-            print("[ERROR] OpenModelica 'omc' compiler was not found on PATH or default directory.")
+            print(
+                "[ERROR] OpenModelica 'omc' compiler was not found on PATH or default directory."
+            )
             return False
 
     script_path = work_dir / script_name
@@ -66,9 +68,13 @@ def main():
     plot_script = base_dir / "plot_results.py"
     if plot_script.exists():
         print("[INFO] Generating trajectory visualization plots...")
-        subprocess.run([sys.executable, str(plot_script)], cwd=str(base_dir), check=True)
+        subprocess.run(
+            [sys.executable, str(plot_script)], cwd=str(base_dir), check=True
+        )
 
-    print("\n[DONE] Generic_ISS & Generic_ISS_Adapters integration verification in example_model.mo finished successfully.")
+    print(
+        "\n[DONE] Generic_ISS & Generic_ISS_Adapters integration verification in example_model.mo finished successfully."
+    )
 
 
 if __name__ == "__main__":

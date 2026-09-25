@@ -1,0 +1,218 @@
+{
+  "schema": "repair-preflight-packet/1",
+  "task": "PM4012 — h2iso main CI repair (T1 deterministic CI / optional casadi import / lint; T2 real-solver reproduction + full regression)",
+  "repo": "/home/gw/opt/h2iso",
+  "baseline": {
+    "head": "49765f11e241da2ca9bee06837528deb1b824101",
+    "dirty": 0,
+    "checkpoint": "none",
+    "falsifier_run": "FR-PM4012-49765f1-20260924T0248Z"
+  },
+  "same_class_matrix": {
+    "searched": true,
+    "search": {
+      "bounded": true,
+      "rounds": 4,
+      "reason": "four falsifier probes (C1/C2/C3/C4) plus a repo-wide ruff scan and a full-ISS-O boundary probe"
+    },
+    "candidates": [
+      {
+        "id": "C1",
+        "same_class": true,
+        "family": "F-ci-import",
+        "discriminating_test": "python /tmp/opencode/falsifier_pm4012/c1_blocker.py  # block casadi via sys.meta_path then `import h2iso`; expects exit 0 after fix, exit 3 at baseline",
+        "verdict": "SURVIVED",
+        "observation": "baseline route: tests/test_species.py:3 -> src/h2iso/__init__.py:6 -> src/h2iso/inventory/__init__.py:10 -> src/h2iso/inventory/calculator.py:26 -> src/h2iso/mesh/__init__.py:3 -> src/h2iso/mesh/column.py:22 `import casadi as ca`; with casadi blocked ALL 26 fast-test modules fail collection"
+      },
+      {
+        "id": "C2",
+        "same_class": true,
+        "family": "F-ci-env",
+        "discriminating_test": "pip install --dry-run --python-version 3.9 -c constraints/ci-3.12.txt -e '.[dev,solver]'  # expects resolution success after per-version split",
+        "verdict": "SURVIVED",
+        "observation": "constraints/ci-3.12.txt:35 numpy==2.4.6 (requires >=3.11) applied to the py3.9 matrix leg -> ResolutionImpossible"
+      },
+      {
+        "id": "C3-simple",
+        "same_class": true,
+        "family": "F-solver-boundary",
+        "discriminating_test": "python /tmp/opencode/falsifier_pm4012/c3_actual_solver.py  # 15-stage single CD2 column; min(x) vs Stream threshold -1e-8",
+        "verdict": "KILLED",
+        "observation": "min(x)=-2.504e-14 (brf default) / +1.0e-14 (brf=0); 0 entries < -1e-8; Stream ACCEPTED — but this covers ONE simple column only"
+      },
+      {
+        "id": "C3-ISSO",
+        "same_class": true,
+        "family": "F-solver-boundary",
+        "discriminating_test": "python /tmp/opencode/falsifier_pm4012/c3isso_boundary_probe.py  # REAL full ISS-O flowsheet (3 columns x 60 stages + recycle); min composition across every column profile and every stream vs -1e-8",
+        "verdict": "UNDECIDABLE",
+        "observation": "REAL full ISS-O reaches min composition = -5.099508e-09 (CD1.x_profile) / -4.475e-09 (CD2.x_profile); 0 entries < -1e-8 but margin to the -1e-8 Stream rejection threshold is only ~2x, vs ~4.6 orders in the C3-simple probe. The ISSO boundary scenario is therefore NOT excluded by C3-simple"
+      },
+      {
+        "id": "C4",
+        "same_class": true,
+        "family": "F-ci-env",
+        "discriminating_test": "curl -s -o /dev/null -w '%{http_code}' https://openmodelica.org/deb.openmodelica.org.gpg.key https://openmodelica.org/build.openmodelica.org.key  # expects 404 at baseline; candidate replacement returns 200",
+        "verdict": "SURVIVED",
+        "observation": "both .github/workflows/ci.yml:170-173 key URLs return HTTP 404 (body saved as 50484c84.key/81d0084c.key, 279 B HTML); dearmored keyring is empty -> apt NO_PUBKEY 64CE41328E03B30A, apt-get update exit=100. Verified replacement https://build.openmodelica.org/apt/openmodelica.asc -> 200 + 'BEGIN PGP PUBLIC KEY BLOCK' (77 lines)"
+      },
+      {
+        "id": "LINT",
+        "same_class": true,
+        "family": "F-ci-lint",
+        "discriminating_test": "ruff check src/ tests/ && ruff format --check src/ tests/  # expects exit 0 both after fix",
+        "verdict": "SURVIVED",
+        "observation": "ruff check -> 8 errors (6x I001, 1x E402, 1x F401; 7 auto-fixable); ruff format --check -> 13 files would be reformatted. Job .github/workflows/ci.yml:25-28 fails at `ruff check` and never reaches `ruff format --check`"
+      }
+    ]
+  },
+  "empty_justification": {
+    "present": false,
+    "reason": "",
+    "counter_case": ""
+  },
+  "impact_analysis": {
+    "upstream": [
+      "GitHub Actions CI on asipp-neutronics/h2iso (run 35761784831) and zxkjack123/h2iso (run 35761779052)",
+      "Python packaging / wheel build (test-wheel job)",
+      "tricys L3+ which imports h2iso as the L1/L2 layer"
+    ],
+    "downstream": [
+      "CI jobs: lint-and-fast-test, test(3.9/3.11/3.12), test-solver, test-wheel, benchmark, e2e-modelica, security-audit",
+      "Every consumer that imports h2iso without the optional [solver] extra"
+    ],
+    "affected": [
+      "src/h2iso/_casadi.py (NEW)",
+      "src/h2iso/mesh/column.py",
+      "src/h2iso/mesh/stage.py",
+      "src/h2iso/mesh/enthalpy.py",
+      "src/h2iso/inventory/calculator.py",
+      "tests/error_paths/test_solver_failures.py",
+      "tests/test_uq/test_integration.py",
+      "tests/test_uq/test_properties.py",
+      "tests/e2e/test_modelica_cycle_integration.py",
+      "tests/modelica/generate_overrides.py",
+      "tests/modelica/scalar_1d_mapping/plot_results.py",
+      "tests/modelica/scalar_1d_mapping/run_simulation.py",
+      "tests/modelica/vector_5d_mapping/plot_results.py",
+      "tests/modelica/vector_5d_mapping/run_simulation.py",
+      "tests/test_codegen/test_modelica_0d.py",
+      "src/h2iso/codegen/modelica_0d.py",
+      "src/h2iso/inventory/models.py",
+      "tests/test_flowsheet/test_issi_full.py",
+      "tests/test_inventory/test_column_inventory.py",
+      "tests/test_inventory/test_wang2022_inventory_benchmark.py",
+      "tests/test_optional_solver.py (NEW)",
+      "tests/test_ci_configuration.py (NEW)",
+      "constraints/py3.9.txt (NEW)",
+      "constraints/py3.11.txt (NEW)",
+      "constraints/py311.txt (NEW)",
+      ".github/workflows/ci.yml"
+    ],
+    "protected_boundary": [
+      "solver numerics: IPOPT options, bound_relax_factor, continuation_substeps, tear tolerance",
+      "physics tolerances and reference data: tests/fixtures/wang2022/*.json, Wang 2022 Table 11/12/13 values",
+      "known-issue xfail markers: KNOWN_ISSUES_ISSI / KNOWN_ISSUES_ISSO in tests/test_inventory/test_wang2022_inventory_benchmark.py (must NOT be added to or converted to skip)",
+      "existing assertion thresholds in tests/** (must not be relaxed to make a test pass)",
+      "tests/fixtures/wang2022/wang2022_isso.json (reference data, read-only)"
+    ]
+  },
+  "budget": {
+    "dimensions": {
+      "rounds": {"source": "finite", "max": 2},
+      "candidates": {"source": "finite", "max": 6},
+      "token": {"source": "existing", "ref": "skills/autonomous-exploration/SKILL.md"},
+      "wall_minutes": {"source": "finite", "max": 240}
+    }
+  },
+  "categories": [
+    {"id": "C1", "category": "blocker", "ref": null, "note": "casadi eager import at package import"},
+    {"id": "C2", "category": "blocker", "ref": null, "note": "shared py3.12 constraints applied to py3.9 leg"},
+    {"id": "C4", "category": "blocker", "ref": null, "note": "two OpenModelica apt key URLs 404"},
+    {"id": "LINT", "category": "blocker", "ref": null, "note": "ruff check 8 errors + 13 unformatted files"},
+    {"id": "C3-ISSO", "category": "blocker", "ref": null, "note": "full-ISS-O negative-composition boundary remains open; must be reproduced on the real fixture, not waived by the simple probe"},
+    {"id": "RUFF-PIN", "category": "optimization", "ref": null, "note": "lint job installs unpinned ruff (latest) while other legs pin ruff==0.15.13 -> version skew; pin for determinism"}
+  ],
+  "cross_repo": {
+    "planned_allowed_paths": ["/home/gw/opt/h2iso/"],
+    "actual_target_workspace": "/home/gw/opt/h2iso",
+    "cross_repo": false,
+    "handoff": null,
+    "in_place_edit": false
+  },
+  "tool_availability": {
+    "by_capability": true,
+    "session_metadata": {
+      "model": "deepseek-flash",
+      "python": "3.12.3",
+      "casadi": "3.8.0",
+      "ruff": "0.16.5",
+      "omc": "1.27.0",
+      "uv": "0.12.0",
+      "conda": "26.5.3",
+      "docker": "29.8.0",
+      "python39_available": false,
+      "python311_available": false
+    },
+    "config_default": {
+      "python": "3.9-3.12 (pyproject requires-python >=3.9)",
+      "ruff": "0.15.13 (constraints/ci-3.12.txt)"
+    },
+    "config_as_authority": false,
+    "contradictions": [],
+    "precedence_events": [
+      {"field": "ruff", "winner": "session", "detail": "session ruff 0.16.5 (unpinned lint job) vs constraints ruff 0.15.13; recorded, not rejected"}
+    ]
+  },
+  "root_claim": {
+    "asserted": false,
+    "annotation": "no root-cause claim made — T2 root cause is an explicit precondition; the C3-simple KILLED verdict is NOT extended to the full ISS-O boundary (C3-ISSO is UNDECIDABLE)"
+  },
+  "acceptance_immutable": {
+    "frozen": [
+      "AC1: ruff check src/ tests/ exit 0",
+      "AC2: ruff format --check src/ tests/ exit 0",
+      "AC3: `import h2iso` succeeds with casadi blocked",
+      "AC4: CI fast-test subset passes with casadi blocked",
+      "AC5: py3.9 constraints resolve",
+      "AC6: OpenModelica apt install exits 0",
+      "AC7: default test suite green",
+      "AC8: benchmark job green",
+      "AC9: wheel clean smoke green",
+      "AC10: e2e-modelica green",
+      "AC11: full-ISS-O boundary reproduced and addressed on the REAL fixture",
+      "AC12: tests/test_optional_solver.py green (persistent optional-solver regression, RED before fix)",
+      "AC13: tests/test_ci_configuration.py green (persistent CI-config invariant regression, RED before fix)"
+    ],
+    "current": [
+      "AC1: ruff check src/ tests/ exit 0",
+      "AC2: ruff format --check src/ tests/ exit 0",
+      "AC3: `import h2iso` succeeds with casadi blocked",
+      "AC4: CI fast-test subset passes with casadi blocked",
+      "AC5: py3.9 constraints resolve",
+      "AC6: OpenModelica apt install exits 0",
+      "AC7: default test suite green",
+      "AC8: benchmark job green",
+      "AC9: wheel clean smoke green",
+      "AC10: e2e-modelica green",
+      "AC11: full-ISS-O boundary reproduced and addressed on the REAL fixture",
+      "AC12: tests/test_optional_solver.py green (persistent optional-solver regression, RED before fix)",
+      "AC13: tests/test_ci_configuration.py green (persistent CI-config invariant regression, RED before fix)"
+    ],
+    "mutated": false
+  },
+  "evidence_recovery": {
+    "closure": "currently_unknown",
+    "phase": "hypotheses",
+    "kind": "hypothesis_test",
+    "resources_accessible": true,
+    "user_only_reason": null,
+    "attempted": [
+      {"source": "repo_file", "access": "read_only_local", "result": "read src/h2iso/{__init__,mesh/*,inventory/calculator}.py import chain"},
+      {"source": "local_artifact", "access": "read_only_local", "result": "/tmp/opencode/falsifier_pm4012/* probes re-run (c1_blocker exit 3, c3isso_boundary min=-5.099508e-09)"},
+      {"source": "repo_file", "access": "read_only_local", "result": ".github/workflows/ci.yml + constraints/ci-3.12.txt read as ground truth"},
+      {"source": "session_history", "access": "read_only_local", "result": "local pytest of tests/test_flowsheet/test_isso_full.py: 10 passed in 574.21s (no assertion failure; runtime is the open risk)"}
+    ],
+    "hypotheses": []
+  }
+}
