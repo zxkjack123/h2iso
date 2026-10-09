@@ -317,6 +317,7 @@ class Column:
         opts = {
             "ipopt.max_iter": 3000,
             "ipopt.tol": 1e-8,
+            "ipopt.bound_relax_factor": 0.0,
             "ipopt.print_level": 0,
             "print_time": False,
             "ipopt.sb": "yes",

@@ -21,6 +21,20 @@ from h2iso.mesh.column import ColumnSpec
 from h2iso.mesh.continuation import ContinuationSolver
 
 
+def _mass_balance_ok(balance: float, z_i: float, F: float) -> bool:
+    """Per-component mass-balance acceptance criterion.
+
+    A component closes if ``|balance| <= max(atol, rtol * F * z_i)``
+    (``rtol = 1e-4``, ``atol = 1e-5 * F``).  The absolute floor covers
+    feed-absent and ppm/ppb-level non-zero feeds whose relative scale would fall
+    below IPOPT's ``tol`` (see ``tests/test_mesh/test_column.py`` for the
+    rationale and the anti-masking proof).
+    """
+    atol = 1e-5 * F
+    rtol = 1e-4 * F * z_i
+    return abs(balance) <= max(atol, rtol)
+
+
 @pytest.fixture
 def cd2_base_spec() -> ColumnSpec:
     """Wang 2022 CD2 column base spec: 15 stages."""
@@ -130,8 +144,10 @@ class TestContinuationN:
 
         for i in range(6):
             balance = D * x_D[i] + B * x_B[i] - F * z[i]
-            rel_err = abs(balance) / (F * max(z[i], 1e-10))
-            assert rel_err < 1e-4, f"Component {i} balance error = {rel_err:.2e}"
+            assert _mass_balance_ok(balance, z[i], F), (
+                f"Component {i} balance failed: balance={balance:.3e}, "
+                f"z_i={z[i]:.3e}, F={F:.3e}"
+            )
 
 
 class TestContinuationR:

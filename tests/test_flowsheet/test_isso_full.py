@@ -196,3 +196,29 @@ class TestISSOFullColumnResults:
                 N,
                 6,
             ), f"{name}: y_profile shape {cr.y_profile.shape}, expected ({N}, 6)"
+
+
+class TestISSOFullNonNegativity:
+    """PM4012 T2: real ISS-O profiles must satisfy the physical non-negativity bound.
+
+    Regression lock for the tolerance collision between IPOPT's default
+    ``bound_relax_factor`` (1e-8) and the ``Stream`` non-negativity
+    tolerance: every column ``x_profile``/``y_profile`` and every stream
+    composition must be ``>= 0.0`` (not merely inside the ``-1e-8``
+    acceptance band).  RED on stock IPOPT options (worst raw min
+    ``-9.999999999999942e-09``); GREEN once bound relaxation is disabled.
+    """
+
+    def test_columns_and_streams_nonnegative(self, isso_full_result):
+        for name, cr in isso_full_result.column_results.items():
+            x_min = float(cr.x_profile.min())
+            y_min = float(cr.y_profile.min())
+            assert x_min >= 0.0, f"{name} x_profile min={x_min:.3e} < 0.0"
+            assert y_min >= 0.0, f"{name} y_profile min={y_min:.3e} < 0.0"
+
+        assert isso_full_result.streams, "ISS-O produced no streams"
+        for stream_name, stream in isso_full_result.streams.items():
+            s_min = float(stream.composition.min())
+            assert s_min >= 0.0, (
+                f"stream {stream_name} composition min={s_min:.3e} < 0.0"
+            )
