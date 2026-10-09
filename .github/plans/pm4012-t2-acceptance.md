@@ -303,3 +303,19 @@ green_target_set_env311.log       column.py.keep  test_column.py.keep
 - **回归**：`/tmp/opencode/pm4012/t2c/matrix_env311_p1.log`（env311 完整默认套件，P1 最终树）。
 - **未解决（转 P2，单独立项）**：`column.py:278-282` 冷凝器级物料平衡漏进料项（`feed_stage=1` 静默丢弃整股进料）。
 - **未** commit / push / PM 写（截至本节撰写）。
+
+---
+
+## 12. 三版本完整矩阵（P1 最终树，2026-10-09 追加）
+
+commits: `8925e99`（T1）+ `9029aa9`（T2+P1）；workspace 干净。
+
+| 环境 | 解释器 | 命令 | 结果 | exit |
+|------|--------|------|------|------|
+| py3.9 | 3.9.25 | `pytest tests/ -q` | 529 passed, 1 skipped, 3 xfailed (18:35) | 0 |
+| py3.11 | 3.11.12 | `pytest tests/ -q` | 529 passed, 1 skipped, 3 xfailed (20:55) | 0 |
+| py3.12 | 3.12.3 | `pytest tests/ -q` | 529 passed, 1 skipped, 3 xfailed (20:29) | 0 |
+
+三环境均 `casadi==3.7.2`。日志：`/tmp/opencode/pm4012/t2c/matrix_env{39,311,312}_p1.log`。
+
+**边界（如实）**：CI 精确红（`min<-1e-8`）本地未复现 = **UNDECIDABLE**；`nonneg` 回归依赖边界被精确 honor。
