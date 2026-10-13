@@ -1,8 +1,8 @@
 # PM4012 — h2iso main CI 修复与完整回归（T1 / T2）
 
 **Mode**: generate（plan）→ refine（`[REFINE-1]` / `[REFINE-2]`）
-**Status**: IN_PROGRESS (T2 + P1 判据完备化完成；待提交)
-**Phase 状态**: **T1 ✅ 完成**（commit `8925e99`，工作树 clean）｜**T2 ✅ 完成**（证据 `FR-PM4012-8925e99-T2-20260925T0612Z`；AC11/AC14 RED→GREEN；用户裁决 **方案 2**（≡ §12.6 Option A）后判据修正；**P1 判据完备化**已并入，见 §14）
+**Status**: IN_PROGRESS (T1 + T2/P1 + 扩围 MSL 修复完成；push 后 CI 8/9→待复验 9/9)
+**Phase 状态**: **T1 ✅ 完成**（commit `8925e99`）｜**T2 ✅ 完成**（commit `9029aa9`，含 P1 判据完备化）｜**扩围 ✅**（e2e-modelica 缺 MSL，用户授权；见 acceptance §13）｜三版本矩阵 ✅（529 passed × py3.9/3.11/3.12，exit 0）
 **Scope Mode**: HOLD（bug 修复；严格保持范围，不扩不缩）
 **Repo / workspace**: `/home/gw/opt/h2iso`（本仓，就地修复）
 **Baseline**: `HEAD=49765f11e241da2ca9bee06837528deb1b824101`，`dirty=0`，`checkpoint=none`

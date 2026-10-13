@@ -319,3 +319,47 @@ commits: `8925e99`（T1）+ `9029aa9`（T2+P1）；workspace 干净。
 三环境均 `casadi==3.7.2`。日志：`/tmp/opencode/pm4012/t2c/matrix_env{39,311,312}_p1.log`。
 
 **边界（如实）**：CI 精确红（`min<-1e-8`）本地未复现 = **UNDECIDABLE**；`nonneg` 回归依赖边界被精确 honor。
+
+---
+
+## 13. 扩围：e2e-modelica 缺 MSL 修复（2026-10-12，用户授权）
+
+**用户裁决（本轮原话）**：对「e2e-modelica 因 CI 缺 MSL 而红（非代码缺陷），如何处理？」选择 **「扩围修 MSL（推荐）」**。
+授权范围含：ci.yml 装 MSL + 本地容器验证 + 提交并 push + 重跑 CI 达 9/9。
+
+### 13.1 触发证据（push a12ce72 后的 CI）
+- asipp run `38213086074` / origin run `38213080252`：**8/9 job success**，仅 `e2e-modelica` failure。
+- `Install OpenModelica` **success**（T1 的 key 修复生效，omc 1.27.1 装上）；失败在 `Run Modelica E2E pytest suite`（7 tests）。
+- 错误（job 114691465337，存 `/tmp/opencode/pm4012/e2e_job.log`）：
+  `Error: Failed to load package Modelica (default) using MODELICAPATH /home/runner/.openmodelica/libraries/`、
+  `Base class Modelica.Icons.Record not found in scope HydrogenIsotope_H2`。
+- **归因**：apt `omc` 不含 Modelica 标准库(MSL)；该 job 从未安装 MSL。此前因 omc 装不上而失败，缺口被掩盖。
+  **非代码缺陷**（本地 MSL 存在时 e2e 全绿）。
+
+### 13.2 容器内 RED → 修复 → GREEN（ubuntu:24.04 noble，CI 同构；不 sudo 改主机）
+探针 `/tmp/opencode/pm4012/msl_probe.sh`：
+- **RED**：无 MSL 时 `loadModel(Modelica)` → `false` + `Failed to load package Modelica`（与 CI 逐字一致）。
+- **FIX**：`installPackage(Modelica)` → `true`，装 `Modelica 4.1.0+maint.om`（含 Complex、ModelicaServices）。
+- **GREEN**：`loadModel(Modelica)` → `true`；继承 `Modelica.Icons.Record` 的 record `checkModel` 通过。
+
+### 13.3 CI 全流程复现（`/tmp/opencode/pm4012/ci_e2e_replay.sh`）
+容器内按 ci.yml 逐步复现 e2e-modelica job（apt→omc→MSL→pip `-c ci-3.12.txt -e ".[dev,solver]"`→pytest→shell）：
+
+| 步骤 | 结果 |
+|------|------|
+| MSL 安装 + `loadModel` 校验 | `MSL_VERIFIED (loadModel=true)` |
+| `pytest tests/e2e/` | **8 passed**，`E2E_PYTEST_EXIT=0` |
+| `bash tests/e2e/test_tricys_init.sh` | `E2E_SHELL_EXIT=0` |
+| 总判定 | **CI_PARITY_GREEN** |
+
+日志：`/tmp/opencode/pm4012/ci_e2e_replay2.log`。
+**容器产物澄清（如实）**：首轮复现 shell 步 `exit 127`（`python: command not found`）——裸 ubuntu 容器无 `python` 别名；
+补 `ln -s python3 → python`（模拟 `actions/setup-python@v5`）后 exit 0。真实 CI 由 setup-python 提供 `python`，非缺陷。
+
+### 13.4 变更（test-first）
+- `tests/test_ci_configuration.py` 新增 `test_e2e_modelica_installs_modelica_standard_library`
+  （**RED** exit 1 → 修 ci.yml 后 **GREEN**；该文件 7 passed）。断言 e2e-modelica job 含
+  `installPackage(Modelica)` **且**有 `loadModel(Modelica)` 大声校验（防静默跳过）。
+- `.github/workflows/ci.yml` e2e-modelica job 新增 `Install Modelica Standard Library` 步骤（装 MSL + `grep -qx true` 硬校验）。
+- 未改 `src/` 生产代码；未改 `stream.py`/neg_tol；无新增 xfail/skip。
+- `ruff check` / `ruff format --check`（pin 0.15.13）exit 0；ci.yml YAML 解析通过，新步骤位于 `Install OpenModelica` 之后、`Install h2iso` 之前。

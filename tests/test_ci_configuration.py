@@ -8,7 +8,9 @@ network) and asserts that the CI determinism fixes stay in place:
 2. the ``test-solver`` job (3.11) uses the 3.11 constraints file;
 3. ``benchmark`` and ``e2e-modelica`` install the ``solver`` extra;
 4. the OpenModelica apt key comes from the verified URL, not the dead ones;
-5. the ``lint-and-fast-test`` job pins its dependencies for determinism.
+5. the ``lint-and-fast-test`` job pins its dependencies for determinism;
+6. the ``e2e-modelica`` job installs the Modelica Standard Library (apt ``omc``
+   alone does not ship it) and verifies it loaded.
 """
 
 from __future__ import annotations
@@ -166,4 +168,27 @@ def test_lint_job_pins_dependencies_for_determinism():
     assert "constraints/ci-3.12.txt" in block, (
         "lint-and-fast-test must consume constraints/ci-3.12.txt so its ruff "
         "version matches the pinned legs"
+    )
+
+
+def test_e2e_modelica_installs_modelica_standard_library():
+    """PM4012 expansion: e2e-modelica must install the MSL, not just ``omc``.
+
+    The apt ``omc`` package ships the compiler but *not* the Modelica Standard
+    Library.  Without it every generated record that extends
+    ``Modelica.Icons.Record`` fails to compile (CI: ``Error: Failed to load
+    package Modelica`` / ``Base class Modelica.Icons.Record not found``).
+    The install must additionally be verified loudly (``loadModel(Modelica)``
+    returning ``true``) so a failed download fails the job instead of being
+    silently skipped.
+    """
+    block = _job_block(_ci_text(), "e2e-modelica")
+
+    assert "installPackage(Modelica)" in block, (
+        "e2e-modelica must install the Modelica Standard Library via omc "
+        "installPackage(Modelica) — apt omc alone does not ship the MSL"
+    )
+    assert re.search(r"loadModel\(Modelica\)", block), (
+        "e2e-modelica must verify the MSL loaded (loadModel(Modelica)) so a "
+        "failed install fails the job loudly rather than silently"
     )
