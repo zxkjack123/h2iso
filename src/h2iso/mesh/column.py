@@ -276,10 +276,17 @@ class Column:
             # Drop last component (index Nc-1).
             for i in range(Nc - 1):
                 if j == 0:
-                    # Condenser: V[1]*y[1]_i = (L[0] + D)*x[0]_i
-                    # Under CMO: V[1] = (R+1)*D, L[0] = R*D
-                    # So: V[1]*y[1]_i - (R+1)*D*x[0]_i = 0
+                    # Condenser: V[1]*y[1]_i + F_0*z_i = (L[0] + D)*x[0]_i
+                    # Under CMO: V[1] = (R+1)*D and L[0] = R*D; if a feed
+                    # enters the condenser, _compute_flows already routes its
+                    # liquid contribution into L[0] (L[0] = R*D + q*F), so the
+                    # drum outflow (L[0] + D) stays consistent with the feed
+                    # term added below.
                     mb = V[1] * y_vars[1][i] - (L[0] + D) * x_vars[0][i]
+                    # Add feed if condenser is a feed stage
+                    if j in feed_map:
+                        for f_flow, f_z in feed_map[j]:
+                            mb = mb + f_flow * f_z[i]
                 elif j == N - 1:
                     # Reboiler: L[N-2]*x[N-2]_i - V[N-1]*y[N-1]_i - B*x[N-1]_i = 0
                     mb = (
