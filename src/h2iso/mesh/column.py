@@ -64,6 +64,24 @@ class ColumnSpec:
             raise ValueError(
                 f"distillate_to_feed must lie in (0, 1); got {self.distillate_to_feed}"
             )
+        # Feed stage range validation (PM4304).  An out-of-range stage is never
+        # visited by the per-stage material-balance loop, so the feed is
+        # silently dropped while still counted in the total feed flow: the
+        # column returns a wrong answer with a "Solve_Succeeded" status.
+        # Fail loudly at construction instead.
+        for stage in self._feed_stages():
+            if not (1 <= stage <= self.n_stages):
+                raise ValueError(
+                    f"feed stage {stage} is outside the valid range "
+                    f"1..{self.n_stages}; an out-of-range feed would be "
+                    "silently ignored"
+                )
+
+    def _feed_stages(self) -> list[int]:
+        """Stages of the feeds actually consumed (mirrors ``Column._get_feeds``)."""
+        if self.feeds is not None:
+            return [f.stage for f in self.feeds]
+        return [self.feed_stage]
 
 
 @dataclass
@@ -161,6 +179,13 @@ class Column:
         feed_map: dict[int, list[tuple[float, np.ndarray]]] = {}
         for f in feeds:
             j = f.stage - 1  # 0-indexed
+            if not (0 <= j < N):
+                # Defense in depth (PM4304): never silently drop a feed even if
+                # the spec was mutated after construction.
+                raise ValueError(
+                    f"feed stage {f.stage} is outside the valid range 1..{N}; "
+                    "an out-of-range feed would be silently ignored"
+                )
             feed_map.setdefault(j, []).append((f.flow, f.composition))
 
         L, V = self._compute_flows()

@@ -89,7 +89,20 @@ def run_h2iso_iss_i(
     # Load base ISS-I config and scale stages
     config = load_flowsheet(_FIXTURE_ISS_I)
     for col in config.columns:
-        col.n_stages = max(3, min(n_stages, col.n_stages))
+        new_n = max(3, min(n_stages, col.n_stages))
+        if new_n != col.n_stages:
+            # Scale feed positions proportionally when shrinking the column
+            # (same convention as flowsheet/sweep.py). Without this the original
+            # stages (e.g. 50/72 for a 90-stage column) fall outside 1..new_n,
+            # so the feeds would be dropped -- ColumnSpec now rejects such a
+            # spec loudly instead of silently ignoring the feed.
+            old_n = col.n_stages
+            scale = new_n / old_n
+            col.feed_positions = {
+                k: max(2, min(new_n - 1, int(v * scale)))
+                for k, v in col.feed_positions.items()
+            }
+        col.n_stages = new_n
     config.feeds[0].flow = total_mol_h
     config.feeds[0].composition = z
 

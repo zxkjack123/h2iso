@@ -281,6 +281,74 @@ class TestColumnSpecInputValidation:
                 distillate_to_feed=0.0,
             )
 
+    def test_feed_stage_below_range_rejected(self):
+        """PM4304: a feed stage below 1 must be rejected, not silently dropped.
+
+        An out-of-range stage is never visited by the stage material-balance
+        loop, so the feed is dropped while still counted in the total feed
+        flow -> a wrong answer with a ``Solve_Succeeded`` status.
+        """
+        with pytest.raises(ValueError, match="feed stage"):
+            ColumnSpec(
+                n_stages=10,
+                feed_stage=0,
+                feed_flow=100.0,
+                feed_composition=self._valid_feed(),
+                pressure=101325.0,
+                reflux_ratio=3.0,
+                distillate_to_feed=0.5,
+            )
+
+    def test_feed_stage_above_range_rejected(self):
+        """PM4304: a feed stage above ``n_stages`` must be rejected."""
+        with pytest.raises(ValueError, match="feed stage"):
+            ColumnSpec(
+                n_stages=10,
+                feed_stage=11,
+                feed_flow=100.0,
+                feed_composition=self._valid_feed(),
+                pressure=101325.0,
+                reflux_ratio=3.0,
+                distillate_to_feed=0.5,
+            )
+
+    def test_multifeed_stage_out_of_range_rejected(self):
+        """PM4304: an out-of-range ``FeedSpec.stage`` must be rejected too."""
+        from h2iso.mesh.column import FeedSpec
+
+        with pytest.raises(ValueError, match="feed stage"):
+            ColumnSpec(
+                n_stages=10,
+                feed_stage=5,  # legacy placeholder; feeds list is authoritative
+                feed_flow=0.0,
+                feed_composition=np.zeros(6),
+                pressure=101325.0,
+                reflux_ratio=3.0,
+                distillate_to_feed=0.5,
+                feeds=[
+                    FeedSpec(
+                        stage=99,
+                        flow=100.0,
+                        composition=self._valid_feed(),
+                    )
+                ],
+            )
+
+    def test_boundary_feed_stages_accepted(self):
+        """PM4304: the boundary stages 1 (condenser) and n_stages (reboiler) are
+        valid feed locations and must NOT be rejected."""
+        for stage in (1, 10):
+            spec = ColumnSpec(
+                n_stages=10,
+                feed_stage=stage,
+                feed_flow=100.0,
+                feed_composition=self._valid_feed(),
+                pressure=101325.0,
+                reflux_ratio=3.0,
+                distillate_to_feed=0.5,
+            )
+            assert spec.feed_stage == stage
+
 
 class TestEquilibratorUnitValidation:
     """Task 4.1: EquilibratorUnit rejects non-positive temperature."""
