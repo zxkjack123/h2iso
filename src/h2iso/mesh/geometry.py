@@ -234,6 +234,7 @@ class ColumnGeometry:
         return cls(
             column_type="packed",
             diameter_m=getattr(cfg, "inside_diameter_m", None),
+            hetp_m=getattr(cfg, "HETP_m", None),
             packing_height_m=getattr(cfg, "packing_height_m", None),
             packing_type=getattr(cfg, "packing_type", None),
             condenser_volume_m3=getattr(cfg, "condenser_volume_m3", None),

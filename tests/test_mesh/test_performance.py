@@ -307,3 +307,4 @@ class TestFromFlowsheetConfig:
         assert geom.diameter_m == 0.06
         assert geom.condenser_volume_m3 == 1e-3
         assert geom.reboiler_volume_m3 == 2e-4
+        assert geom.hetp_m == 0.05
