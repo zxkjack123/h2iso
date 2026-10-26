@@ -120,3 +120,36 @@ class TestDetectTearStreams:
         )
         tears = detect_tear_streams(config)
         assert tears == []
+
+
+class TestUnknownSpeciesWarning:
+    """Impurities in the feed JSON must not be dropped silently (A.3)."""
+
+    def _write(self, tmp_path, composition):
+        import json
+
+        doc = {
+            "feeds": {
+                "NBI_feed": {
+                    "total_flow_mol_h": 80.357,
+                    "composition_mole_fraction": composition,
+                }
+            }
+        }
+        path = tmp_path / "fs.json"
+        path.write_text(json.dumps(doc), encoding="utf-8")
+        return path
+
+    def test_impurity_keys_warn(self, tmp_path):
+        path = self._write(tmp_path, {"D2": 0.98, "DT": 0.02, "CO": 0.01, "He4": 0.005})
+        with pytest.warns(UserWarning, match="outside the 6-isotope core"):
+            config = load_flowsheet(path)
+        # the 6-species composition is renormalised over the isotopes only
+        assert config.feeds[0].composition.sum() == pytest.approx(1.0)
+        assert config.feeds[0].composition[3] == pytest.approx(0.98)
+
+    def test_pure_isotope_feed_silent(self, tmp_path, recwarn):
+        path = self._write(tmp_path, {"D2": 0.98, "DT": 0.02})
+        config = load_flowsheet(path)
+        assert not [w for w in recwarn if "6-isotope core" in str(w.message)]
+        assert config.feeds[0].composition[4] == pytest.approx(0.02)

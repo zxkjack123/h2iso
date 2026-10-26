@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -104,7 +105,7 @@ def load_flowsheet(path: str | Path) -> FlowsheetConfig:
     FlowsheetConfig
     """
     path = Path(path)
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
     # Parse feeds
@@ -114,6 +115,16 @@ def load_flowsheet(path: str | Path) -> FlowsheetConfig:
         comp_dict = fdata.get("composition_mole_fraction", {})
         for i, sp in enumerate(SPECIES_ORDER):
             comp[i] = comp_dict.get(sp, 0.0)
+        unknown = sorted(set(comp_dict) - set(SPECIES_ORDER))
+        if unknown:
+            warnings.warn(
+                f"feed '{name}': composition contains species outside the "
+                f"6-isotope core {unknown}; they are ignored here. Handle "
+                "impurities via h2iso.impurities (disposition layer) or "
+                "pre-process the feed composition.",
+                UserWarning,
+                stacklevel=2,
+            )
         # Normalize
         s = comp.sum()
         if s > 0:

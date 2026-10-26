@@ -1,0 +1,70 @@
+{
+  "source": {
+    "authors": "X. Wang et al.",
+    "title": "Hydrogen isotope inventory evaluation of hydrogen isotopes separation system of CFETR using Aspen Plus simulator",
+    "journal": "Fusion Engineering and Design",
+    "volume": 177,
+    "year": 2022,
+    "doi": "10.1016/j.fusengdes.2022.113078",
+    "tables_used": ["Table 1 (feed)", "Table 5 (column design)", "Table 8 (heat load/temperature)", "Table 9 (product compositions)"],
+    "model": "ISS-I (inner fuel cycle), CD2 column",
+    "impurity_extension": "Impurity extension: declared demonstration basis (1% CO + 0.5% N2) plus 0.5% He-4 for the top-vent demonstration. Impurity fractions are of the TOTAL feed; hydrogen-isotope fractions below are relative to the D2/DT sub-mixture (the 6-species column solve uses the renormalised D2/DT feed; impurities are handled by the impurity disposition layer, see h2iso.impurities)."
+  },
+  "feed": {
+    "name": "NBI",
+    "description": "Neutral Beam Injection exhaust gas, fed to ISS-I CD2 at stage 37, with trace impurities",
+    "total_flow_mol_h": 80.357,
+    "composition_mole_fraction": {
+      "H2": 0.0,
+      "HD": 0.0,
+      "D2": 0.98,
+      "HT": 0.0,
+      "DT": 0.02,
+      "T2": 0.0
+    },
+    "impurities": {
+      "CO": 0.01,
+      "N2": 0.005,
+      "He4": 0.005
+    },
+    "impurities_notes": "Declared demonstration basis: 1% CO + 0.5% N2 (fractions of the total feed). 0.5% He-4 added to exercise the non-condensable path. CO and N2 freeze out in the 23-25 K column (triple points 68.2 / 63.2 K); He-4 is supercritical (T_c = 5.2 K) and leaves with the top product. See the impurity disposition documentation sec. 3.3 for the corrected acceptance semantics.",
+    "temperature_K": null,
+    "pressure_Pa": 90000
+  },
+  "column": {
+    "name": "CD2",
+    "total_stages": 75,
+    "feed_stage": 37,
+    "reflux_ratio": 15,
+    "distillate_to_feed_ratio": 0.979,
+    "pressure_top_Pa": 90000,
+    "pressure_bottom_Pa": 100000,
+    "condenser_type": "Total_Condenser",
+    "inside_diameter_m": 0.06,
+    "condenser_volume_m3": 1.0e-3,
+    "reboiler_volume_m3": 2.0e-4,
+    "HETP_m": 0.05
+  },
+  "expected_impurity_behaviour": {
+    "He4": {
+      "status": "to_top",
+      "fraction_to_top": 1.0,
+      "note": "Non-condensable (K = inf in h2iso terms). Dilutes the top product by a relative ~He mole fraction."
+    },
+    "CO": {
+      "status": "frozen_out",
+      "fraction_to_top": 0.0,
+      "note": "T_tp = 68.16 K >> column window: solid. No published solubility in liquid hydrogen (literature gap) -> conservative fully-frozen default."
+    },
+    "N2": {
+      "status": "frozen_out",
+      "fraction_to_top": 0.0,
+      "dissolved_cap_ppm": 0.3,
+      "note": "T_tp = 63.15 K >> column window: solid. Dissolved trace capped at ~0.3 ppm of the liquid flow (published solubility in LH2 at 20 K)."
+    }
+  },
+  "acceptance_semantics": {
+    "original_claim": "impurities 99% leave via the top vent; top H2 purity change < 0.5%",
+    "corrected": "The 99%-to-top claim holds only for the helium isotopes. CO/CH4/N2 freeze out at 19-30 K (physical, not a model limitation) and must be reported as deposition risks. Verified: He -> top with dilution <= He feed fraction; CO/N2 -> frozen-out flags with warnings; baseline 6-species solve unchanged."
+  }
+}
