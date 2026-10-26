@@ -442,7 +442,10 @@ def liquid_holdup_packed_billet_schultes(
     u_v, u_v_flood, eps :
         Optional above-loading correction inputs: vapour velocity [m/s],
         its flooding value, and the packing void fraction.  When given,
-        ``h_L = h_L,pl + (h_L,fl - h_L,pl) * (u_v/u_v_flood)**13``.
+        ``h_L = h_L,pl + (h_L,fl - h_L,pl) * (u_v/u_v_flood)**13``.  When
+        ``u_v > u_v_flood`` the result is extrapolated beyond the
+        correlation's validity range: a ``UserWarning`` is emitted and the
+        returned value is **not** clipped or otherwise altered.
     rho_w, mu_w :
         Reference water properties for the flooding-holdup term.
 
@@ -468,6 +471,14 @@ def liquid_holdup_packed_billet_schultes(
     if u_v is not None and u_v_flood is not None and eps is not None:
         if not 0.0 < u_v_flood:
             raise ValueError("u_v_flood must be > 0")
+        if u_v > u_v_flood:
+            warnings.warn(
+                f"vapour velocity {u_v:.4g} m/s exceeds the Billet-Schultes "
+                f"flooding velocity {u_v_flood:.4g} m/s; the correlation is "
+                f"extrapolated beyond its validity range",
+                UserWarning,
+                stacklevel=2,
+            )
         h_fl = 0.3741 * eps * (mu_l * rho_w / (mu_w * rho_l)) ** 0.05
         h_l_s = h_l_pl + (h_fl - h_l_pl) * (u_v / u_v_flood) ** 13.0
         out["h_L_flood"] = h_fl

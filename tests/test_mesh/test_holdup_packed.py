@@ -489,3 +489,50 @@ class TestBridgeInputGuard:
                 bridge_holdup_to_inventory(
                     self._holdup(), self._geometry(hetp_m=bad), base=self._base()
                 )
+
+
+class TestBilletSchultesFloodingBoundary:
+    """Billet-Schultes above-flooding scope warning (F4).
+
+    The ``(u_v/u_v_flood)**13`` term is only defined up to the flooding
+    point; beyond it the correlation is extrapolated.  The guard warns
+    (strictly ``u_v > u_v_flood``) without clipping or altering the value.
+    """
+
+    U_L = 0.01
+    A_P = 250.0
+    RHO_L = 70.0
+    MU_L = 1.3e-5
+    C_H = 0.5
+    EPS = 0.95
+    U_V_FLOOD = 0.5
+
+    def _call(self, u_v):
+        return liquid_holdup_packed_billet_schultes(
+            self.U_L,
+            self.A_P,
+            self.RHO_L,
+            self.MU_L,
+            c_h=self.C_H,
+            u_v=u_v,
+            u_v_flood=self.U_V_FLOOD,
+            eps=self.EPS,
+        )
+
+    def test_above_flooding_warns(self):
+        with pytest.warns(UserWarning, match="validity range"):
+            self._call(1.3 * self.U_V_FLOOD)
+
+    def test_at_flooding_does_not_warn(self):
+        import warnings
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            self._call(self.U_V_FLOOD)
+
+    def test_within_range_does_not_warn(self):
+        import warnings
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            self._call(0.5 * self.U_V_FLOOD)
