@@ -163,6 +163,47 @@ class TestRachfordRiceExtended:
         with pytest.raises(ValueError, match="shape"):
             rachford_rice_extended(np.array([1.0]), np.array([1.0, 2.0]))
 
+    # --- all-liquid (bubble guard) contract ------------------------------
+    # Oracle: the classic solver short-circuits to exactly 0.0 whenever the
+    # bubble criterion sum(z_i K_i) <= 1 holds (see rachford_rice :211).
+
+    def test_subcooled_feed_is_all_liquid(self):
+        """Sub-cooled feed (sum z K < 1) must be all liquid, V == 0.0."""
+        z = np.array([0.5, 0.5])
+        K = np.array([0.3, 0.6])
+        assert float(np.sum(z * K)) < 1.0  # regime under test: sub-cooled
+        v, x, y = rachford_rice_extended(z, K)
+        assert v == 0.0
+        assert np.allclose(x, z)
+        assert not np.any(y)
+
+    def test_at_bubble_point_is_all_liquid(self):
+        """At the bubble point (sum z K == 1) the convention is V == 0.0."""
+        z = np.array([0.5, 0.5])
+        K = np.array([1.5, 0.5])
+        assert abs(float(np.sum(z * K)) - 1.0) <= 1e-15  # exactly on the bubble
+        v, x, y = rachford_rice_extended(z, K)
+        assert v == 0.0
+        assert np.allclose(x, z)
+        assert not np.any(y)
+
+    def test_all_liquid_agrees_with_classic(self):
+        """Fixed sub-cooled table: extended must equal classic exactly (0.0)."""
+        cases = [
+            (np.array([0.5, 0.5]), np.array([0.3, 0.6])),
+            (np.array([0.4, 0.6]), np.array([0.2, 0.7])),
+            (np.array([0.2, 0.8]), np.array([0.9, 0.5])),
+            (np.array([0.1, 0.9]), np.array([1.2, 0.3])),
+            (np.array([0.7, 0.3]), np.array([0.5, 0.8])),
+            (np.array([0.5, 0.3, 0.2]), np.array([1.5, 0.5, 0.2])),
+        ]
+        for z, K in cases:
+            assert np.all(np.isfinite(K))
+            assert float(np.sum(z * K)) < 1.0
+            v_ext = rachford_rice_extended(z, K)[0]
+            v_cls = rachford_rice(z, K)
+            assert v_ext == v_cls == 0.0
+
 
 class TestFeedChecks:
     """Feed-level thresholds from the A.2 process answers (in code)."""

@@ -337,8 +337,17 @@ def rachford_rice_extended(
     Returns
     -------
     (V, x, y) : (float, ndarray, ndarray)
-        Vapour fraction (0 <= V <= 1) and phase compositions.  For
-        ``K = inf`` components ``x = 0`` and ``y = z / V`` (requires
+        Vapour fraction (0 <= V <= 1) and phase compositions.  The endpoint
+        contract is explicit:
+
+        * all liquid (``V = 0``) -> ``(0.0, z.copy(), zeros_like(z))``.  This
+          is returned whenever there is no non-condensable fraction and the
+          bubble criterion ``sum(z_i K_i) <= 1`` holds; the ``sum(z_i K_i) == 1``
+          bubble point is resolved as all liquid **by convention** (the guard
+          is applied before the dew check).
+        * all vapour (``V = 1``) -> ``(1.0, zeros_like(z), z.copy())``.
+
+        For ``K = inf`` components ``x = 0`` and ``y = z / V`` (requires
         ``V > 0``; with ``Z_inf > 0`` this always holds).
     """
     z = np.asarray(z, dtype=np.float64)
@@ -358,6 +367,15 @@ def rachford_rice_extended(
 
     zf = z[~inf_mask]
     Kf = K[~inf_mask]
+
+    # Bubble check on the finite subset (mirrors the classic solver, which
+    # short-circuits to V = 0 when sum(z_i K_i) <= 1).  It must be tested
+    # BEFORE the dew check so that the sum(z K) == 1 bubble boundary is
+    # resolved as all-liquid by convention.  A non-condensable fraction
+    # (z_inf > 0) forces vapour, so the guard only applies when z_inf == 0.
+    sum_z_k = float(np.sum(zf * Kf)) if Kf.size else 0.0
+    if z_inf == 0.0 and sum_z_k <= 1.0:
+        return 0.0, z.copy(), np.zeros_like(z)
 
     def residual(V: float) -> float:
         return float(np.sum(zf * (Kf - 1.0) / (1.0 + V * (Kf - 1.0))) + z_inf / V)
