@@ -1,0 +1,307 @@
+{
+  "_schema": {
+    "version": "1.0",
+    "description": "Engineering prior database for HETP / overall efficiency of cryogenic hydrogen-isotope distillation columns. Not a physical constant table: every entry carries source, validity range and uncertainty. Primary source for most packing entries: L. Shere et al., Int. J. Hydrogen Energy 55 (2024) 319-338, Table 8 (DOI 10.1016/j.ijhydene.2023.10.282), source-reported as verified against the open-access PDF on 2026-10-08 (not re-verified in this repository).",
+    "entry_fields": {
+      "name": "canonical packing/tray name",
+      "aliases": "alternative spellings accepted by lookup_hetp()",
+      "kind": "'packing' | 'tray'",
+      "hetp_m": "representative height equivalent to a theoretical plate [m]",
+      "range_m": "[min, max] range reported by the source, when a range is given",
+      "source": "literature citation (short)",
+      "doi": "DOI or URL when available",
+      "evidence": "'primary-verified' | 'secondary' | 'design-assumption'",
+      "validity": "system, pressure and load range the value is valid for",
+      "notes": "free text, including conflicts between sources"
+    }
+  },
+  "_integration_note": {
+    "status": "experimental-integration",
+    "statement": "This database was imported into h2iso as an experimental integration. Content, provenance labels and DOIs have NOT been independently re-verified in this repository; entries sourced from third-party compilations are engineering priors, not calibrated or in-house measured values. Do not cite this file as validated physical data. Entries whose DOI could not be confirmed are stored with doi=null and the reason recorded in notes."
+  },
+  "packings": [
+    {
+      "name": "Generic cryo H/D/T design value",
+      "aliases": [
+        "default",
+        "generic"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.05,
+      "range_m": [
+        0.02,
+        0.08
+      ],
+      "source": "ITER ISS design baseline (adopted from TPL/JAERI H-D-T experiments); TSTA design value was also 50 mm; Barrow et al. 2025 used 66.7 mm",
+      "doi": null,
+      "evidence": "design-assumption",
+      "validity": "20-26 K, near-ambient pressure, small-diameter packed columns",
+      "notes": "Conservative engineering default. Literature spans 2-8 cm depending on packing; see individual entries. Not a physical constant. doi was a delivery-side placeholder ('...00000-placeholder-see-notes'), not a resolvable identifier: set to null and left unverified in this repository."
+    },
+    {
+      "name": "Spiral prismatic 2 x 2 mm (nitric-acid pickled)",
+      "aliases": [
+        "spiral prismatic",
+        "PNPI spiral prismatic"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.022,
+      "range_m": [
+        0.022,
+        0.022
+      ],
+      "source": "Shere et al. 2024 Table 8 (PNPI, refs [12,189]); lowest HETP reported in the compilation",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "primary-verified",
+      "validity": "H2-HD, 2.2 cm ID, 1.55 m packing, 120-900 kPa, ~20 K, 20 W @ 20 K",
+      "notes": "Nitric-acid pickling roughens the surface; best reported value in the field."
+    },
+    {
+      "name": "Heli-Pak 2 x 2.5 mm",
+      "aliases": [
+        "Heli-Pak 2x2.5",
+        "Helipak 2x2.5"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.029,
+      "range_m": [
+        0.029,
+        0.029
+      ],
+      "source": "Shere et al. 2024 Table 8 (Osaka Univ.; H2-HD-D2, 3.2 cm ID, 1.10 m, 38 stages)",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "secondary",
+      "validity": "H2-HD-D2, 17.5-20.5 K",
+      "notes": "Shere Table 8 footnote: this HETP value was provided by the packing manufacturer."
+    },
+    {
+      "name": "Helipak B (optimised)",
+      "aliases": [
+        "Helipak B",
+        "Helipak-B"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.02,
+      "range_m": [
+        0.019,
+        0.025
+      ],
+      "source": "ITER Task T332a (1995) Low-Inventory Cryogenic Distillation Tests, report INIS 27067242, verified from the report text 2026-10-09: 'a 30-mm column could achieve a 2.0 cm HETP with about 17% hold-up at a vapour velocity of around 11 cm/s'",
+      "doi": "",
+      "evidence": "primary-verified",
+      "validity": "17-50 mm ID, ~11 cm/s vapor velocity, 17% liquid loading",
+      "notes": "Recommended by the ITER low-inventory programme; ~24% less inventory per plate than Helipak C (TSTA 30 mm). 1.9 cm believed near the theoretical limit. Now primary-verified from the INIS report (2026-10-09)."
+    },
+    {
+      "name": "Helipak C",
+      "aliases": [
+        "Helipak-C",
+        "Heli-Pak C"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.055,
+      "range_m": [
+        0.047,
+        0.055
+      ],
+      "source": "ITER Task T332a (1996) Low-Inventory Cryogenic Distillation Tests, report INIS 28058166 (+ ITER ISS design basis), verified 2026-10-09: Helipak C 'HETP's in the vicinity of 5.5 cm'; 22 mm column measured 4.7 cm close to flooding",
+      "doi": "",
+      "evidence": "primary-verified",
+      "validity": "H-D-T / D2-DT, ~20 K, ITER ISS reference packing (before low-inventory programme)",
+      "notes": "The packing behind the 'ITER HETP = 5 cm' design number. Low-inventory programme replaced it with Helipak B (2.0 cm) for the high-tritium bottom section."
+    },
+    {
+      "name": "Dixon ring 3 x 3 mm",
+      "aliases": [
+        "Dixon 3x3",
+        "Dixon rings 3x3"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.045,
+      "range_m": [
+        0.03,
+        0.06
+      ],
+      "source": "Shere et al. 2024 Table 8 (JAERI/LANL/JET experiments, H-D-T and H2-D2, 1-2 cm ID)",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "primary-verified",
+      "validity": "H-D-T / H2-D2, 20-25 K, 40-200 kPa, 1-2 cm ID",
+      "notes": "Shere: 'Dixon ring packing provided the best combined performance in terms of low HETP and low pressure drop'. Individual studies report 3, 4, 5, 6 cm."
+    },
+    {
+      "name": "Dixon ring 1.5 x 1.5 mm",
+      "aliases": [
+        "Dixon 1.5x1.5",
+        "Dixon rings 1.5x1.5"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.045,
+      "range_m": [
+        0.03,
+        0.06
+      ],
+      "source": "Shere et al. 2024 Table 8 (JAERI/LANL/JET experiments)",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "primary-verified",
+      "validity": "H-D-T, 20-25 K, 1-2 cm ID",
+      "notes": "Mixtures with 3 x 3 mm are common; report as a range rather than a single value."
+    },
+    {
+      "name": "Heli-Pak 4.4 x 2.3 mm",
+      "aliases": [
+        "Heli-Pak 4.4x2.3",
+        "Helipak 4.4x2.3"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.05,
+      "range_m": [
+        0.04,
+        0.06
+      ],
+      "source": "Shere et al. 2024 Table 8 (LANL, H-D-T, 2.84/2.50 cm ID, 4.12/3.20 m packing, 183 stages)",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "primary-verified",
+      "validity": "H-D-T, 20-25 K, 103 kPa",
+      "notes": "Used in the widely cited 80-theoretical-stage holdup study (Iwai et al.)."
+    },
+    {
+      "name": "ICIT B7 structured packing",
+      "aliases": [
+        "B7",
+        "ICIT B7",
+        "B7 structured"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.065,
+      "range_m": [
+        0.065,
+        0.2
+      ],
+      "source": "Shere et al. 2024 Table 8 (ICIT Rm. Valcea, D2-nH2-oH2, 4.2 cm ID, 1.2 m, 22 stages, refs [192,193])",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "primary-verified",
+      "validity": "D2-nH2-oH2, 150-350 kPa",
+      "notes": "CONFLICT: Croitoru et al. 2004 (Nucl. Technol. Radiat. Prot. 19(2) 52-58, DOI 10.2298/NTRP0402052C) report HTU ~0.2 m for hydrogen / ~0.1 m for water on B7. Both numbers are recorded; the conflict has not been resolved in this repository - resolve against the original papers before use."
+    },
+    {
+      "name": "ICIT B5 structured packing",
+      "aliases": [
+        "B5",
+        "ICIT B5"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.055,
+      "range_m": [
+        0.055,
+        0.055
+      ],
+      "source": "Shere et al. 2024 Table 8 (ICIT Rm. Valcea, D2-nH2-oH2, 4.2 cm ID, 1.2 m, 22 stages)",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "primary-verified",
+      "validity": "D2-nH2-oH2, 150-350 kPa",
+      "notes": ""
+    },
+    {
+      "name": "Dixon ring & spiral ring (JET AGHS)",
+      "aliases": [
+        "JET Dixon",
+        "JET AGHS packing"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.06,
+      "range_m": [
+        0.06,
+        0.075
+      ],
+      "source": "Shere et al. 2024 Table 8 (JET Culham, H-D-T, 1.6/1.6/1.7/1.3 cm ID, 260 stages, ref [182])",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "primary-verified",
+      "validity": "H-D-T, 18-26 K, 100-121 kPa",
+      "notes": "Two values reported: 6 cm and 7.5 cm depending on column."
+    },
+    {
+      "name": "TSTA commercial random packing",
+      "aliases": [
+        "TSTA packing"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.05,
+      "range_m": [
+        0.05,
+        0.05
+      ],
+      "source": "Shere et al. 2024 Table 8 (TSTA, H-D-T, 310 stages, ref [11]); TSTA design basis 50 +/- 5 mm",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "primary-verified",
+      "validity": "H-D-T, 80-133 kPa",
+      "notes": "The value behind the generic 5 cm design number."
+    },
+    {
+      "name": "Ontario Hydro low-inventory packing",
+      "aliases": [
+        "Ontario Hydro",
+        "OHT packing"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.0205,
+      "range_m": [
+        0.0205,
+        0.0205
+      ],
+      "source": "Shere et al. 2024 Table 8 (Ontario Hydro Nuclear, D2-DT, 3.0 cm ID, 1.50 m, 73 stages, 24 K, 12 kPa, ref [177])",
+      "doi": "10.1016/j.ijhydene.2023.10.282",
+      "evidence": "primary-verified",
+      "validity": "D2-DT, 24 K, 12 kPa",
+      "notes": "Low-pressure / low-inventory operation."
+    },
+    {
+      "name": "Sulzer EX structured packing",
+      "aliases": [
+        "Sulzer EX",
+        "Sulzer"
+      ],
+      "kind": "packing",
+      "hetp_m": 0.025,
+      "range_m": [
+        0.02,
+        0.03
+      ],
+      "source": "JET WDS cryogenic distillation column design (Parracho et al., CCFE poster, IAEA conference)",
+      "doi": "",
+      "evidence": "design-assumption",
+      "validity": "60 mm ID upper section, 20-25 K, ~105 kPa, ~130 Pa/m pressure drop",
+      "notes": "Design assumption for a water-detritiation CD column - no direct hydrogen-isotope measurement found in the literature compilation (Shere et al. do not list Sulzer data)."
+    }
+  ],
+  "trays": [
+    {
+      "name": "ICIS bubble-cap tray",
+      "aliases": [
+        "bubble-cap",
+        "bell-shaped tray"
+      ],
+      "kind": "tray",
+      "hetp_m": null,
+      "range_m": null,
+      "source": "ICIS Rm. Valcea 1995, 'Determination of trays and ordered filling efficiency in the process of H2-HD distillation', in 25 Years of Activity in Cryogenics and Isotope Separation in Romania, INIS RN 28023555",
+      "doi": "",
+      "evidence": "secondary",
+      "validity": "H2-HD cryogenic distillation",
+      "notes": "Murphree efficiency 20-40%. This is the only public tray-efficiency measurement for H2-HD distillation found; weak evidence (conference proceedings)."
+    },
+    {
+      "name": "ICIS sieve tray",
+      "aliases": [
+        "sieve tray"
+      ],
+      "kind": "tray",
+      "hetp_m": null,
+      "range_m": null,
+      "source": "ICIS Rm. Valcea 1995, same as above",
+      "doi": "",
+      "evidence": "secondary",
+      "validity": "H2-HD cryogenic distillation",
+      "notes": "Murphree efficiency 20-80%."
+    }
+  ]
+}
