@@ -430,6 +430,9 @@ def column_impurity_disposition(
     """
     if feed_flow_mol_h <= 0:
         raise ValueError("feed_flow_mol_h must be > 0")
+    _require_non_negative_finite(feed_flow_mol_h, "feed_flow_mol_h")
+    if liquid_flow_mol_h is not None:
+        _require_non_negative_finite(liquid_flow_mol_h, "liquid_flow_mol_h")
     caps = dict(DEFAULT_SOLUBILITY_PPM)
     if solubility_ppm:
         caps.update(solubility_ppm)
@@ -437,6 +440,7 @@ def column_impurity_disposition(
 
     out = []
     for sp, frac in feed_composition.items():
+        _require_non_negative_finite(frac, f"feed impurity fraction {sp!r}")
         if frac <= 0:
             continue
         if sp not in IMPURITY_ORDER:

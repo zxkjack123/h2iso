@@ -27,6 +27,7 @@ from h2iso.impurities import (
     N_ALL_SPECIES,
     SolidPhaseError,
     check_feed_impurities,
+    column_impurity_disposition,
     has_solid_phase,
     is_non_condensable,
     kvalue_impurity,
@@ -372,3 +373,47 @@ class TestFeedCheckInputValidation:
         assert [a.code for a in check_feed_impurities({"He4": 0.0})] == [
             "NO_IMPURITIES"
         ]
+
+
+class TestDispositionInputValidation:
+    """T-3.2: illegal disposition inputs are rejected, zero stays a skip.
+
+    ``column_impurity_disposition`` previously let ``NaN`` straight through
+    (``nan <= 0`` is False) and returned an ``ImpurityDisposition`` carrying a
+    ``nan`` molar flow; a ``nan`` carrier flow poisoned the dissolved-trace cap
+    in the same way.
+    """
+
+    T_MIN, T_MAX = 23.5, 24.9
+
+    def test_disposition_nan_fraction_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            column_impurity_disposition(
+                {"He4": float("nan")}, 10.0, self.T_MIN, self.T_MAX
+            )
+
+    def test_disposition_negative_fraction_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            column_impurity_disposition({"He4": -0.1}, 10.0, self.T_MIN, self.T_MAX)
+
+    def test_disposition_feed_flow_nan_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            column_impurity_disposition(
+                {"He4": 0.01}, float("nan"), self.T_MIN, self.T_MAX
+            )
+
+    def test_disposition_liquid_flow_nan_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            column_impurity_disposition(
+                {"He4": 0.01},
+                10.0,
+                self.T_MIN,
+                self.T_MAX,
+                liquid_flow_mol_h=float("nan"),
+            )
+
+    def test_disposition_zero_fraction_skipped(self):
+        assert (
+            column_impurity_disposition({"He4": 0.0}, 10.0, self.T_MIN, self.T_MAX)
+            == []
+        )
