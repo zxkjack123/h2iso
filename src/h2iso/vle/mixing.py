@@ -25,7 +25,7 @@ from h2iso.vle.souers import pvap
 def _load_bip() -> np.ndarray:
     """Load BIP matrix from JSON."""
     with data_path("parameters", "bip.json") as path:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
     return np.array(data["kij"], dtype=np.float64)
 
@@ -311,3 +311,94 @@ def _validate_composition(x: np.ndarray) -> None:
     total = np.sum(x)
     if abs(total - 1.0) > 0.01:
         raise ValueError(f"Mole fractions sum to {total}, expected ~1.0")
+
+
+def rachford_rice_extended(
+    z: np.ndarray, K: np.ndarray
+) -> tuple[float, np.ndarray, np.ndarray]:
+    """Rachford-Rice allowing ``K = +inf`` (non-condensable components).
+
+    Impurity extension: He-3 / He-4 are supercritical in the ISS window and are
+    carried as ``K = inf``.  Such components go **entirely to the vapour
+    phase**: with ``Z_inf`` their total feed fraction, the vapour fraction
+    must satisfy ``V >= Z_inf``, and the residual becomes
+
+        h(V) = sum_finite z_i (K_i - 1) / (1 + V (K_i - 1)) + Z_inf / V
+
+    which is strictly decreasing in ``V`` on ``(Z_inf, 1]``.
+
+    Parameters
+    ----------
+    z : ndarray
+        Feed mole fractions (any length; need not be the 6-species set).
+    K : ndarray
+        K-values; may contain ``inf`` (and must not contain ``nan``).
+
+    Returns
+    -------
+    (V, x, y) : (float, ndarray, ndarray)
+        Vapour fraction (0 <= V <= 1) and phase compositions.  For
+        ``K = inf`` components ``x = 0`` and ``y = z / V`` (requires
+        ``V > 0``; with ``Z_inf > 0`` this always holds).
+    """
+    z = np.asarray(z, dtype=np.float64)
+    K = np.asarray(K, dtype=np.float64)
+    if z.shape != K.shape:
+        raise ValueError(f"z and K must have the same shape; got {z.shape}, {K.shape}")
+    if np.any(np.isnan(K)):
+        raise ValueError("K contains NaN")
+    if np.any(z < 0):
+        raise ValueError("feed mole fractions must be non-negative")
+
+    inf_mask = ~np.isfinite(K)
+    z_inf = float(np.sum(z[inf_mask]))
+    if z_inf >= 1.0 - 1e-12:
+        # everything non-condensable: all vapour
+        return 1.0, np.zeros_like(z), z.copy()
+
+    zf = z[~inf_mask]
+    Kf = K[~inf_mask]
+
+    def residual(V: float) -> float:
+        return float(np.sum(zf * (Kf - 1.0) / (1.0 + V * (Kf - 1.0))) + z_inf / V)
+
+    # dew check on the finite subset (K=inf terms never condense)
+    with np.errstate(divide="ignore"):
+        sum_z_over_k = float(np.sum(zf / Kf)) if Kf.size else 0.0
+    if sum_z_over_k <= 1.0:
+        # all vapour (consistent: non-condensables remain gaseous)
+        return 1.0, np.zeros_like(z), z.copy()
+
+    # two phase: root of the monotone residual in (z_inf, 1]
+    v_hi = 1.0
+    if residual(v_hi) >= 0.0:
+        # even a fully vaporised stream leaves residual >= 0 -> all vapour
+        return 1.0, np.zeros_like(z), z.copy()
+    v_lo = z_inf + max(1e-12, 1e-9 * (1.0 - z_inf))
+    if residual(v_lo) <= 0.0:  # numerically degenerate; fall back to midpoint
+        v_lo = z_inf + 1e-6
+    # bisection (robust; the problem is 1-D and smooth)
+    a, b = v_lo, v_hi
+    for _ in range(200):
+        mid = 0.5 * (a + b)
+        if residual(mid) > 0.0:
+            a = mid
+        else:
+            b = mid
+        if b - a < 1e-14:
+            break
+    V = 0.5 * (a + b)
+
+    x = np.zeros_like(z)
+    y = np.zeros_like(z)
+    x[~inf_mask] = zf / (1.0 + V * (Kf - 1.0))
+    y[~inf_mask] = Kf * x[~inf_mask]
+    y[inf_mask] = z[inf_mask] / V
+    x = np.clip(x, 0.0, None)
+    y = np.clip(y, 0.0, None)
+    # normalise tiny numerical drift
+    if x.sum() > 0:
+        x /= x.sum()
+    if y.sum() > 0:
+        y /= y.sum()
+    return V, x, y

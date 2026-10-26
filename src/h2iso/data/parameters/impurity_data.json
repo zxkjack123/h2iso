@@ -1,0 +1,167 @@
+{
+  "_schema": {
+    "version": "1.0.0",
+    "description": "Impurity species for the ISS extension (impurity extension): CO, CH4, N2, He-3, He-4. Every value carries its source. Values marked '本工作拟合' are DERIVED (regressions against NIST REFPROP saturation data) and must not be cited as literature values. See the impurity-property provenance record for the full audit.",
+    "pvap_forms": {
+      "plxant": "ln(P/Pa) = A + B/T + C*ln(T) + D*T**E",
+      "antoine": "ln(P/Pa) = A - B/(T + C)",
+      "ept76": "ln(P/Pa) = sum(a_k * T**k for k=-1..4) + b*ln(T)"
+    },
+    "units": "T [K], P [Pa], P_c [bar], dHvap [J/mol]"
+  },
+  "species": {
+    "CO": {
+      "formula": "CO",
+      "name": "carbon monoxide",
+      "molar_mass": 28.0101,
+      "T_tp": 68.16,
+      "P_tp": 15538.0,
+      "T_b": 81.639,
+      "T_c": 132.86,
+      "P_c_bar": 34.882,
+      "omega": 0.0497,
+      "dHvap_j_mol": 6012.0,
+      "has_solid_phase": true,
+      "pvap": {
+        "model": "plxant",
+        "params": {"A": 44.5135, "B": -1059.56, "C": -4.65534, "D": 7.28197e-5, "E": 2.0},
+        "validity_K": [68.16, 120.0],
+        "fitted": true,
+        "max_dev_rel": 0.00075,
+        "source": "本工作拟合（对 NIST REFPROP 饱和表回归，2026-10-08）"
+      },
+      "pvap_antoine_alt": {
+        "params": {"A": 20.024703, "B": 634.119186, "C": -7.0245},
+        "validity_K": [68.16, 95.0],
+        "max_dev_rel": 0.00061
+      },
+      "dH_sub_j_mol": 7900.0,
+      "sources": {
+        "main": "NIST WebBook / REFPROP (Lemmon & Span, J. Chem. Eng. Data 51 (2006) 785)",
+        "notes": "WebBook has no Antoine entry for CO; use the fitted PLXANT/Antoine above."
+      }
+    },
+    "CH4": {
+      "formula": "CH4",
+      "name": "methane",
+      "molar_mass": 16.043,
+      "T_tp": 90.694,
+      "P_tp": 11696.0,
+      "T_b": 111.669,
+      "T_c": 190.564,
+      "P_c_bar": 45.992,
+      "omega": 0.01142,
+      "dHvap_j_mol": 8201.0,
+      "has_solid_phase": true,
+      "pvap": {
+        "model": "plxant",
+        "params": {"A": 39.4782, "B": -1327.63, "C": -3.49108, "D": 3.2027e-5, "E": 2.0},
+        "validity_K": [90.694, 140.0],
+        "fitted": true,
+        "max_dev_rel": 0.00037,
+        "source": "本工作拟合（对 NIST REFPROP 饱和表回归，2026-10-08）"
+      },
+      "pvap_literature": {
+        "model": "antoine",
+        "params": {"A": 3.9895, "B": 443.028, "C": -0.49},
+        "form_note": "log10(P/bar) = A - B/(T+C)  [WebBook recomputed convention]",
+        "validity_K": [90.99, 189.99],
+        "source": "Prydz & Goodwin, J. Chem. Thermodyn. 4 (1972) 127 (via NIST WebBook)"
+      },
+      "dH_sub_j_mol": 9700.0,
+      "sources": {"main": "NIST WebBook / REFPROP (Setzmann & Wagner, JPCRD 20 (1991) 1061)"}
+    },
+    "N2": {
+      "formula": "N2",
+      "name": "nitrogen",
+      "molar_mass": 28.0134,
+      "T_tp": 63.151,
+      "P_tp": 12523.0,
+      "T_b": 77.356,
+      "T_c": 126.192,
+      "P_c_bar": 33.958,
+      "omega": 0.0372,
+      "dHvap_j_mol": 5584.0,
+      "has_solid_phase": true,
+      "pvap": {
+        "model": "plxant",
+        "params": {"A": 41.4448, "B": -955.97, "C": -4.14254, "D": 7.56799e-5, "E": 2.0},
+        "validity_K": [63.151, 120.0],
+        "fitted": true,
+        "max_dev_rel": 0.00064,
+        "source": "本工作拟合（对 NIST REFPROP 饱和表回归，2026-10-08）"
+      },
+      "pvap_literature": {
+        "model": "antoine",
+        "params": {"A": 3.63792, "B": 257.877, "C": -6.344},
+        "form_note": "log10(P/bar) = A - B/(T+C)  [WebBook recomputed convention]",
+        "validity_K": [63.14, 78.0],
+        "source": "Moussa, Muijlwijk et al. 1966 (via NIST WebBook); recommended for the cryogenic band (+0.17% at NBP)"
+      },
+      "sources": {"main": "NIST WebBook / REFPROP (Span et al., JPCRD 29 (2000) 1361)"}
+    },
+    "He3": {
+      "formula": "He3",
+      "name": "helium-3",
+      "molar_mass": 3.016029,
+      "T_tp": null,
+      "P_tp": null,
+      "T_b": 3.1968,
+      "T_c": 3.3157,
+      "P_c_bar": 1.1466,
+      "omega": -0.4723,
+      "omega_source": "本工作按 Pitzer 定义自算（低置信度；UPM 教学表给 -0.46）。公开数据库无此值。",
+      "dHvap_j_mol": 25.3,
+      "dHvap_source": "本工作 Clapeyron 核验（EPT-76 蒸气压 + 真实饱和蒸气密度）。注意 20.56 J/mol 是 0 K 极限值，不是沸点值。",
+      "has_solid_phase": false,
+      "solid_note": "低压下不存在固相（熔化曲线极小 ≈2.931 MPa @ 0.3159 K）",
+      "pvap": {
+        "model": "ept76",
+        "params": {
+          "a_m1": -2.50943, "a0": 9.70876, "a1": -0.304433, "a2": 0.210429,
+          "a3": -0.0545145, "a4": 0.0056067, "b": 2.25484
+        },
+        "validity_K": [0.2, 3.3157],
+        "source": "EPT-76 equation (Durieux & Rusby convention), 逐字转录自 A1 调研报告 §3.4"
+      },
+      "sources": {"main": "原始文献汇编见 A1_impurity_properties.md §8.6；NIST WebBook 无 He-3 条目。"}
+    },
+    "He4": {
+      "formula": "He4",
+      "name": "helium-4",
+      "molar_mass": 4.002602,
+      "T_tp": null,
+      "P_tp": null,
+      "T_b": 4.224,
+      "T_c": 5.1953,
+      "P_c_bar": 2.2832,
+      "omega": -0.385,
+      "dHvap_j_mol": 82.3,
+      "has_solid_phase": false,
+      "solid_note": "低压下不存在固相（熔化曲线极小 ≈2.5 MPa @ 0.78 K）；λ 点 2.1768 K。",
+      "pvap": {
+        "model": "plxant",
+        "params": {"A": 10.5757, "B": -7.55297, "C": 1.7472, "D": 1.23947e-2, "E": 2.0},
+        "validity_K": [2.177, 5.15],
+        "fitted": true,
+        "max_dev_rel": 0.00191,
+        "source": "本工作拟合（对 NIST REFPROP 饱和表回归，2026-10-08）"
+      },
+      "sources": {"main": "NIST WebBook / REFPROP (Ortiz-Vega et al. He EOS); Angus et al. IUPAC 1977"}
+    }
+  },
+  "operation_window": {
+    "iss_temperature_K": [19.0, 30.0],
+    "freezing_assessment": {
+      "CO": "T_tp = 68.16 K >> window: solid. True criterion at trace level is solubility (~0.2-0.3 ppm for N2 in LH2 at 20 K); freeze-out/plugging hazard. See A2 report.",
+      "CH4": "T_tp = 90.69 K >> window: solid.",
+      "N2": "T_tp = 63.15 K >> window: solid. Measured solid-N2 formation 29.8-32.9 K (Barwood et al. 2025).",
+      "He3": "supercritical/non-condensable (T_c = 3.32 K); trace to the top.",
+      "He4": "supercritical/non-condensable (T_c = 5.20 K); trace to the top."
+    },
+    "note": "Declared demonstration-basis acceptance ('99% of impurities leave via the top vent') is physically valid only for He; CO/CH4/N2 freeze out at 19-30 K. Flagged in the impurity disposition documentation."
+  },
+  "kij_status": {
+    "note": "Per the declared demonstration basis: list sources, do not change numbers. EPA/600/7-87/004 Table 8 gives SRK kij (H2-N2 0.1016 / H2-CO 0.0904 / H2-CH4 0.0050, Lin convention; CH4-N2 0.0319, GD convention) - convention-bound, NOT to be mixed with COMSOL SRK(GD). H2-T2 and all T2 pairs: not found; literature uses Sherwood excess-function models. Keep kij = 0 with source comments until conventions are unified."
+  }
+}
