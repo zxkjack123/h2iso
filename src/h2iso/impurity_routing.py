@@ -56,6 +56,7 @@ from typing import TYPE_CHECKING
 
 from h2iso.impurities import (
     IMPURITY_ORDER,
+    _require_non_negative_finite,
     classify_species,
     column_impurity_disposition,
 )
@@ -278,7 +279,18 @@ def route_impurities(
         if bad:
             raise KeyError(f"{bad} are not impurity species; expected {IMPURITY_ORDER}")
 
+        # Injected impurity flows are non-negative finite molar flows; the
+        # vector is then normalised by its own total, so a non-finite or
+        # negative entry (or a total of zero from mixed signs) would make the
+        # scaling meaningless.
+        for sp, q in flows.items():
+            _require_non_negative_finite(q, f"injected {sp} flow [mol/h]")
+
         total = sum(flows.values())
+        if total <= 0:
+            raise ValueError(
+                f"injected impurity flows must sum to a positive total; got {total!r}"
+            )
         fractions = {sp: q / total for sp, q in flows.items()}
         t_min, t_max = windows[column]
         carrier = _bottom_liquid_flow(result, column)

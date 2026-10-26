@@ -349,3 +349,45 @@ class TestIssiIntegration:
         for sp, flow in self.INJECTION["CD2"].items():
             routed = sum(r.flow_mol_h for r in rep.routes if r.species == sp)
             assert routed == pytest.approx(flow, rel=1e-9)
+
+
+class TestInjectionValidation:
+    """T-3.4: injected impurity flows are validated before the scaling step.
+
+    The injection vector is normalised by its own total; negative or
+    non-finite entries made that normalisation meaningless (mixed-sign input
+    divided by a zero total, ``nan`` propagated into every routed flow).
+    """
+
+    def _cfg_res(self):
+        cfg = _config(["A", "B"], [("A_top", "B")], products=["B_top"])
+        res = _FakeFlowsheetResult(
+            {"A": ISS_WINDOW, "B": ISS_WINDOW}, {"A": 5.0, "B": 5.0}
+        )
+        return cfg, res
+
+    def test_mixed_sign_injection_rejected(self):
+        cfg, res = self._cfg_res()
+        with pytest.raises(ValueError, match="injected"):
+            route_impurities(cfg, res, {"A": {"He4": 1.0, "CO": -1.0}})
+
+    def test_all_negative_injection_rejected(self):
+        cfg, res = self._cfg_res()
+        with pytest.raises(ValueError, match="injected"):
+            route_impurities(cfg, res, {"A": {"He4": -0.4, "CO": -0.6}})
+
+    def test_nan_injection_rejected(self):
+        cfg, res = self._cfg_res()
+        with pytest.raises(ValueError, match="injected"):
+            route_impurities(cfg, res, {"A": {"He4": float("nan")}})
+
+    def test_inf_injection_rejected(self):
+        cfg, res = self._cfg_res()
+        with pytest.raises(ValueError, match="injected"):
+            route_impurities(cfg, res, {"A": {"He4": float("inf")}})
+
+    def test_clean_injection_still_conserves(self):
+        cfg, res = self._cfg_res()
+        rep = route_impurities(cfg, res, {"A": {"He4": 0.4, "He3": 0.15}})
+        assert len(rep.routes) == 2
+        assert sum(r.flow_mol_h for r in rep.routes) == pytest.approx(0.55, rel=1e-12)
