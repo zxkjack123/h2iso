@@ -11,6 +11,7 @@ nav:
   - API Reference:
       - VLE: api/vle.md
       - MESH Solver: api/mesh.md
+      - Impurities: api/impurities.md
   - Validation:
       - MESH Report: validation/mesh_report.md
   - Examples:
