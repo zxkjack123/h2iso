@@ -28,6 +28,7 @@ from h2iso.impurities import (
     SolidPhaseError,
     check_feed_impurities,
     column_impurity_disposition,
+    dilute_top_product,
     has_solid_phase,
     is_non_condensable,
     kvalue_impurity,
@@ -417,3 +418,40 @@ class TestDispositionInputValidation:
             column_impurity_disposition({"He4": 0.0}, 10.0, self.T_MIN, self.T_MAX)
             == []
         )
+
+
+class TestDiluteTopProductValidation:
+    """T-3.3: illegal dilution inputs are rejected with named errors.
+
+    ``dilute_top_product`` returned ``({'D2': nan, 'He4': nan}, nan)`` for a
+    ``nan`` impurity flow, and an empty ``x_top`` died inside ``max()`` with the
+    bare ``max() arg is an empty sequence`` message.
+    """
+
+    def test_dilute_nan_impurity_flow_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            dilute_top_product({"D2": 1.0}, {"He4": float("nan")}, 18.3)
+
+    def test_dilute_negative_flow_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            dilute_top_product({"D2": 1.0}, {"He4": -1.0}, 18.3)
+
+    def test_dilute_nan_fraction_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            dilute_top_product({"D2": float("nan")}, {"He4": 1e-6}, 18.3)
+
+    def test_dilute_nan_distillate_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            dilute_top_product({"D2": 1.0}, {"He4": 1e-6}, float("nan"))
+
+    def test_dilute_empty_top_rejected(self):
+        with pytest.raises(ValueError, match="at least one species"):
+            dilute_top_product({}, {"He4": 0.1}, 18.3)
+
+    def test_dilute_clean_case_unchanged(self):
+        x_dil, rel = dilute_top_product(
+            {"D2": 0.999966, "DT": 0.000034}, {"He4": 1e-6}, 100.0
+        )
+        assert set(x_dil) == {"D2", "DT", "He4"}
+        assert sum(x_dil.values()) == pytest.approx(1.0)
+        assert 0.0 < rel < 1e-6

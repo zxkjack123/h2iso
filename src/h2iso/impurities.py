@@ -506,9 +506,26 @@ def dilute_top_product(
     (x_diluted, relative_purity_change) : (dict, float)
         Diluted composition over all species present, and the relative
         change of the dominant (baseline-main) fraction.
+
+    Raises
+    ------
+    ValueError
+        If ``distillate_flow_mol_h`` is not finite and positive, if ``x_top``
+        is empty, or if any mole fraction or impurity flow is not a finite
+        non-negative number.  Unknown species keys are still passed through
+        unchanged (tolerated extension components).
     """
     if distillate_flow_mol_h <= 0:
         raise ValueError("distillate_flow_mol_h must be > 0")
+    _require_non_negative_finite(distillate_flow_mol_h, "distillate_flow_mol_h")
+    if not x_top:
+        raise ValueError(
+            "x_top must contain at least one species; got an empty mapping"
+        )
+    for sp, frac in x_top.items():
+        _require_non_negative_finite(frac, f"x_top fraction {sp!r}")
+    for sp, flow in impurity_flows_to_top_mol_h.items():
+        _require_non_negative_finite(flow, f"top impurity flow {sp!r}")
     imp_total = sum(impurity_flows_to_top_mol_h.values())
     total = distillate_flow_mol_h + imp_total
     x_dil = {}
