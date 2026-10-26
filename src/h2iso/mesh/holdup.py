@@ -926,6 +926,14 @@ def bridge_holdup_to_inventory(
         raise ValueError("holdup result carries no volume profiles")
     if geometry.hetp_m is None or geometry.diameter_m is None:
         raise ValueError("geometry.hetp_m and diameter_m are required")
+    if not math.isfinite(geometry.hetp_m) or geometry.hetp_m <= 0.0:
+        raise ValueError(
+            f"geometry.hetp_m must be finite and > 0; got {geometry.hetp_m!r}"
+        )
+    if not math.isfinite(geometry.diameter_m) or geometry.diameter_m <= 0.0:
+        raise ValueError(
+            f"geometry.diameter_m must be finite and > 0; got {geometry.diameter_m!r}"
+        )
 
     if base is None:
         base = InventoryGeometry(
@@ -933,6 +941,11 @@ def bridge_holdup_to_inventory(
             HETP_m=geometry.hetp_m,
             condenser_volume_m3=geometry.condenser_volume_m3 or 1.0e-3,
             reboiler_volume_m3=geometry.reboiler_volume_m3 or 2.0e-4,
+        )
+
+    if not math.isfinite(base.eps_packing) or base.eps_packing <= 0.0:
+        raise ValueError(
+            f"base.eps_packing must be finite and > 0; got {base.eps_packing!r}"
         )
 
     v_stage = geometry.cross_section_area_m2 * geometry.hetp_m

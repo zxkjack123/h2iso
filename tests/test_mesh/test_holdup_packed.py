@@ -432,3 +432,60 @@ class TestInventoryBridge:
         )
         with pytest.raises(ValueError, match="packed"):
             bridge_holdup_to_inventory(holdup, tray)
+
+
+class TestBridgeInputGuard:
+    """Divisor guards in :func:`bridge_holdup_to_inventory` (F3).
+
+    The bridge divides by the base ``eps_packing`` and by the stage volume
+    ``A * HETP``; a degenerate base/geometry used to surface as a bare
+    ``ZeroDivisionError``.  These cases drive the bridge directly with
+    minimal stand-ins (bypassing the ``InventoryGeometry`` constructor guard)
+    so the second line of defence is exercised on its own.
+    """
+
+    def _holdup(self):
+        from types import SimpleNamespace
+
+        return SimpleNamespace(
+            liquid_volume_m3_per_stage=[1e-5, 2e-5, 3e-5, 1e-5],
+            liquid_molar_volume_m3_per_mol=[2.5e-5, 2.5e-5, 2.5e-5, 2.5e-5],
+        )
+
+    def _base(self, **overrides):
+        from types import SimpleNamespace
+
+        fields = dict(
+            eps_packing=0.20,
+            eps_stage=0.10,
+            eps_condenser=0.01,
+            eps_reboiler=0.05,
+            condenser_volume_m3=1.0e-3,
+            reboiler_volume_m3=2.0e-4,
+        )
+        fields.update(overrides)
+        return SimpleNamespace(**fields)
+
+    def _geometry(self, **overrides):
+        from h2iso.mesh.geometry import ColumnGeometry
+
+        fields = dict(column_type="packed", diameter_m=0.06, hetp_m=0.02)
+        fields.update(overrides)
+        return ColumnGeometry(**fields)
+
+    def test_bridge_rejects_zero_eps_packing(self):
+        from h2iso.mesh.holdup import bridge_holdup_to_inventory
+
+        with pytest.raises(ValueError, match="eps_packing"):
+            bridge_holdup_to_inventory(
+                self._holdup(), self._geometry(), base=self._base(eps_packing=0.0)
+            )
+
+    def test_bridge_rejects_nonpositive_hetp(self):
+        from h2iso.mesh.holdup import bridge_holdup_to_inventory
+
+        for bad in (0.0, -0.02):
+            with pytest.raises(ValueError, match="hetp_m"):
+                bridge_holdup_to_inventory(
+                    self._holdup(), self._geometry(hetp_m=bad), base=self._base()
+                )
