@@ -2,15 +2,83 @@
 
 Generates .mos scripts that set initial parameter values in
 OpenModelica models from h2iso column results.
+
+Core exports (always): T, x, y, L, V, Q_cond, Q_reb.
+
+Optional init-export extensions (emitted when present on the result):
+
+* ``holdup_l_init[N]`` / ``holdup_v_init[N]`` -- per-stage liquid / vapour
+  holdup [mol] computed by :mod:`h2iso.mesh.holdup` (requires column
+  geometry on the spec);
+* ``murphree_eff[N, N_species]`` -- applied Murphree vapour efficiencies
+  (nested-brace Modelica matrix literal), only when an
+  :class:`~h2iso.mesh.efficiency.EfficiencySpec` was used.
+
+Two output formats are provided
+-------------------------------
+
+``generate_init_script`` (``.mos``)
+    ``setInitXml(...)`` lines, one per variable.  This is the historical
+    h2iso format; note that **standard OpenModelica >= 1.26 does not
+    provide a ``setInitXml`` scripting command**, so this script is only
+    executable if the consumer implements that command itself.
+
+``generate_override_file`` (``-overrideFile`` compatible text)
+    ``<prefix>.<var>[i]=<value>`` lines suitable for
+    ``simulate(Model, simflags="-overrideFile file.txt")`` -- the mechanism
+    already used by the repository's own 5000 h Modelica runs
+    (``tests/modelica/*/override_cycle.txt``).  Verified end-to-end against
+    OpenModelica 1.26.3 (see ``tests/e2e/test_modelica_init_override.py``).
+    Requirements on the Modelica side: overridden **parameters** must be
+    declared ``annotation(Evaluate=false)``, and variable names are
+    **relative to the simulated top-level model** (no class name prefix).
 """
 
 from __future__ import annotations
+
+import numpy as np
 
 from h2iso.mesh.column import ColumnResult
 from h2iso.species import SPECIES_ORDER
 
 
-def generate_init_script(result: ColumnResult, model_name: str) -> str:
+def _vec(values: np.ndarray, fmt: str) -> str:
+    return ", ".join(format(float(v), fmt) for v in values)
+
+
+def _override_lines(
+    prefix: str,
+    name: str,
+    values: np.ndarray,
+    fmt: str,
+    out: list[str],
+) -> None:
+    """Append ``prefix.name[i]=value`` lines for an array variable."""
+    dot = f"{prefix}." if prefix else ""
+    for i, v in enumerate(np.asarray(values).ravel(order="C")):
+        out.append(f"{dot}{name}[{i + 1}]={format(float(v), fmt)}")
+
+
+def _override_matrix(
+    prefix: str,
+    name: str,
+    matrix: np.ndarray,
+    fmt: str,
+    out: list[str],
+) -> None:
+    """Append ``prefix.name[i,j]=value`` lines for a 2-D variable."""
+    dot = f"{prefix}." if prefix else ""
+    m = np.asarray(matrix)
+    for i in range(m.shape[0]):
+        for j in range(m.shape[1]):
+            out.append(f"{dot}{name}[{i + 1},{j + 1}]={format(float(m[i, j]), fmt)}")
+
+
+def generate_init_script(
+    result: ColumnResult,
+    model_name: str,
+    include_optional: bool = True,
+) -> str:
     """Generate a Modelica .mos initialization script.
 
     Parameters
@@ -19,6 +87,9 @@ def generate_init_script(result: ColumnResult, model_name: str) -> str:
         Solved column result.
     model_name : str
         Fully qualified Modelica model name (e.g., "Tricys.Distillation.CD2").
+    include_optional : bool
+        When ``True`` (default), additionally export holdup and stage
+        efficiency initial values if they are present on ``result``.
 
     Returns
     -------
@@ -32,31 +103,138 @@ def generate_init_script(result: ColumnResult, model_name: str) -> str:
     lines.append("")
 
     # Temperature profile
-    T_str = ", ".join(f"{result.T_profile[j]:.6f}" for j in range(N))
-    lines.append(f'setInitXml("{model_name}.T_init", "{{{T_str}}}");')
+    lines.append(
+        f'setInitXml("{model_name}.T_init", "{{{_vec(result.T_profile, ".6f")}}}");'
+    )
     lines.append("")
 
     # Liquid composition
     for i, sp in enumerate(SPECIES_ORDER):
-        x_str = ", ".join(f"{result.x_profile[j, i]:.8g}" for j in range(N))
-        lines.append(f'setInitXml("{model_name}.x_{sp}_init", "{{{x_str}}}");')
+        lines.append(
+            f'setInitXml("{model_name}.x_{sp}_init", '
+            f'"{{{_vec(result.x_profile[:, i], ".8g")}}}");'
+        )
     lines.append("")
 
     # Vapor composition
     for i, sp in enumerate(SPECIES_ORDER):
-        y_str = ", ".join(f"{result.y_profile[j, i]:.8g}" for j in range(N))
-        lines.append(f'setInitXml("{model_name}.y_{sp}_init", "{{{y_str}}}");')
+        lines.append(
+            f'setInitXml("{model_name}.y_{sp}_init", '
+            f'"{{{_vec(result.y_profile[:, i], ".8g")}}}");'
+        )
     lines.append("")
 
     # Flow profiles
-    L_str = ", ".join(f"{result.L_profile[j]:.6f}" for j in range(N))
-    V_str = ", ".join(f"{result.V_profile[j]:.6f}" for j in range(N))
-    lines.append(f'setInitXml("{model_name}.L_init", "{{{L_str}}}");')
-    lines.append(f'setInitXml("{model_name}.V_init", "{{{V_str}}}");')
+    lines.append(
+        f'setInitXml("{model_name}.L_init", "{{{_vec(result.L_profile, ".6f")}}}");'
+    )
+    lines.append(
+        f'setInitXml("{model_name}.V_init", "{{{_vec(result.V_profile, ".6f")}}}");'
+    )
     lines.append("")
 
     # Heat duties
     lines.append(f'setInitXml("{model_name}.Q_cond", "{result.condenser_duty:.4f}");')
     lines.append(f'setInitXml("{model_name}.Q_reb", "{result.reboiler_duty:.4f}");')
 
+    # --- optional init-export blocks ---------------------------------------
+    if include_optional:
+        holdup_l = getattr(result, "holdup_l_profile", None)
+        holdup_v = getattr(result, "holdup_v_profile", None)
+        if holdup_l is not None:
+            lines.append("")
+            lines.append("// Liquid holdup per stage [mol] (optional export)")
+            lines.append(
+                f'setInitXml("{model_name}.holdup_l_init", '
+                f'"{{{_vec(np.asarray(holdup_l), ".8g")}}}");'
+            )
+        if holdup_v is not None:
+            lines.append(
+                f'setInitXml("{model_name}.holdup_v_init", '
+                f'"{{{_vec(np.asarray(holdup_v), ".8g")}}}");'
+            )
+
+        murphree = getattr(result, "murphree_eff", None)
+        if murphree is not None:
+            murphree = np.asarray(murphree)
+            rows = ", ".join("{" + _vec(row, ".6g") + "}" for row in murphree)
+            lines.append("")
+            lines.append(
+                "// Applied Murphree vapor efficiency [stage, species] (optional export)"
+            )
+            lines.append(f'setInitXml("{model_name}.murphree_eff", "{{{rows}}}");')
+
     return "\n".join(lines) + "\n"
+
+
+def generate_override_file(
+    result: ColumnResult,
+    prefix: str = "",
+    include_optional: bool = True,
+) -> str:
+    """Generate a ``-overrideFile``-compatible init/parameter file.
+
+    The output can be passed to OpenModelica as::
+
+        simulate(Model, simflags="-overrideFile <file>")
+
+    which is the mechanism used by the repository's own Modelica runs
+    (``tests/modelica/*/override_cycle.txt``).  Verified against
+    OpenModelica 1.26.3.
+
+    Parameters
+    ----------
+    result : ColumnResult
+        Solved column result.
+    prefix : str
+        Instance path of the column **relative to the simulated top-level
+        model**, e.g. ``"CD2"`` or ``"i_iss.core.CD2"``.  Do *not* include
+        the top-level class name itself (OMC resolves override names
+        relative to the simulated model).
+    include_optional : bool
+        Also export holdup / Murphree arrays when present on ``result``.
+
+    Notes
+    -----
+    On the Modelica side, overridden **parameters** must be declared with
+    ``annotation(Evaluate=false)``; otherwise OMC folds them at compile
+    time and reports "override variable name not found in model".
+    State variables' start values can be overridden directly.
+    """
+    N = len(result.T_profile)
+    out: list[str] = []
+    out.append("// Auto-generated by h2iso -- OpenModelica overrideFile")
+    out.append('// Usage: simulate(<Model>, simflags="-overrideFile <this file>")')
+    out.append(f"// N_stages = {N}")
+    out.append("")
+
+    _override_lines(prefix, "T_init", result.T_profile, ".8g", out)
+    for i, sp in enumerate(SPECIES_ORDER):
+        _override_lines(prefix, f"x_{sp}_init", result.x_profile[:, i], ".8g", out)
+    for i, sp in enumerate(SPECIES_ORDER):
+        _override_lines(prefix, f"y_{sp}_init", result.y_profile[:, i], ".8g", out)
+    _override_lines(prefix, "L_init", result.L_profile, ".8g", out)
+    _override_lines(prefix, "V_init", result.V_profile, ".8g", out)
+
+    dot = f"{prefix}." if prefix else ""
+    out.append(f"{dot}Q_cond={result.condenser_duty:.8g}")
+    out.append(f"{dot}Q_reb={result.reboiler_duty:.8g}")
+
+    if include_optional:
+        holdup_l = getattr(result, "holdup_l_profile", None)
+        holdup_v = getattr(result, "holdup_v_profile", None)
+        if holdup_l is not None:
+            out.append("")
+            out.append("// Liquid holdup per stage [mol] (optional export)")
+            _override_lines(prefix, "holdup_l_init", holdup_l, ".8g", out)
+        if holdup_v is not None:
+            out.append("// Vapor holdup per stage [mol] (optional export)")
+            _override_lines(prefix, "holdup_v_init", holdup_v, ".8g", out)
+
+        murphree = getattr(result, "murphree_eff", None)
+        if murphree is not None:
+            out.append("")
+            out.append("// Applied Murphree vapor efficiency [stage, species]")
+            _override_matrix(prefix, "murphree_eff", murphree, ".6g", out)
+
+    return "\n".join(out) + "\n"
