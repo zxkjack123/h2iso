@@ -96,7 +96,7 @@ class TestSweepResultExport:
         assert out_path.exists()
         import json
 
-        with open(out_path) as f:
+        with open(out_path, encoding="utf-8") as f:
             data = json.load(f)
         assert data["parameter_name"] == "reflux_ratio"
         assert data["n_total"] == 2

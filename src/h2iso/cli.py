@@ -88,7 +88,7 @@ def cmd_column(args: argparse.Namespace) -> None:
         print(f"Error: config file not found: {config_path}", file=sys.stderr)
         raise SystemExit(1)
 
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         cfg = json.load(f)
 
     # Parse feed composition (support both flat and nested formats)
@@ -170,7 +170,7 @@ def cmd_export(args: argparse.Namespace) -> None:
         print(f"Error: input file not found: {input_path}", file=sys.stderr)
         raise SystemExit(1)
 
-    with open(input_path) as f:
+    with open(input_path, encoding="utf-8") as f:
         data = json.load(f)
 
     # Support both flat and nested JSON formats
@@ -288,7 +288,7 @@ def cmd_flowsheet(args: argparse.Namespace) -> None:
         }
 
     summary_path = out_dir / "summary.json"
-    with open(summary_path, "w") as f:
+    with open(summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
 
     print(f"\nResults exported to {out_dir}/")

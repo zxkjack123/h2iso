@@ -4,7 +4,7 @@
 
 X. Wang et al., "Hydrogen isotope inventory evaluation of hydrogen isotopes
 separation system of CFETR using Aspen Plus simulator", *Fusion Engineering
-and Design*, vol. 184, 2022, doi: 10.1016/j.fusengdes.2022.113078.
+and Design*, vol. 177, 2022, doi: 10.1016/j.fusengdes.2022.113078.
 
 ## System Description
 

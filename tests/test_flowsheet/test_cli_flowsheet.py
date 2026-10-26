@@ -71,7 +71,7 @@ class TestCLIFlowsheetSolve:
         summary_path = tmp_path / "summary.json"
         assert summary_path.exists()
 
-        with open(summary_path) as f:
+        with open(summary_path, encoding="utf-8") as f:
             summary = json.load(f)
 
         assert summary["converged"] is True

@@ -25,7 +25,7 @@ This report documents the validation of the h2iso VLE module against:
 
 ### 2. Wang 2022 CD2 Column Comparison
 
-Reference: Wang et al. (2022), Fusion Eng. Des. 184, 113078.
+Reference: Wang et al. (2022), Fusion Eng. Des. 177, 113078.
 
 | Metric | Wang 2022 | h2iso | Deviation | Status |
 |--------|-----------|-------|-----------|--------|

@@ -18,7 +18,7 @@ from h2iso._data import data_path
 def _load_json(filename: str) -> dict[str, Any]:
     """Load a JSON parameter file from the data directory."""
     with data_path("parameters", filename) as path:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
 
 

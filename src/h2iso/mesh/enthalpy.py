@@ -23,7 +23,7 @@ else:
 
 def _load_enthalpy_params() -> dict:
     with data_path("parameters", "enthalpy.json") as path:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
 
 

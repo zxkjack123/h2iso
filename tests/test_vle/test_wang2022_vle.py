@@ -12,7 +12,7 @@ FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "wang2022"
 
 
 def _load_cd2_fixture():
-    with open(FIXTURES_DIR / "wang2022_issi_cd2.json") as f:
+    with open(FIXTURES_DIR / "wang2022_issi_cd2.json", encoding="utf-8") as f:
         return json.load(f)
 
 

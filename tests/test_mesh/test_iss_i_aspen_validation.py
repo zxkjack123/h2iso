@@ -68,7 +68,7 @@ def _species_flow_to_atom_flow(flow_mol_h, composition):
 
 @pytest.fixture(scope="module")
 def baseline():
-    with open(FIXTURE) as f:
+    with open(FIXTURE, encoding="utf-8") as f:
         return json.load(f)
 
 

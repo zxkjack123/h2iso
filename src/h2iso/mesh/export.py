@@ -26,7 +26,7 @@ def export_csv(result: ColumnResult, path: str | Path) -> None:
     header.extend([f"y_{sp}" for sp in SPECIES_ORDER])
     header.extend(["L", "V"])
 
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(",".join(header) + "\n")
         for j in range(N):
             row = [str(j + 1), f"{result.T_profile[j]:.10g}"]
@@ -60,7 +60,7 @@ def export_json(result: ColumnResult, path: str | Path) -> None:
         "convergence": result.convergence_info,
     }
 
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
 

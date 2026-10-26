@@ -4,7 +4,7 @@
 
 - **Authors**: X. Wang et al.
 - **Title**: "Hydrogen isotope inventory evaluation of hydrogen isotopes separation system of CFETR using Aspen Plus simulator"
-- **Journal**: Fusion Engineering and Design, Volume 184, 2022
+- **Journal**: Fusion Engineering and Design, Volume 177, 2022
 - **DOI**: 10.1016/j.fusengdes.2022.113078
 
 ## Files

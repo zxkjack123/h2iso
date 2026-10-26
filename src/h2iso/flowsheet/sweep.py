@@ -65,7 +65,7 @@ class SweepResult:
 
     def to_json(self, path: str | Path) -> None:
         """Export to JSON file."""
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=2)
 
 

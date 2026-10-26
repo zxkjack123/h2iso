@@ -23,7 +23,7 @@ def test_parameter_file_loadable(filename: str) -> None:
     """Each bundled parameter file must resolve to a real path and parse as JSON."""
     with data_path("parameters", filename) as path:
         assert path.exists(), f"{filename} not found at {path}"
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         assert isinstance(data, dict)
         assert data, f"{filename} parsed to empty dict"
@@ -33,7 +33,7 @@ def test_schema_file_loadable() -> None:
     """Bundled flowsheet schema must be reachable too."""
     with data_path("schemas", "flowsheet_v1.json") as path:
         assert path.exists()
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         assert isinstance(data, dict)
 
@@ -42,4 +42,4 @@ def test_missing_file_raises() -> None:
     """Asking for a non-existent file must error out clearly (FileNotFoundError or OSError)."""
     with pytest.raises((FileNotFoundError, OSError)):
         with data_path("parameters", "does_not_exist.json") as path:
-            open(path).read()
+            open(path, encoding="utf-8").read()

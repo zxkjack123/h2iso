@@ -59,7 +59,7 @@ class TestCSVExport:
         path = tmp_path / "profile.csv"
         export_csv(column_result, path)
 
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             reader = csv.reader(f)
             header = next(reader)
 
@@ -75,7 +75,7 @@ class TestCSVExport:
         path = tmp_path / "profile.csv"
         export_csv(column_result, path)
 
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             lines = f.readlines()
         # Header + N data rows
         assert len(lines) == 1 + len(column_result.T_profile)
@@ -84,7 +84,7 @@ class TestCSVExport:
         path = tmp_path / "profile.csv"
         export_csv(column_result, path)
 
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             rows = list(reader)
 
@@ -105,7 +105,7 @@ class TestJSONExport:
         path = tmp_path / "profile.json"
         export_json(column_result, path)
 
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
         assert data["format"] == "h2iso_column_result"
@@ -121,7 +121,7 @@ class TestJSONExport:
         path = tmp_path / "profile.json"
         export_json(column_result, path)
 
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
         T_read = np.array(data["profiles"]["T"])

@@ -43,3 +43,15 @@ uq_runs/
 .opencode/
 figures/
 h2iso_results.json
+
+# Hypothesis property-testing cache
+.hypothesis/
+
+# Demo / example run outputs
+runs/
+
+# External delivery / binary safety guard (PM4893)
+*.rar
+*.bkp
+*.apw
+data/external/

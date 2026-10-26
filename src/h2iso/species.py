@@ -29,7 +29,7 @@ class Species:
 def _load_species() -> dict[str, Species]:
     """Load species registry from JSON parameter file."""
     with data_path("parameters", "species.json") as path:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
     registry = {}

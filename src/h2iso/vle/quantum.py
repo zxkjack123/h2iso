@@ -28,7 +28,7 @@ Numeric = Union[float, np.ndarray]
 
 def _load_quantum_params() -> dict:
     with data_path("parameters", "quantum.json") as path:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
 
 

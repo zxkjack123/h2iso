@@ -25,7 +25,7 @@ FIXTURES = Path(__file__).parent.parent / "fixtures" / "wang2022"
 @pytest.fixture
 def wang2022_cd2_ref():
     """Load Wang 2022 ISS-I CD2 reference data."""
-    with open(FIXTURES / "wang2022_issi_cd2.json") as f:
+    with open(FIXTURES / "wang2022_issi_cd2.json", encoding="utf-8") as f:
         return json.load(f)
 
 

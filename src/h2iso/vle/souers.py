@@ -28,7 +28,7 @@ Numeric = Union[float, np.ndarray]
 def _load_params() -> dict:
     """Load vapor pressure parameters from JSON."""
     with data_path("parameters", "vapor_pressure.json") as path:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)["species"]
 
 

@@ -26,7 +26,7 @@ FIXTURES = Path(__file__).parent.parent / "fixtures" / "wang2022"
 
 @pytest.fixture(scope="module")
 def cd2_spec() -> ColumnSpec:
-    with open(FIXTURES / "wang2022_issi_cd2.json") as f:
+    with open(FIXTURES / "wang2022_issi_cd2.json", encoding="utf-8") as f:
         ref = json.load(f)
 
     feed = np.zeros(N_SPECIES)
