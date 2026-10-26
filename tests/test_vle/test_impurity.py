@@ -252,3 +252,66 @@ class TestFeedChecks:
         a = check_feed_impurities({"He4": 0.06})[0]
         d = a.to_dict()
         assert d["level"] == "critical" and "message" in d
+
+
+class TestRachfordRiceResidualContract:
+    """Residual / differential contract for ``rachford_rice_extended``.
+
+    The species material balance ``(1 - V) x + V y = z`` is *not* a
+    discriminating check for this solver (it closes to a few 1e-7 even for the
+    wrong branch), so the contract is stated on the Rachford-Rice residual
+
+        h(V) = sum_finite z_i (K_i - 1) / (1 + V (K_i - 1)) + z_inf / V
+
+    and, in the all-liquid endpoint where ``h`` is not defined, on the
+    one-sided bubble slack ``sum(z_i K_i) - 1 <= 0``.
+    """
+
+    @staticmethod
+    def _residual(z, K, v):
+        z = np.asarray(z, dtype=float)
+        K = np.asarray(K, dtype=float)
+        mask = np.isposinf(K)
+        zf, Kf, z_inf = z[~mask], K[~mask], float(np.sum(z[mask]))
+        h = float(np.sum(zf * (Kf - 1.0) / (1.0 + v * (Kf - 1.0))))
+        if z_inf > 0.0 and v > 0.0:
+            h += z_inf / v
+        return h
+
+    def test_returned_root_has_small_residual(self):
+        cases = [
+            ("all_liquid sub-cooled", [0.5, 0.5], [0.3, 0.6], 0.0),
+            ("all_liquid at bubble", [0.5, 0.5], [1.5, 0.5], 0.0),
+            ("all_liquid ternary", [0.5, 0.3, 0.2], [1.5, 0.5, 0.2], 0.0),
+            ("two_phase binary", [0.5, 0.5], [3.0, 0.3], None),
+            ("two_phase with K=inf", [0.5, 0.4, 0.1], [2.0, 0.5, np.inf], None),
+            ("all_vapour", [0.5, 0.5], [5.0, 5.0], 1.0),
+        ]
+        for label, z, K, expect_v in cases:
+            z = np.array(z)
+            K = np.array(K)
+            v = rachford_rice_extended(z, K)[0]
+            mask = np.isposinf(K)
+            if expect_v == 0.0:
+                # all liquid: the root is the endpoint, contract is the
+                # one-sided bubble slack, not |sum(z K) - 1|
+                assert v == 0.0, label
+                slack = float(np.sum(z[~mask] * K[~mask])) - 1.0
+                assert slack <= 1e-12, (label, slack)
+            elif expect_v == 1.0:
+                assert v == 1.0, label
+                assert float(np.sum(z[~mask] / K[~mask])) <= 1.0, label
+            else:
+                assert abs(self._residual(z, K, v)) <= 1e-9, (
+                    label,
+                    self._residual(z, K, v),
+                )
+
+    def test_residual_contract_matches_classic_two_phase(self):
+        z = np.array([0.5, 0.5])
+        K = np.array([3.0, 0.3])
+        v_ext = rachford_rice_extended(z, K)[0]
+        v_cls = rachford_rice(z, K)
+        assert 0.0 < v_ext < 1.0
+        assert abs(v_ext - v_cls) <= 1e-9
+        assert abs(self._residual(z, K, v_ext)) <= 1e-9
