@@ -29,6 +29,7 @@ Registry conventions
 
 from __future__ import annotations
 
+import copy
 import json
 import math
 import warnings
@@ -55,8 +56,12 @@ class SolidPhaseError(ValueError):
 _DATA: dict | None = None
 
 
-def load_impurity_data() -> dict:
-    """Load (and cache) the impurity parameter file."""
+def _raw_data() -> dict:
+    """Return the live cached impurity parameter mapping (module-internal).
+
+    Callers must not mutate the returned object; the public accessors below
+    hand out deep copies precisely so that this stays true.
+    """
     global _DATA
     if _DATA is None:
         with data_path("parameters", "impurity_data.json") as path:
@@ -65,14 +70,34 @@ def load_impurity_data() -> dict:
     return _DATA
 
 
-def impurity(species: str) -> dict:
-    """Return the data block for an impurity species name."""
-    data = load_impurity_data()["species"]
+def _raw_species(species: str) -> dict:
+    """Return the live per-species data block (module-internal, no copy)."""
+    data = _raw_data()["species"]
     if species not in data:
         raise KeyError(
             f"unknown impurity {species!r}; expected one of {IMPURITY_ORDER}"
         )
     return data[species]
+
+
+def load_impurity_data() -> dict:
+    """Load the impurity parameter file.
+
+    Always returns a **deep copy** of the module-level cache: the cache itself
+    stays private, so neither the caller nor anything it passes the mapping to
+    can poison later calls.  Nested containers are copied too (``dict()`` alone
+    would still share them).
+    """
+    return copy.deepcopy(_raw_data())
+
+
+def impurity(species: str) -> dict:
+    """Return the data block for an impurity species name.
+
+    The returned block is a **deep copy**; writing into ``pvap.params``,
+    ``sources`` or any other nested container of it cannot reach the cache.
+    """
+    return copy.deepcopy(_raw_species(species))
 
 
 def species_index_all(name: str) -> int:

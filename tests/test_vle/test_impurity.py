@@ -30,8 +30,10 @@ from h2iso.impurities import (
     column_impurity_disposition,
     dilute_top_product,
     has_solid_phase,
+    impurity,
     is_non_condensable,
     kvalue_impurity,
+    load_impurity_data,
     pvap_impurity,
     species_index_all,
 )
@@ -455,3 +457,46 @@ class TestDiluteTopProductValidation:
         assert set(x_dil) == {"D2", "DT", "He4"}
         assert sum(x_dil.values()) == pytest.approx(1.0)
         assert 0.0 < rel < 1e-6
+
+
+class TestRegistryIsolation:
+    """T-4.1: the impurity data registry never surrenders a live reference.
+
+    Both public accessors used to hand out the cached object itself, so a
+    caller writing into it poisoned every later call in the process -- and the
+    nested containers (``pvap.params``, ``sources``, ``validity_K``) are the
+    dangerous route, since an outer ``dict()`` copy would still share them.
+    """
+
+    def test_registry_isolation_load_top_level(self):
+        d = load_impurity_data()
+        d["species"]["He4"]["probe"] = 1
+        assert "probe" not in load_impurity_data()["species"]["He4"]
+
+    def test_registry_isolation_load_nested(self):
+        d = load_impurity_data()
+        d["species"]["He4"]["pvap"]["params"]["A"] = -1.0
+        d["operation_window"]["iss_temperature_K"].append(1234.0)
+        again = load_impurity_data()
+        assert again["species"]["He4"]["pvap"]["params"]["A"] != -1.0
+        assert 1234.0 not in again["operation_window"]["iss_temperature_K"]
+
+    def test_registry_isolation_impurity(self):
+        impurity("He4")["probe"] = 1
+        assert "probe" not in impurity("He4")
+
+    def test_registry_isolation_impurity_nested(self):
+        block = impurity("He4")
+        block["sources"]["main"] = "poison"
+        block["pvap"]["params"]["A"] = -1.0
+        again = impurity("He4")
+        assert again["sources"]["main"] != "poison"
+        assert again["pvap"]["params"]["A"] != -1.0
+
+    def test_registry_values_still_correct(self):
+        # copies must carry the real data, not an empty or corrupted block
+        assert has_solid_phase("CO") is True
+        assert has_solid_phase("He4") is False
+        assert impurity("He4")["T_tp"] is None
+        assert impurity("CO")["pvap"]["validity_K"] == [68.16, 120.0]
+        assert load_impurity_data()["species"]["He4"]["name"]
