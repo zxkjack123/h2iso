@@ -22,10 +22,12 @@ from typing import Any
 import numpy as np
 
 from h2iso._casadi import ca
+from h2iso.mesh.efficiency import EfficiencySpec
 from h2iso.mesh.enthalpy import (
     liquid_enthalpy_numeric,
     vapor_enthalpy_numeric,
 )
+from h2iso.mesh.geometry import ColumnGeometry
 from h2iso.species import N_SPECIES, SPECIES_ORDER
 from h2iso.vle.souers import pvap_sx
 
@@ -54,6 +56,8 @@ class ColumnSpec:
     feed_quality: float = 1.0  # q=1 saturated liquid (legacy single-feed)
     feeds: list[FeedSpec] | None = None  # Multi-feed list (overrides legacy fields)
     eos: str = "souers"  # "souers" (default) or "peng-robinson"
+    geometry: ColumnGeometry | None = None  # real hardware (holdup / HETP use)
+    efficiency: EfficiencySpec | None = None  # stage efficiency; None = ideal stages
 
     def __post_init__(self):
         if self.n_stages < 2:
@@ -76,6 +80,12 @@ class ColumnSpec:
                     f"1..{self.n_stages}; an out-of-range feed would be "
                     "silently ignored"
                 )
+        if self.geometry is not None:
+            self.geometry.validate()
+        if self.efficiency is not None:
+            # Validate shape/values eagerly so errors surface at construction,
+            # not inside the NLP assembly.
+            self.efficiency.to_matrix(self.n_stages, N_SPECIES)
 
     def _feed_stages(self) -> list[int]:
         """Stages of the feeds actually consumed (mirrors ``Column._get_feeds``)."""
@@ -96,6 +106,10 @@ class ColumnResult:
     condenser_duty: float  # W (negative = cooling)
     reboiler_duty: float  # W (positive = heating)
     convergence_info: dict = field(default_factory=dict)
+    # Optional extras (None unless computed / specified):
+    holdup_l_profile: np.ndarray | None = None  # (N,) liquid holdup [mol/stage]
+    holdup_v_profile: np.ndarray | None = None  # (N,) vapor holdup [mol/stage]
+    murphree_eff: np.ndarray | None = None  # (N, Nc) applied stage efficiencies
 
 
 class Column:
@@ -190,6 +204,12 @@ class Column:
 
         L, V = self._compute_flows()
 
+        # Stage-efficiency matrix; None reproduces the ideal-stage equilibrium
+        # constraints exactly (backward compatible).
+        eff_matrix = None
+        if spec.efficiency is not None:
+            eff_matrix = spec.efficiency.to_matrix(N, Nc)
+
         # Decision variables per stage: T(1) + x(6) + y(6) = 13
         n_vars_per_stage = 1 + Nc + Nc  # 13
 
@@ -268,11 +288,27 @@ class Column:
                     lbg.append(0.0)
                     ubg.append(0.0)
             else:
-                # VLE: y_j = K_j * x_j where K = Psat/P (modified Raoult)
+                # VLE: y_j = K_j * x_j where K = Psat/P (modified Raoult).
+                # With an EfficiencySpec the constraint is modified (see
+                # h2iso.mesh.efficiency): Murphree uses the vapour entering
+                # from below (y_{j+1}); vaporization scales K.
                 for i, sp in enumerate(SPECIES_ORDER):
                     Psat_i = pvap_sx(T_vars[j], sp)
                     K_i = Psat_i / P
-                    g.append(y_vars[j][i] - K_i * x_vars[j][i])
+                    if eff_matrix is None:
+                        g.append(y_vars[j][i] - K_i * x_vars[j][i])
+                    elif spec.efficiency.mode == "vaporization":
+                        g.append(y_vars[j][i] - eff_matrix[j, i] * K_i * x_vars[j][i])
+                    elif j == N - 1:
+                        # Reboiler: no entering vapour; kept as an equilibrium
+                        # stage (standard practice).
+                        g.append(y_vars[j][i] - K_i * x_vars[j][i])
+                    else:
+                        y_in = y_vars[j + 1][i]
+                        E = eff_matrix[j, i]
+                        g.append(
+                            y_vars[j][i] - (y_in + E * (K_i * x_vars[j][i] - y_in))
+                        )
                     lbg.append(0.0)
                     ubg.append(0.0)
 
@@ -381,6 +417,12 @@ class Column:
         ColumnResult
         """
         if self.spec.eos == "peng-robinson":
+            if self.spec.efficiency is not None:
+                raise NotImplementedError(
+                    "efficiency models are only implemented for the default "
+                    "CasADi solver; the peng-robinson ColumnPR path assumes "
+                    "ideal equilibrium stages"
+                )
             pr_solver = ColumnPR(self.spec)
             return pr_solver.solve()
 
@@ -401,7 +443,26 @@ class Column:
         w_opt = np.array(sol["x"]).flatten()
         stats = solver.stats()
 
-        return self._extract_result(w_opt, stats)
+        result = self._extract_result(w_opt, stats)
+        return self._attach_holdup(result)
+
+    def _attach_holdup(self, result: ColumnResult) -> ColumnResult:
+        """Populate per-stage holdup when a geometry is attached to the spec.
+
+        Uses :mod:`h2iso.mesh.holdup` (tray or packed correlations,
+        selected by ``geometry.column_type``); leaves the profiles as
+        ``None`` when no geometry is given (historical behaviour).
+        """
+        if self.spec.geometry is None:
+            return result
+        from h2iso.mesh.holdup import evaluate_column_holdup
+
+        hol = evaluate_column_holdup(
+            result, self.spec.geometry, pressure=self.spec.pressure
+        )
+        result.holdup_l_profile = hol.liquid_mol_per_stage
+        result.holdup_v_profile = hol.vapor_mol_per_stage
+        return result
 
     def _extract_result(self, w_opt: np.ndarray, stats: dict) -> ColumnResult:
         """Extract profiles from flat solution vector."""
@@ -433,6 +494,10 @@ class Column:
         H_V_bot = vapor_enthalpy_numeric(T_prof[-1], x_bot)
         Q_reb = V[-1] * (H_V_bot - H_L_bot) / 3600.0  # W
 
+        murphree_eff = None
+        if self.spec.efficiency is not None and self.spec.efficiency.mode == "murphree":
+            murphree_eff = self.spec.efficiency.to_matrix(N, Nc)
+
         return ColumnResult(
             T_profile=T_prof,
             x_profile=x_prof,
@@ -451,6 +516,7 @@ class Column:
                     "Feasible_Point_Found",
                 ),
             },
+            murphree_eff=murphree_eff,
         )
 
 
