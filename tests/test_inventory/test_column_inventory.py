@@ -105,3 +105,47 @@ class TestColumnInventoryUnit:
         assert "total_grams" in d
         assert "gas_phase_mol" in d
         assert "liquid_phase_mol" in d
+
+
+class TestInventoryGeometryInputGuard:
+    """Entry guard on ``InventoryGeometry`` (constructor) and the
+    ``ColumnGeometry.from_flowsheet_config`` bridge.
+
+    The guard rejects non-physical ``HETP_m`` / ``eps_packing`` at
+    construction time so the zero-division / zero-fraction paths cannot be
+    entered silently; it is a **pure addition** and leaves every legal
+    construction path (defaults included) unchanged.
+    """
+
+    def test_defaults_unchanged(self):
+        """The historical default construction must keep working (no change)."""
+        geom = InventoryGeometry()
+        assert geom.HETP_m == 0.05
+        assert geom.eps_packing == 0.20
+
+    def test_eps_packing_zero_rejected(self):
+        with pytest.raises(ValueError, match="eps_packing"):
+            InventoryGeometry(eps_packing=0.0)
+
+    def test_eps_packing_out_of_range_rejected(self):
+        with pytest.raises(ValueError, match="eps_packing"):
+            InventoryGeometry(eps_packing=1.5)
+
+    def test_hetp_zero_or_negative_rejected(self):
+        for bad in (0.0, -1.0):
+            with pytest.raises(ValueError, match="HETP_m"):
+                InventoryGeometry(HETP_m=bad)
+
+    def test_hetp_nan_rejected(self):
+        with pytest.raises(ValueError, match="HETP_m"):
+            InventoryGeometry(HETP_m=float("nan"))
+
+    def test_from_flowsheet_config_validates_hetp(self):
+        """``from_flowsheet_config`` must run ``validate()`` on the result."""
+        from types import SimpleNamespace
+
+        from h2iso.mesh.geometry import ColumnGeometry
+
+        cfg = SimpleNamespace(inside_diameter_m=0.06, HETP_m=-0.01)
+        with pytest.raises(ValueError, match="hetp_m"):
+            ColumnGeometry.from_flowsheet_config(cfg)

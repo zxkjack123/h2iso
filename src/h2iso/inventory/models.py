@@ -9,6 +9,7 @@ Based on the inventory formulation in:
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -55,6 +56,25 @@ class InventoryGeometry:
     eps_stage: float = 0.10  # epsilon_j: liquid ratio against stage volume (10%)
     eps_reboiler: float = 0.05  # epsilon_N: liquid ratio against reboiler volume (5%)
     eps_packing: float = 0.20  # epsilon: ratio of packing volume (20%)
+
+    def __post_init__(self) -> None:
+        """Reject non-physical ``HETP_m`` / ``eps_packing`` at construction.
+
+        The inventory model divides by ``HETP_m`` (per-stage volume) and by
+        ``eps_packing`` (liquid fraction of the packing volume), so a zero,
+        negative or non-finite value silently produces a zero-division or a
+        non-physical fraction inside the calculation.  Only these two fields
+        are guarded here; the drum volumes and the diameter keep their
+        historical permissive defaults so that existing call sites are not
+        affected.
+        """
+        if not math.isfinite(self.HETP_m) or self.HETP_m <= 0.0:
+            raise ValueError(f"HETP_m must be finite and > 0; got {self.HETP_m!r}")
+        if not math.isfinite(self.eps_packing) or not 0.0 < self.eps_packing <= 1.0:
+            raise ValueError(
+                f"eps_packing must be finite and lie in (0, 1]; "
+                f"got {self.eps_packing!r}"
+            )
 
 
 @dataclass

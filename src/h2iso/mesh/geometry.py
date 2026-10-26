@@ -231,7 +231,7 @@ class ColumnGeometry:
         unknown packing internals, which is sufficient for HETP-based
         stage conversion but **not** for detailed holdup correlations.
         """
-        return cls(
+        geom = cls(
             column_type="packed",
             diameter_m=getattr(cfg, "inside_diameter_m", None),
             hetp_m=getattr(cfg, "HETP_m", None),
@@ -240,3 +240,5 @@ class ColumnGeometry:
             condenser_volume_m3=getattr(cfg, "condenser_volume_m3", None),
             reboiler_volume_m3=getattr(cfg, "reboiler_volume_m3", None),
         )
+        geom.validate()
+        return geom
