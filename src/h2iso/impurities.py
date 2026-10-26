@@ -210,6 +210,20 @@ class FeedAlert:
         return {"level": self.level, "code": self.code, "message": self.message}
 
 
+def _require_non_negative_finite(value: float, name: str) -> float:
+    """Reject ``NaN`` / ``+-inf`` / negative impurity quantities.
+
+    Impurity mole fractions and molar flows are physical, non-negative and
+    finite; a non-finite entry silently poisons every downstream balance
+    (sums become ``nan``, threshold comparisons turn False). ``0.0`` stays
+    legal -- it is a vacuous but well-defined entry.
+    """
+    v = float(value)
+    if not math.isfinite(v) or v < 0.0:
+        raise ValueError(f"{name} must be a finite non-negative float; got {value!r}")
+    return v
+
+
 def check_feed_impurities(
     impurities: dict,
     *,
@@ -238,6 +252,9 @@ def check_feed_impurities(
     unknown = sorted(set(impurities) - set(IMPURITY_ORDER))
     if unknown:
         raise KeyError(f"{unknown} are not impurity species; expected {IMPURITY_ORDER}")
+
+    for sp, frac in impurities.items():
+        _require_non_negative_finite(frac, f"impurity fraction {sp!r}")
 
     alerts: list[FeedAlert] = []
     total = sum(v for v in impurities.values() if v > 0)

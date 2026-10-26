@@ -344,3 +344,31 @@ class TestRachfordRiceResidualContract:
         assert 0.0 < v_ext < 1.0
         assert abs(v_ext - v_cls) <= 1e-9
         assert abs(self._residual(z, K, v_ext)) <= 1e-9
+
+
+class TestFeedCheckInputValidation:
+    """T-3.1: illegal impurity mole fractions are rejected at the entry point.
+
+    Impurity fractions are non-negative finite quantities; ``NaN`` / ``+-inf``
+    silently poison every downstream balance (``total``/``he`` sums become
+    ``nan`` and every threshold comparison turns False).  ``0.0`` remains a
+    legal (if vacuous) entry and must still take the clean-feed branch.
+    """
+
+    def test_negative_fraction_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            check_feed_impurities({"He4": -1e-3})
+
+    def test_nan_fraction_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            check_feed_impurities({"He4": float("nan")})
+
+    def test_non_finite_fraction_rejected(self):
+        with pytest.raises(ValueError, match="finite non-negative"):
+            check_feed_impurities({"He4": float("inf")})
+
+    def test_clean_feed_still_info(self):
+        assert [a.code for a in check_feed_impurities({})] == ["NO_IMPURITIES"]
+        assert [a.code for a in check_feed_impurities({"He4": 0.0})] == [
+            "NO_IMPURITIES"
+        ]
