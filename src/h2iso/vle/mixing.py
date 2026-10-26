@@ -331,8 +331,13 @@ def rachford_rice_extended(
     ----------
     z : ndarray
         Feed mole fractions (any length; need not be the 6-species set).
+        Must be non-negative and sum to 1 (tolerance ``1e-6``).
     K : ndarray
-        K-values; may contain ``inf`` (and must not contain ``nan``).
+        K-values.  Must be non-negative or ``+inf``; ``NaN``, negative values
+        and ``-inf`` raise ``ValueError``.  ``0`` is legal (a strongly
+        condensing species: the bubble criterion then holds and the feed goes
+        entirely to the liquid endpoint).  Only ``+inf`` marks a
+        non-condensable component.
 
     Returns
     -------
@@ -356,10 +361,17 @@ def rachford_rice_extended(
         raise ValueError(f"z and K must have the same shape; got {z.shape}, {K.shape}")
     if np.any(np.isnan(K)):
         raise ValueError("K contains NaN")
+    if np.any(K < 0.0):
+        raise ValueError(
+            "K must be non-negative (0 allowed) or +inf; got negative/-inf entries"
+        )
     if np.any(z < 0):
         raise ValueError("feed mole fractions must be non-negative")
+    z_sum = float(np.sum(z))
+    if abs(z_sum - 1.0) > 1e-6:
+        raise ValueError(f"feed mole fractions must sum to 1; got {z_sum}")
 
-    inf_mask = ~np.isfinite(K)
+    inf_mask = np.isposinf(K)
     z_inf = float(np.sum(z[inf_mask]))
     if z_inf >= 1.0 - 1e-12:
         # everything non-condensable: all vapour

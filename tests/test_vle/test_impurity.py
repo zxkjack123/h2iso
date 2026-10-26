@@ -14,6 +14,7 @@ Covers (acceptance: >= 10 new tests, all traceable to NIST-based values):
 from __future__ import annotations
 
 import math
+import warnings
 
 import numpy as np
 import pytest
@@ -203,6 +204,34 @@ class TestRachfordRiceExtended:
             v_ext = rachford_rice_extended(z, K)[0]
             v_cls = rachford_rice(z, K)
             assert v_ext == v_cls == 0.0
+
+    # --- illegal K / feed validation -------------------------------------
+
+    def test_negative_k_rejected(self):
+        with pytest.raises(ValueError, match="non-negative"):
+            rachford_rice_extended(np.array([0.5, 0.5]), np.array([1.0, -2.0]))
+
+    def test_negative_inf_k_rejected(self):
+        with pytest.raises(ValueError):
+            rachford_rice_extended(np.array([0.5, 0.5]), np.array([1.0, -math.inf]))
+
+    def test_zero_k_is_all_liquid_and_warns_nothing(self):
+        """K = 0 stays legal: it is a strongly condensing species."""
+        z = np.array([0.5, 0.5])
+        K = np.array([1.0, 0.0])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            v, x, y = rachford_rice_extended(z, K)
+        assert v == 0.0
+        assert np.allclose(x, z)
+        assert not np.any(y)
+
+    def test_z_sum_validated(self):
+        z = np.array([0.5, 0.3, 0.2]) * 1.2
+        K = np.array([4.0, 1.0, 0.3])
+        assert abs(float(np.sum(z)) - 1.0) > 1e-6
+        with pytest.raises(ValueError):
+            rachford_rice_extended(z, K)
 
 
 class TestFeedChecks:
