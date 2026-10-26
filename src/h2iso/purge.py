@@ -232,8 +232,10 @@ def design_purge(
         raise ValueError(
             "vent pressure required (PurgeSpec.pressure_Pa or pressure_Pa)"
         )
-    if he_flow_mol_h < 0:
-        raise ValueError(f"he_flow_mol_h must be >= 0; got {he_flow_mol_h}")
+    if not np.isfinite(he_flow_mol_h) or he_flow_mol_h < 0:
+        raise ValueError(
+            f"he_flow_mol_h must be a finite value >= 0; got {he_flow_mol_h}"
+        )
 
     x = np.asarray(column_result.x_profile[0], dtype=np.float64)
     T_cond = float(column_result.T_profile[0])

@@ -156,3 +156,31 @@ class TestPurgePhysics:
             design_purge(col, 0.4, PurgeSpec("CD2", 0.2))
         with pytest.raises(ValueError, match="he_flow_mol_h"):
             design_purge(col, -1.0, PurgeSpec("CD2", 0.2), pressure_Pa=P_TOP)
+
+
+class TestPurgeHeFlowValidation:
+    """T-3.5: the helium purge flow must be a finite non-negative number.
+
+    ``design_purge`` only guarded ``he_flow_mol_h < 0``, which is False for
+    ``nan`` -- the design then carried nan losses.  ``0.0`` stays legal (a
+    column reached by no helium still gets a design with zero losses).
+    """
+
+    def test_design_purge_nan_he_flow_rejected(self):
+        col = _FakeColumn()
+        with pytest.raises(ValueError, match="finite"):
+            design_purge(col, float("nan"), PurgeSpec("CD2", 0.2), pressure_Pa=P_TOP)
+
+    def test_design_purge_inf_he_flow_rejected(self):
+        col = _FakeColumn()
+        with pytest.raises(ValueError, match="finite"):
+            design_purge(col, float("inf"), PurgeSpec("CD2", 0.2), pressure_Pa=P_TOP)
+
+    def test_design_purge_zero_he_flow_unchanged(self):
+        col = _FakeColumn()
+        d = design_purge(col, 0.0, PurgeSpec("CD2", 0.2), pressure_Pa=P_TOP)
+        assert d.he_flow_mol_h == 0.0
+        assert d.loss_total_mol_h == 0.0
+        assert d.loss_per_he_mol == 0.0
+        assert d.tritium_loss_mol_h == 0.0
+        assert "0.00 mol per mol He" in d.basis
