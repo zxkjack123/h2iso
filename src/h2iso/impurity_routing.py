@@ -3,17 +3,18 @@
 The single-column disposition layer (:mod:`h2iso.impurities`) answers
 *where each impurity goes inside one column*.  This module answers the
 follow-up question of the ISS design work: **where does an impurity leave
-a multi-column cascade (which vent / product), and where does it
-deposit?**
+a multi-column cascade (which terminus: purge branch / declared product
+end / undeclared terminal end), and where does it deposit?**
 
 Model -- tracer / post-processing semantics
 -------------------------------------------
 Impurities are treated as tracers on a *converged* 6-isotope flowsheet
 solution:
 
-* the 6-isotope core is solved normally; ppm-to-percent impurity amounts
-  do not perturb temperature, flow or composition profiles (this is the
-  standing assumption of the disposition architecture);
+* UNVERIFIED ASSUMPTION: the 6-isotope core is solved normally and this
+  impurity layer does not feed back into temperature, flow or composition
+  profiles.  That ppm-to-percent impurity amounts cannot perturb the core
+  is a modelling assumption, not a verified result;
 * each injection is classified with the full operating window of its
   entry column (min/max of the solved ``T_profile``) and then routed
   along the flowsheet graph:
@@ -76,8 +77,11 @@ class ImpurityRoute:
     entry_column : str
         Column the impurity was injected into.
     status : {"vent", "product", "frozen", "dissolved", "vle_active", "recirculating"}
-        ``vent``  -- left the flowsheet with a top product;
-        ``product`` -- left with a bottoms/terminal stream;
+        ``vent``  -- reached a **terminal stream** (a product end, or an end
+        the flowsheet does not connect or declare).  **LEGACY NAME -- it does
+        NOT mean the impurity entered a vent**; read :attr:`terminal_kind`
+        instead.  A real condenser purge branch is ``purge``.
+        ``product`` -- left with a bottoms/terminal stream (legacy value);
         ``frozen`` -- deposited in ``destination`` (a column);
         ``dissolved`` -- ppm trace leaving with a bottoms liquid;
         ``recirculating`` -- re-entered an already-visited column;
@@ -89,6 +93,20 @@ class ImpurityRoute:
     flow_mol_h : float
     basis : str
         Human-readable justification (K = inf / T < T_tp / splitter note).
+    terminal_kind : {"purge_branch", "declared_product_end", \
+"undeclared_terminal_end", None}
+        Unambiguous, mutually exclusive classification of the terminus
+        (three states, exactly one applies when the impurity leaves the
+        flowsheet):
+
+        * ``purge_branch`` -- routed into a real condenser purge branch;
+        * ``declared_product_end`` -- reached a stream declared in
+          ``config.products``;
+        * ``undeclared_terminal_end`` -- reached a leaf stream that the
+          flowsheet neither connects nor declares.
+
+        ``None`` for routes that do not terminate at a stream (``frozen``,
+        ``dissolved``, ``recirculating``, ``vle_active``).
     """
 
     species: str
@@ -98,9 +116,37 @@ class ImpurityRoute:
     path: list[str]
     flow_mol_h: float
     basis: str
+    terminal_kind: str | None = None
+
+    @property
+    def exits_via_terminal_stream(self) -> bool:
+        """True for both terminal-stream kinds (product end / undeclared end).
+
+        This is **False** for a real condenser purge branch -- use
+        :attr:`enters_purge_branch` for that question.
+        """
+        return self.terminal_kind in (
+            "declared_product_end",
+            "undeclared_terminal_end",
+        )
+
+    @property
+    def enters_purge_branch(self) -> bool:
+        """True only when the route ends in a real condenser purge branch."""
+        return self.terminal_kind == "purge_branch"
 
     @property
     def enters_vent(self) -> bool:
+        """DEPRECATED / MISLEADING NAME -- do not use this to answer
+        "did the impurity enter a vent?".
+
+        The historical body (``status in ("vent", "product")``) is kept
+        verbatim for backward compatibility, but it is **True for a plain
+        product terminus** and **False for a real condenser purge branch**.
+        It therefore cannot distinguish a product end from a purge branch.
+        Use :attr:`exits_via_terminal_stream` or :attr:`enters_purge_branch`
+        instead.
+        """
         return self.status in ("vent", "product")
 
     def to_dict(self) -> dict:
@@ -112,6 +158,7 @@ class ImpurityRoute:
             "path": list(self.path),
             "flow_mol_h": float(self.flow_mol_h),
             "basis": self.basis,
+            "terminal_kind": self.terminal_kind,
         }
 
 
@@ -170,6 +217,15 @@ def _connection_map(config) -> dict[str, list[str]]:
     for conn in config.connections:
         out.setdefault(conn.from_unit, []).append(conn.to_unit)
     return out
+
+
+def _terminal_kind(config, stream: str) -> str:
+    """Classify a terminal stream as a declared product end or an open end.
+
+    ``status == "vent"`` covers both; this is what tells them apart.
+    """
+    products = getattr(config, "products", None) or {}
+    return "declared_product_end" if stream in products else "undeclared_terminal_end"
 
 
 def _column_windows(result) -> dict[str, tuple[float, float]]:
@@ -324,6 +380,7 @@ def route_impurities(
                             entry.to_top_mol_h,
                             entry.basis + "; diverted to the condenser purge branch "
                             "(V1.2) instead of the top product",
+                            "purge_branch",
                         )
                     )
                     continue
@@ -421,7 +478,16 @@ def _walk_vapor(
     destinations = outgoing.get(stream, [])
     if not destinations:
         return [
-            ImpurityRoute(species, from_column, "vent", stream, list(path), flow, basis)
+            ImpurityRoute(
+                species,
+                from_column,
+                "vent",
+                stream,
+                list(path),
+                flow,
+                basis,
+                _terminal_kind(config, stream),
+            )
         ]
 
     routes: list[ImpurityRoute] = []
@@ -456,6 +522,7 @@ def _walk_vapor(
                         branch_flow,
                         note + f"; diverted to the {dest} condenser purge branch "
                         "(V1.2) instead of the top product",
+                        "purge_branch",
                     )
                 )
                 continue
@@ -532,7 +599,7 @@ def _walk_vapor(
                     arrivals=arrivals,
                 )
             )
-        else:  # terminal stream (product or unconnected)
+        else:  # terminal stream (declared product end or undeclared end)
             routes.append(
                 ImpurityRoute(
                     species,
@@ -542,6 +609,7 @@ def _walk_vapor(
                     [*path, dest],
                     branch_flow,
                     note,
+                    _terminal_kind(config, dest),
                 )
             )
     return routes

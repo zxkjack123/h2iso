@@ -391,3 +391,81 @@ class TestInjectionValidation:
         rep = route_impurities(cfg, res, {"A": {"He4": 0.4, "He3": 0.15}})
         assert len(rep.routes) == 2
         assert sum(r.flow_mol_h for r in rep.routes) == pytest.approx(0.55, rel=1e-12)
+
+
+# ----------------------------------------------------------------------
+# D1(a): terminal-stream semantics (product / unconnected / purge)
+# ----------------------------------------------------------------------
+#
+# ``status == "vent"`` only means "reached a terminal stream".  It does NOT
+# mean "entered a vent/purge branch", and ``ImpurityRoute.enters_vent`` is
+# misleading: it returns True for ``product`` termini but False for real
+# condenser purge branches.  These tests pin the unambiguous replacement
+# fields.  The legacy attribute is left untouched on purpose (an API change
+# would need its own decision) -- it is only documented as deprecated.
+
+
+class TestTerminalKindSemantics:
+    def test_declared_product_terminal(self):
+        cfg = _config(["A", "B"], [("A_top", "B")], products=["B_top"])
+        res = _FakeFlowsheetResult(
+            {"A": ISS_WINDOW, "B": ISS_WINDOW}, {"A": 5.0, "B": 5.0}
+        )
+        rep = route_impurities(cfg, res, {"A": {"He4": 0.4}})
+        r = rep.routes[0]
+        assert r.status == "vent"
+        assert r.terminal_kind == "declared_product_end"
+        assert r.exits_via_terminal_stream is True
+        assert r.enters_purge_branch is False
+        # legacy field: unchanged, and it does not distinguish product/purge
+        assert r.enters_vent is True
+
+    def test_unconnected_terminal_stream(self):
+        # A_top is a leaf but is NOT a declared product
+        cfg = _config(["A"], [], products=[])
+        res = _FakeFlowsheetResult({"A": ISS_WINDOW}, {"A": 5.0})
+        r = route_impurities(cfg, res, {"A": {"He4": 0.4}}).routes[0]
+        assert r.status == "vent"
+        assert r.terminal_kind == "undeclared_terminal_end"
+        assert r.exits_via_terminal_stream is True
+        assert r.enters_purge_branch is False
+
+    def test_purge_branch_is_the_only_purge_terminal(self):
+        cfg = _config(["A"], [], products=["A_top"])
+        cfg.columns[0].pressure_top_Pa = 90_000.0
+        res = _FakeFlowsheetResult({"A": ISS_WINDOW}, {"A": 5.0})
+        rep = route_impurities(
+            cfg, res, {"A": {"He4": 0.4}}, purges={"A": PurgeSpec("A", 0.2)}
+        )
+        r = rep.routes[0]
+        assert r.status == "purge"
+        assert r.terminal_kind == "purge_branch"
+        assert r.enters_purge_branch is True
+        assert r.exits_via_terminal_stream is False
+        # the trap this whole task exists for: the legacy flag is False for a
+        # REAL purge branch, yet True for a plain product stream
+        assert r.enters_vent is False
+
+    def test_non_terminal_routes_carry_no_terminal_kind(self):
+        cfg = _config(["A"], [], products=[])
+        res = _FakeFlowsheetResult({"A": ISS_WINDOW}, {"A": 1000.0})
+        rep = route_impurities(cfg, res, {"A": {"N2": 1.0e-3}})
+        assert rep.routes, "expected dissolved + frozen routes"
+        for r in rep.routes:
+            assert r.status in {"dissolved", "frozen"}
+            assert r.terminal_kind is None
+            assert r.exits_via_terminal_stream is False
+            assert r.enters_purge_branch is False
+
+    def test_to_dict_exposes_terminal_kind_and_report_keys_are_stable(self):
+        cfg = _config(["A"], [], products=["A_top"])
+        res = _FakeFlowsheetResult({"A": ISS_WINDOW}, {"A": 5.0})
+        rep = route_impurities(cfg, res, {"A": {"He4": 0.4}})
+        assert rep.routes[0].to_dict()["terminal_kind"] == "declared_product_end"
+        assert set(rep.to_dict()) == {
+            "routes",
+            "by_destination",
+            "by_status",
+            "purge_designs",
+            "warnings",
+        }
