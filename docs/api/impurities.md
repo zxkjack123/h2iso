@@ -6,6 +6,25 @@ CO/CH4/N2 are solid below their triple points in the ISS window, and the helium
 isotopes are supercritical non-condensables (`K = inf`) — neither belongs inside
 the MESH equilibrium equations.
 
+## Assumptions (all UNVERIFIED)
+
+This layer is an **experimental post-processing convention**, not a physical
+acceptance of impurity transport. Four assumptions are load-bearing and none of
+them is verified:
+
+1. `UNVERIFIED` — the CO/CH4 dissolved-trace cap is set to zero because no
+   published solubility in liquid hydrogen was found. `0.0` means "fully
+   frozen"; it is a modelling choice, not a measured value.
+2. `UNVERIFIED` — `classify_species()` keys on the operating temperature window
+   only. It is insensitive to impurity concentration and implements no
+   solubility- or saturation-limited criterion.
+3. `UNVERIFIED` — `frozen_mol_h` is an **accounting allocation** (impurity flow
+   minus the dissolved-trace cap), not a solid-phase equilibrium solution. It
+   does not predict deposition location, accumulation or plugging.
+4. `UNVERIFIED` — the layer runs on a converged six-component MESH solution and
+   does not feed back into temperature, flow or composition profiles. That the
+   trace-level influence is negligible is itself unverified.
+
 ## `h2iso.impurities` — Registry, properties, disposition
 
 ### `IMPURITY_ORDER`, `ALL_SPECIES_ORDER`
@@ -37,6 +56,10 @@ One `ImpurityDisposition` per impurity present, splitting the flow into
 (ppm trace carried by the **liquid**, i.e. the bottoms product, capped by
 solubility) and `frozen_mol_h` (deposits in the column). Frozen species raise a
 `UserWarning` — deposition/plugging risk must not be missed.
+
+`frozen_mol_h` is an accounting allocation (`impurity flow - dissolved trace`),
+not a solid-phase equilibrium result: it does not predict where the solid forms,
+how it accumulates, or when it plugs the column (see the assumptions above).
 
 ```python
 from h2iso.impurities import column_impurity_disposition
@@ -79,6 +102,25 @@ streams honour `config.splitter` ratios (otherwise each branch carries the full
 flow, matching the sequential-modular solver) and the note is recorded in
 `route.basis`; a walk re-entering an already-visited column is reported as
 `recirculating`.
+
+Each route also carries `terminal_kind`, the unambiguous terminus
+classification (three mutually exclusive states):
+
+| `terminal_kind` | meaning |
+|---|---|
+| `"purge_branch"` | routed into a real condenser purge branch |
+| `"declared_product_end"` | reached a stream declared in `config.products` |
+| `"undeclared_terminal_end"` | reached a leaf stream the flowsheet neither connects nor declares |
+| `None` | the route never reaches a stream (frozen / dissolved / recirculating / vle_active) |
+
+Read `route.exits_via_terminal_stream` and `route.enters_purge_branch` for those
+questions.
+
+**Legacy names — `status == "vent"` and `route.enters_vent`:** `"vent"` means
+"reached a **terminal stream**", not "entered a vent". `enters_vent` returns
+`True` for a plain product end and `False` for a real purge branch, so it cannot
+answer "did the impurity enter a vent?". It is kept unchanged for backward
+compatibility and is deprecated — use `terminal_kind` instead.
 
 **Warns:** `UserWarning` for every freeze-out, forwarded from the single-column
 disposition layer.
