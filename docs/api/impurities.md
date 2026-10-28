@@ -114,7 +114,9 @@ classification (three mutually exclusive states):
 | `None` | the route never reaches a stream (frozen / dissolved / recirculating / vle_active) |
 
 Read `route.exits_via_terminal_stream` and `route.enters_purge_branch` for those
-questions.
+questions. A route deserialized from a payload written before `terminal_kind`
+existed carries `None` — treat that as "not classified", not as "not a
+terminus".
 
 **Legacy names — `status == "vent"` and `route.enters_vent`:** `"vent"` means
 "reached a **terminal stream**", not "entered a vent". `enters_vent` returns

@@ -457,6 +457,33 @@ class TestTerminalKindSemantics:
             assert r.exits_via_terminal_stream is False
             assert r.enters_purge_branch is False
 
+    def test_terminal_kind_covers_every_stream_terminus(self):
+        # invariant: a route that ends on a stream carries a kind; the legacy
+        # status and the new kind can never contradict each other
+        cfg = _config(
+            ["A", "B", "C"], [("A_top", "B"), ("B_top", "C")], products=["C_top"]
+        )
+        cfg.columns[1].pressure_top_Pa = 90_000.0
+        res = _FakeFlowsheetResult(
+            {"A": ISS_WINDOW, "B": ISS_WINDOW, "C": ISS_WINDOW},
+            {"A": 1.0, "B": 1.0, "C": 1.0},
+        )
+        rep = route_impurities(
+            cfg, res, {"A": {"He4": 0.4}}, purges={"B": PurgeSpec("B", 0.2)}
+        )
+        assert rep.routes
+        for r in rep.routes:
+            if r.status == "vent":
+                assert r.terminal_kind in {
+                    "declared_product_end",
+                    "undeclared_terminal_end",
+                }
+            elif r.status == "purge":
+                assert r.terminal_kind == "purge_branch"
+            else:
+                assert r.terminal_kind is None
+            assert not (r.exits_via_terminal_stream and r.enters_purge_branch)
+
     def test_to_dict_exposes_terminal_kind_and_report_keys_are_stable(self):
         cfg = _config(["A"], [], products=["A_top"])
         res = _FakeFlowsheetResult({"A": ISS_WINDOW}, {"A": 5.0})

@@ -81,7 +81,8 @@ class ImpurityRoute:
         the flowsheet does not connect or declare).  **LEGACY NAME -- it does
         NOT mean the impurity entered a vent**; read :attr:`terminal_kind`
         instead.  A real condenser purge branch is ``purge``.
-        ``product`` -- left with a bottoms/terminal stream (legacy value);
+        ``product`` -- legacy value, never emitted by this module (kept in
+        the enum so historical serialized routes still validate);
         ``frozen`` -- deposited in ``destination`` (a column);
         ``dissolved`` -- ppm trace leaving with a bottoms liquid;
         ``recirculating`` -- re-entered an already-visited column;
@@ -95,9 +96,9 @@ class ImpurityRoute:
         Human-readable justification (K = inf / T < T_tp / splitter note).
     terminal_kind : {"purge_branch", "declared_product_end", \
 "undeclared_terminal_end", None}
-        Unambiguous, mutually exclusive classification of the terminus
-        (three states, exactly one applies when the impurity leaves the
-        flowsheet):
+        Unambiguous, mutually exclusive classification of the terminus.
+        For a route that **reaches a terminal stream**, exactly one of the
+        three values applies:
 
         * ``purge_branch`` -- routed into a real condenser purge branch;
         * ``declared_product_end`` -- reached a stream declared in
@@ -105,8 +106,12 @@ class ImpurityRoute:
         * ``undeclared_terminal_end`` -- reached a leaf stream that the
           flowsheet neither connects nor declares.
 
-        ``None`` for routes that do not terminate at a stream (``frozen``,
-        ``dissolved``, ``recirculating``, ``vle_active``).
+        ``None`` otherwise -- including ``dissolved``, which does leave with
+        the bottoms liquid but is not a *stream terminus* in this sense, and
+        ``frozen`` / ``recirculating`` / ``vle_active``.  ``None`` also
+        results when a route is rehydrated from a payload serialized before
+        ``terminal_kind`` existed: treat it as "not classified" rather than
+        as "not a terminus".
     """
 
     species: str
