@@ -6,8 +6,10 @@ Runs the CD2 impurity fixture end-to-end:
 2. the impurity disposition layer classifies He-4 -> top, CO/N2 -> frozen
    (with warnings) over the *solved* CD2 temperature window;
 3. top-product dilution by the non-condensable matches the exact
-   flow-weighted value and stays within the declared demonstration 0.5% band for the
-   0.5% He-4 feed of this fixture;
+   flow-weighted identity ``rel == I / (D + I)``; the declared demonstration
+   criterion ``r <= z_f`` is **NOT MET** for the 0.5 % He-4 feed of this
+   fixture (r = 0.5081300813 % > 0.5 %) and is encoded as a strict xfail --
+   see ``docs/notes/2026-10-28-d5-dilution-band-not-met.md``;
 4. the corrected acceptance semantics are locked in as assertions (the
    original "99% to the top vent" claim holds only for helium -- see the
    impurity disposition documentation sec. 3.3).
@@ -151,7 +153,7 @@ class TestDisposition:
 
 
 class TestTopProductDilution:
-    def test_exact_dilution_and_acceptance_band(self, fixture, cd2_result):
+    def test_exact_dilution_identity(self, fixture, cd2_result):
         t_min = float(cd2_result.T_profile[0])
         t_max = float(cd2_result.T_profile[-1])
         with warnings.catch_warnings():
@@ -179,9 +181,52 @@ class TestTopProductDilution:
         )
         he_flow = to_top["He4"]
         assert x_dil["He4"] == pytest.approx(he_flow / (d_flow + he_flow), rel=1e-12)
-        # corrected acceptance: dilution <= He feed fraction (0.5 %) band
-        assert rel < 0.006
-        assert rel > 0.004
+        zf = fixture["feed"]["impurities"]["He4"]  # fraction of the TOTAL feed
+        F = fixture["feed"]["total_flow_mol_h"]
+        assert he_flow == pytest.approx(zf * F, rel=1e-12)  # I = zf * F
+        assert rel == pytest.approx(he_flow / (d_flow + he_flow), rel=1e-12)
+        # NOTE: the strict criterion r <= zf (no tolerance) is NOT met for this
+        # fixture (r = 0.5081300813 % > 0.5 %); it is encoded -- and currently
+        # xfailing -- in test_d5_strict_dilution_band_r_le_zf. No tolerance or
+        # approximation may be used to report this as a pass.
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="D5 = DEFINED-NOT-MET: r = 0.5081300813 % > z_f = 0.5 %",
+    )
+    def test_d5_strict_dilution_band_r_le_zf(self, fixture, cd2_result):
+        """The declared criterion, verbatim: r <= z_f with no tolerance.
+
+        r is the dilution of the top product by the non-condensable,
+        r = I / (D + I); z_f is the He-4 fraction of the TOTAL feed. With
+        D/F = 0.979 and z_f = 0.005 the criterion is structurally violated
+        (it would need D/F >= 1 - z_f = 0.995). Kept as a strict xfail so that
+        the gap stays visible: if a future path makes the criterion hold, this
+        test turns XPASS and fails, forcing a re-review instead of silently
+        passing.
+        """
+        t_min = float(cd2_result.T_profile[0])
+        t_max = float(cd2_result.T_profile[-1])
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            disp = column_impurity_disposition(
+                fixture["feed"]["impurities"],
+                80.357,
+                t_min,
+                t_max,
+                liquid_flow_mol_h=80.357 * (1 - 0.979),
+            )
+        to_top = {
+            d.species: d.to_top_mol_h
+            for d in disp
+            if d.status == "to_top" and d.to_top_mol_h > 0
+        }
+        d_flow = 0.979 * 80.357
+        he_flow = to_top["He4"]
+        r = he_flow / (d_flow + he_flow)
+        zf = fixture["feed"]["impurities"]["He4"]
+        assert r == pytest.approx(0.401785 / (78.669503 + 0.401785), rel=1e-9)
+        assert r <= zf  # literal criterion, currently False (no tolerance)
 
     def test_errors(self):
         with pytest.raises(ValueError, match="must be > 0"):
