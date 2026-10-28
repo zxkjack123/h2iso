@@ -25,6 +25,10 @@ Registry conventions
 :data:`ALL_SPECIES_ORDER` = the 6 hydrogen isotopologues followed by the
 5 impurities (11 components; index order is API-stable).  The historical
 6-species API is untouched.
+
+Assumptions (UNVERIFIED)
+------------------------
+UNVERIFIED ASSUMPTION: this is a post-processing layer on a converged 6-component MESH solution; it does not feed back into temperature, flow or composition profiles, and that the trace-level influence is negligible is itself unverified.
 """
 
 from __future__ import annotations
@@ -337,6 +341,8 @@ def check_feed_impurities(
 # in liquid hydrogen at 20 K; Barwood et al. 2025 / Campestrini et al.
 # 2023, see A1/A2 reports).  CO and CH4 solubilities are a documented
 # literature gap; 0.0 is a conservative default (fully frozen).
+#
+# UNVERIFIED ASSUMPTION: no published CO/CH4 solubility in liquid hydrogen was found (literature gap); 0.0 is a modelling choice for "fully frozen", NOT a measured or validated value.
 DEFAULT_SOLUBILITY_PPM = {"CO": 0.0, "CH4": 0.0, "N2": 0.3, "He3": None, "He4": None}
 
 
@@ -359,6 +365,8 @@ class ImpurityDisposition:
         capped by the solubility allowance.
     frozen_mol_h : float
         Flow expected to freeze out (deposit) somewhere in the cold column.
+
+        UNVERIFIED ASSUMPTION: frozen_mol_h is an accounting allocation (impurity flow minus the dissolved-trace cap), NOT a solid-phase equilibrium solution; it does not predict deposition location, accumulation or plugging.
     basis : str
         Human-readable justification (K = inf / T < T_tp / solubility cap).
     """
@@ -391,6 +399,8 @@ def classify_species(species: str, T_min: float, T_max: float) -> tuple[str, str
     triple point somewhere in the window, i.e. deposits) or
     ``"vle_active"`` (liquid-vapour equilibrium meaningful over the whole
     window -- generic support; not the ISS case at 19-30 K).
+
+    UNVERIFIED ASSUMPTION: classification uses the operating temperature window only and is insensitive to impurity concentration; no solubility/saturation-limited criterion is implemented or validated.
     """
     if T_min <= 0 or T_max < T_min:
         raise ValueError(f"invalid temperature window [{T_min}, {T_max}] K")
@@ -452,6 +462,8 @@ def column_impurity_disposition(
     silently.  This layer implements the *corrected* acceptance semantics
     of the declared demonstration basis (the original "99 % to the top vent" claim
     holds only for the helium isotopes; see the impurity disposition documentation).
+    ``frozen_mol_h`` is an accounting allocation, not a solid-phase
+    equilibrium result -- see :attr:`ImpurityDisposition.frozen_mol_h`.
     """
     if feed_flow_mol_h <= 0:
         raise ValueError("feed_flow_mol_h must be > 0")
