@@ -195,6 +195,8 @@ class TestRochaBravoFair:
             corrugation_angle_deg=self.THETA,
             eps=self.EPS,
             a_p=self.A_P,
+            f_se=0.35,
+            include_eps_in_denom=True,
         )
         args.update(kw)
         return liquid_holdup_packed_rocha_bravo_fair(**args)
@@ -231,6 +233,32 @@ class TestRochaBravoFair:
     def test_flooding_raises(self):
         with pytest.raises(ValueError, match="flooding"):
             self._call(dP_per_Z=1025.0, dP_per_Z_flood=1025.0)
+
+    def test_include_eps_in_denom_has_no_default(self):
+        # The eps convention is a published definitional dispute; callers must
+        # state which side they are on rather than inherit one silently.
+        args = dict(
+            u_ls=0.002,
+            u_gs=0.5,
+            rho_l=self.RHO_L,
+            rho_g=self.RHO_G,
+            mu_l=self.MU_L,
+            sigma=self.SIGMA,
+            corrugation_base_m=self.B,
+            corrugation_height_m=self.H,
+            corrugation_angle_deg=self.THETA,
+            eps=self.EPS,
+        )
+        with pytest.raises(TypeError, match="include_eps_in_denom"):
+            liquid_holdup_packed_rocha_bravo_fair(**args)
+
+    def test_f_se_required_with_specific_area(self):
+        with pytest.raises(ValueError, match="f_se is required"):
+            self._call(f_se=None)
+
+    def test_flooding_pressure_drop_required_with_gradient(self):
+        with pytest.raises(ValueError, match="dP_per_Z_flood is required"):
+            self._call(dP_per_Z=500.0)
 
     def test_monotonic_in_liquid_velocity(self):
         h1 = self._call(u_ls=0.001)["h_L"]
@@ -465,6 +493,30 @@ class TestInventoryBridge:
         )
         with pytest.raises(ValueError, match="packed"):
             bridge_holdup_to_inventory(holdup, tray)
+
+    def test_rbf_branch_passes_an_explicit_eps_convention(self):
+        # ``include_eps_in_denom`` has no default, so the only way this branch
+        # can run is for ``evaluate_column_holdup`` to pick a convention.
+        from h2iso.mesh.holdup import evaluate_column_holdup
+
+        result, geom, _ = self._setup()
+        holdup = evaluate_column_holdup(
+            result,
+            geom,
+            pressure=self.PRESSURE,
+            packed_method="rocha-bravo-fair",
+            packed_extra=dict(
+                mu_l=1.3e-5,
+                sigma=0.002,
+                corrugation_base_m=0.0067,
+                corrugation_height_m=0.0125,
+                corrugation_angle_deg=45.0,
+                eps=0.937,
+            ),
+        )
+        assert holdup.method_liquid == "packed:rocha-bravo-fair"
+        assert holdup.total_liquid_mol > 0.0
+        assert all(v >= 0.0 for v in holdup.liquid_mol_per_stage)
 
 
 class TestBridgeInputGuard:

@@ -514,10 +514,10 @@ def liquid_holdup_packed_rocha_bravo_fair(
     corrugation_angle_deg: float,
     eps: float,
     a_p: float | None = None,
-    f_se: float = 0.35,
+    f_se: float | None = None,
     dP_per_Z: float | None = None,
-    dP_per_Z_flood: float = 1025.0,
-    include_eps_in_denom: bool = True,
+    dP_per_Z_flood: float | None = None,
+    include_eps_in_denom: bool,
     sigma_switch_n_m: float = 0.055,
 ) -> dict:
     """Rocha-Bravo-Fair (1993) total liquid holdup, structured packings.
@@ -539,23 +539,31 @@ def liquid_holdup_packed_rocha_bravo_fair(
         Packing void fraction.
     a_p : float, optional
         Specific surface area, only needed for ``a_e``.
-    f_se : float
-        Surface-enhancement factor (0.35 for Mellapak/Flexipac).
+    f_se : float, optional
+        Surface-enhancement factor used for ``a_e`` only (0.35 for
+        Mellapak/Flexipac).  **Required whenever** ``a_p`` **is given** --
+        it is a property of the packing surface, so there is no safe
+        default.
     dP_per_Z : float, optional
         Current pressure-drop gradient [Pa/m]; when given, ``g_eff``
         includes the flooding-margin term.  **Coupling note:** in a
         simulator this must be iterated with the pressure-drop model
         (relaxation 0.5 recommended); this function performs a single
         evaluation.
-    dP_per_Z_flood : float
-        Flooding pressure drop [Pa/m] (1025 for air/water; packing- and
-        load-dependent -- 1650 has been reported for Mellapak 350Y at
-        high load).
+    dP_per_Z_flood : float, optional
+        Flooding pressure drop [Pa/m].  **Required whenever** ``dP_per_Z``
+        **is given**: it is packing- and load-dependent (1025 Pa/m is an
+        air/water number; 1650 has been reported for Mellapak 350Y at
+        high load), so it must be chosen deliberately.
     include_eps_in_denom : bool
-        Definitional switch for the published dispute (Qiu comment vs
-        authors' rebuttal): ``True`` (default, matches the executable
-        UFRJ listing) uses the bed-volume convention with ``eps`` in the
-        denominator; ``False`` reproduces the five printed variants.
+        **Required, no default** -- this is the published definitional
+        dispute (Qiu comment vs the authors' rebuttal).  Eq. 19 of the
+        paper as printed carries no ``eps`` in the denominator;
+        ``True`` adds it (bed-volume convention, matching the executable
+        UFRJ listing) and multiplies ``h_L`` by ``eps**(-1/3)``
+        (2.2 % at ``eps = 0.937``).  ``evaluate_column_holdup`` passes
+        ``True``; the switch stays mandatory so no caller inherits either
+        convention silently.
     sigma_switch_n_m : float
         Contact-angle switch point: ``cos(gamma) = 0.9`` below it, the
         published exponential above it.  The original paper uses 0.055;
@@ -577,6 +585,12 @@ def liquid_holdup_packed_rocha_bravo_fair(
         raise ValueError("mu_l and sigma must be > 0")
     if u_ls < 0 or u_gs < 0:
         raise ValueError("velocities must be non-negative")
+    if a_p is not None and f_se is None:
+        raise ValueError(
+            "f_se is required when a_p is given: the surface-enhancement "
+            "factor applies to a specific packing surface (0.35 for "
+            "Mellapak/Flexipac) and has no safe default"
+        )
 
     s = math.sqrt(corrugation_base_m**2 / 4.0 + corrugation_height_m**2)
     sin_t = math.sin(math.radians(corrugation_angle_deg))
@@ -602,6 +616,13 @@ def liquid_holdup_packed_rocha_bravo_fair(
     )
     g_eff = _G * (rho_l - rho_g) / rho_l
     if dP_per_Z is not None:
+        if dP_per_Z_flood is None:
+            raise ValueError(
+                "dP_per_Z_flood is required when dP_per_Z is given: the "
+                "flooding pressure drop is packing- and load-dependent "
+                "(1025 Pa/m is an air/water value only), so it has no "
+                "safe default"
+            )
         if dP_per_Z >= dP_per_Z_flood:
             raise ValueError(
                 "at or beyond the flooding pressure drop "
@@ -625,7 +646,7 @@ def liquid_holdup_packed_rocha_bravo_fair(
         "Ft": ft,
         "h_L": h_l,
     }
-    if a_p is not None:
+    if a_p is not None and f_se is not None:
         out["a_e"] = ft * f_se * a_p
     return out
 
@@ -849,12 +870,17 @@ def evaluate_column_holdup(
                 )
                 h_l = out["h_L"]
             elif method == "rocha-bravo-fair":
+                # ``include_eps_in_denom`` has no default, so the package makes
+                # its own choice explicit here (bed-volume convention); a
+                # caller may still override it through ``packed_extra``.
+                rbf_kwargs = {"include_eps_in_denom": True}
+                rbf_kwargs.update(extra)
                 out = liquid_holdup_packed_rocha_bravo_fair(
                     u_ls=u_l,
                     u_gs=V_prof[j] * (_GAS_R * T_prof[j] / pressure) / 3600.0 / area,
                     rho_l=rho_l,
                     rho_g=rho_v,
-                    **extra,
+                    **rbf_kwargs,
                 )
                 h_l = out["h_L"]
             else:
