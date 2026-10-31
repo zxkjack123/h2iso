@@ -167,10 +167,10 @@ class TestBilletSchultesPacked:
 
 
 class TestRochaBravoFair:
-    """Rocha-Bravo-Fair (1993).  Independent transcription as a regression
-    lock plus the epsilon-convention switch (cited design note sec. 5.3)."""
+    """Rocha-Bravo-Fair (1993).  Independent transcription (Eq. 18-19, 28) as a
+    regression lock, plus the explicit epsilon-convention switch."""
 
-    # Sulzer DX reference geometry (cited design note table, from the UFRJ thesis)
+    # Sulzer DX corrugation geometry: b = 6.4 mm, h = 2.9 mm, theta = 60 deg
     B = 0.0064
     H = 0.0029
     THETA = 60.0

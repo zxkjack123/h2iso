@@ -1,7 +1,7 @@
 """Stage-efficiency models for the MESH column solver (holdup/efficiency extension).
 
 Two distinct concepts are supported, and they are intentionally **not**
-interchangeable (see the cited design note):
+interchangeable:
 
 ``"murphree"`` -- Murphree vapour efficiency
     Describes how far the vapour *leaving* a stage approaches the vapour

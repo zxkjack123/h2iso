@@ -14,17 +14,21 @@ in the ISS (Isotope Separation System):
 **Packed columns** (structured / random packing)
 
 * Stichlmair, Bravo & Fair (1989) -- pre-loading and loading-region liquid
-  holdup (formula cross-confirmed by six independent documents, including
-  an executable MATLAB listing; no published worked example exists).
+  holdup, Eq. 14-15 of the paper, reproduced against the paper's own worked
+  example (p. 24).
 * Billet & Schultes -- liquid holdup for random and structured packings
   (implemented as the recommended substitute for "Bravo & Fair (1982)",
-  which -- contrary to the declared demonstration basis -- is a **mass-transfer**
-  paper and contains no holdup correlation; see the cited design note sec. 4).
-* Rocha, Bravo & Fair (1993) -- structured-packing hydraulic model
-  (``include_eps_in_denom`` switch documents the published definitional
-  dispute between Qiu's comment and the authors' rebuttal; no published
-  worked example exists -- cross-checked against the executable UFRJ
-  MATLAB listing instead).
+  which -- contrary to the declared demonstration basis -- is a
+  **mass-transfer** paper and contains no holdup correlation).
+* Rocha, Bravo & Fair (1993) -- structured-packing hydraulic model, Eq. 18-19
+  and the contact-angle switch in Eq. 28 as printed.  No published worked
+  example exists for this correlation, so it is locked by re-computation
+  only; ``include_eps_in_denom`` marks the published definitional dispute
+  between Qiu's comment and the authors' rebuttal and has no default.
+
+Source-by-source provenance for every correlation here (what was checked,
+against which document, and which items remain unverified) is recorded in
+``docs/notes/2026-10-31-holdup-correlation-provenance.md``.
 
 Unit conventions
 ----------------
@@ -47,10 +51,11 @@ Cryogenic-service caveat
 These correlations were developed on air/water and hydrocarbon systems.
 In liquid-hydrogen service ``rho_L - rho_V`` is comparatively small, which
 pushes the Bennett-Agrawal froth-density factor ``phi_e`` toward its
-lower limit; a clamp with a warning is applied and the validity of the
-correlations for hydrogen isotopes at 20 K is an assumption to be stated
-explicitly in the cited design note (no cryogenic-specific holdup
-correlation exists in the open literature -- see the report).
+lower limit; a clamp with a warning is applied.  Validity of any of these
+correlations for hydrogen isotopes at 20 K is an **assumption of this
+implementation**, not a verified result: the literature surveyed for this
+module contains no cryogenic-specific liquid-holdup correlation for
+structured packing.
 """
 
 from __future__ import annotations
@@ -141,16 +146,24 @@ def clear_liquid_height_bennett_agrawal(
 
     Notes
     -----
-    SI form (Wang et al. 2018, Eq. 5-6):
+    SI form, transcribed from Wang et al. (2018, FRI), Eq. 5-6:
 
         K_s   = u_a * sqrt(rho_v / (rho_l - rho_v))
         phi_e = exp(-12.55 * K_s**0.91)
         C     = 0.5 + 0.438 * exp(-137.8 * h_w)
         h_L   = phi_e * (h_w + C * (q_liquid_per_weir / phi_e)**0.67)
 
-    Equivalent to the Perry (mm) form
+    Same correlation in the Perry (mm) form
     ``h_L[mm] = phi_e (h_w[mm] + 15330 C_P (q/phi_e)^(2/3))`` with
-    ``C_P = 0.0327 + 0.0286 exp(-0.1378 h_w[mm])`` (ratio 1000:15.33).
+    ``C_P = 0.0327 + 0.0286 exp(-0.1378 h_w[mm])``.
+
+    The two coefficient sets are *not* related by a single factor: the
+    exponent constant converts exactly (``137.8 = 1000 * 0.1378``), but the
+    prefactors do not (``0.438 / 0.0286 = 15.315`` vs
+    ``0.500 / 0.0327 = 15.291``).  That is a rounding difference in the
+    published millimetre form, not a transcription error -- the SI set above
+    is the one implemented, so the ``C_P`` form is quoted for recognition
+    only.
     """
     if rho_l <= rho_v:
         raise ValueError(
@@ -230,9 +243,21 @@ def clear_liquid_height_hofhuis_zuiderweg(
     hole_pitch : float
         Hole centre-to-centre distance [m] (**not** hole diameter).
     mode : {"original", "dhulesia_froth"}
-        ``"original"``: ``h_cl = 0.6 psi^0.25 h_w^0.5 p^0.25`` (1979).
+        ``"original"``: ``h_cl = 0.6 psi^0.25 h_w^0.5 p^0.25`` (1979),
+        transcribed from Wang et al. (2018, FRI), Eq. 7-8, including the
+        variable definitions (``p`` = hole *pitch*, ``u_s`` = vapour velocity
+        based on the bubbling area).
+
         ``"dhulesia_froth"``: ``h_cl = 0.5 psi^0.33 h_w^0.5 p^0.17``
-        (Dhulesia 1984, froth regime, reported +/-10% vs experiments).
+        (**SECONDARY-UNVERIFIED**).  These coefficients are not confirmed
+        against a primary source: the only accessible secondary reference
+        (Wang et al. 2018) cites Dhulesia (1984, *Chem. Eng. Res. Des.*
+        62(5)) by name but prints no equation, and the "+/-10 %" agreement
+        often attributed to this form belongs to Dhulesia's fit, not to a
+        verification made here.  The paper is not available in this
+        repository.  Do not cite this branch as validated; it is kept in
+        place to keep the change surface small, not because the
+        transcription is confirmed.
 
     Returns
     -------
@@ -434,9 +459,16 @@ def liquid_holdup_packed_billet_schultes(
     """Billet-Schultes liquid holdup for random / structured packings.
 
     Implemented as the recommended substitute for the declared basis's
-    "Bravo & Fair (1982)" entry, which contains no holdup correlation (see
-    the cited design note sec. 4).  Formula family as given in the ChemSep Book
-    (Eq. 16.53-16.64), verified against three independent documents.
+    "Bravo & Fair (1982)" entry, which contains no holdup correlation.
+
+    Formula family as given in the ChemSep Book (Kooijman & Taylor), Eq.
+    16.53-16.64 of the **2nd edition**; the 1st-edition web release numbers
+    the same block 18.100-18.110, so an edition must be quoted with the
+    equation number.  All nine constants (0.15 / 0.1 / 0.85 / 0.25 / 0.1 /
+    12 / 0.3741 / 0.05 / the exponent 13) were re-checked against that
+    block during the 2026-10-31 transcription review.  The correlation has
+    no published worked example, so the tests lock it by re-computation;
+    see ``docs/notes/2026-10-31-holdup-correlation-provenance.md``.
 
     Parameters
     ----------
@@ -523,9 +555,15 @@ def liquid_holdup_packed_rocha_bravo_fair(
     """Rocha-Bravo-Fair (1993) total liquid holdup, structured packings.
 
     ``h_L = (4 Ft / S)**(2/3) * [3 mu_L u_LS / (rho_L g_eff sin(theta))]**(1/3)``
-    with the area-correction factor ``Ft`` as published (cross-confirmed by
-    five independent documents plus an executable MATLAB listing; see the
-    the cited design note sec. 5).
+    with the area-correction factor ``Ft`` as published in Eq. 18 and the
+    contact-angle switch of Eq. 28.  Transcribed from the paper itself; the
+    constants and the ``sigma`` switch point (0.055 N/m, not the 0.0453 N/m
+    used by ChemSep) were re-checked against the printed equations during
+    the 2026-10-31 review.  ``h_L`` here is a volume fraction in whichever
+    ``eps`` convention the caller selects (see ``include_eps_in_denom``).
+    No published worked example exists, so the tests lock it by
+    re-computation; see
+    ``docs/notes/2026-10-31-holdup-correlation-provenance.md``.
 
     Parameters
     ----------
