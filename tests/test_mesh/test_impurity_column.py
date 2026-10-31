@@ -6,10 +6,14 @@ Runs the CD2 impurity fixture end-to-end:
 2. the impurity disposition layer classifies He-4 -> top, CO/N2 -> frozen
    (with warnings) over the *solved* CD2 temperature window;
 3. top-product dilution by the non-condensable matches the exact
-   flow-weighted identity ``rel == I / (D + I)``; the declared demonstration
-   criterion ``r <= z_f`` is **NOT MET** for the 0.5 % He-4 feed of this
-   fixture (r = 0.5081300813 % > 0.5 %) and is encoded as a strict xfail --
-   see ``docs/notes/2026-10-28-d5-dilution-band-not-met.md``;
+   flow-weighted identity ``rel == I / (D + I)``. Two distinct facts are kept
+   apart on purpose: the delivered criterion ``r <= z_f`` is **NOT MET** for
+   the 0.5 % He-4 feed of this fixture (r = 0.5081300813 % > 0.5 %) and stays
+   encoded as a strict xfail -- see
+   ``docs/notes/2026-10-28-d5-dilution-band-not-met.md``; the owner-adopted
+   1 % limit (ruling of 2026-10-31, see
+   ``docs/notes/2026-10-31-dev-orchestrator-d5-threshold-relaxation.md``) is
+   met with a ~1.97x margin and is asserted by a separate, passing test;
 4. the corrected acceptance semantics are locked in as assertions (the
    original "99% to the top vent" claim holds only for helium -- see the
    impurity disposition documentation sec. 3.3).
@@ -40,6 +44,16 @@ FIXTURE = (
     / "wang2022"
     / "wang2022_issi_cd2_impurity.json"
 )
+
+#: D5 dilution limit in force: 1 %, adopted by owner ruling on 2026-10-31
+#: (``docs/notes/2026-10-31-dev-orchestrator-d5-threshold-relaxation.md``).
+#: The delivered criterion ``r <= z_f`` (0.5 % for this fixture) is still
+#: encoded verbatim, and still unmet, in
+#: ``test_d5_strict_dilution_band_r_le_zf``. This constant is a test-level
+#: acceptance value for the relaxed limit only -- it is intentionally not a
+#: library default in ``h2iso.impurities``, because it encodes a project
+#: acceptance decision, not a property of the physics kernel.
+D5_DILUTION_LIMIT = 0.01
 
 
 @pytest.fixture(scope="module")
@@ -185,10 +199,14 @@ class TestTopProductDilution:
         F = fixture["feed"]["total_flow_mol_h"]
         assert he_flow == pytest.approx(zf * F, rel=1e-12)  # I = zf * F
         assert rel == pytest.approx(he_flow / (d_flow + he_flow), rel=1e-12)
-        # NOTE: the strict criterion r <= zf (no tolerance) is NOT met for this
-        # fixture (r = 0.5081300813 % > 0.5 %); it is encoded -- and currently
-        # xfailing -- in test_d5_strict_dilution_band_r_le_zf. No tolerance or
-        # approximation may be used to report this as a pass.
+        # NOTE: two separate facts, both kept visible.
+        # (a) The delivered criterion r <= zf (no tolerance) is NOT met for
+        #     this fixture (r = 0.5081300813 % > 0.5 %); it is encoded -- and
+        #     currently xfailing -- in test_d5_strict_dilution_band_r_le_zf.
+        #     No tolerance or approximation may be used to report it as a pass.
+        # (b) The owner-adopted 1 % limit (ruling of 2026-10-31) IS met; see
+        #     test_d5_relaxed_dilution_band_r_le_1pct. That pass says nothing
+        #     about (a).
 
     @pytest.mark.xfail(
         strict=True,
@@ -227,6 +245,52 @@ class TestTopProductDilution:
         zf = fixture["feed"]["impurities"]["He4"]
         assert r == pytest.approx(0.401785 / (78.669503 + 0.401785), rel=1e-9)
         assert r <= zf  # literal criterion, currently False (no tolerance)
+
+    def test_d5_relaxed_dilution_band_r_le_1pct(self, fixture, cd2_result):
+        """Owner ruling of 2026-10-31: the D5 limit is 1 %, not 0.5 %.
+
+        This test asserts the *relaxed* limit and is expected to pass. It is
+        deliberately a separate test from
+        ``test_d5_strict_dilution_band_r_le_zf`` so the two facts never merge:
+
+        * ``r = 0.5081300813 %`` is **above** the delivered 0.5 % criterion --
+          that test still xfails, i.e. the delivered criterion is not met;
+        * ``r`` is **below** the owner-adopted 1 % limit -- this test passes.
+
+        A pass here is a statement about the 1 % limit only. It must not be
+        reported as the delivered criterion having been satisfied, and it is
+        not evidence that either limit was the intended design requirement
+        (the definition question remains open with the deliverer).
+        """
+        t_min = float(cd2_result.T_profile[0])
+        t_max = float(cd2_result.T_profile[-1])
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            disp = column_impurity_disposition(
+                fixture["feed"]["impurities"],
+                80.357,
+                t_min,
+                t_max,
+                liquid_flow_mol_h=80.357 * (1 - 0.979),
+            )
+        to_top = {
+            d.species: d.to_top_mol_h
+            for d in disp
+            if d.status == "to_top" and d.to_top_mol_h > 0
+        }
+        d_flow = 0.979 * 80.357
+        he_flow = to_top["He4"]
+        r = he_flow / (d_flow + he_flow)
+
+        # The measured dilution itself is unchanged by the ruling.
+        assert r == pytest.approx(0.005081300813008131, rel=1e-9)
+        assert r <= D5_DILUTION_LIMIT
+        # Margin at the adopted limit: 1 % / 0.5081 % = 1.97x.
+        assert D5_DILUTION_LIMIT / r > 1.9
+        # Equivalent design condition for the relaxed limit: with I = z_f * F
+        # and D = d * F, r <= t is equivalent to d >= z_f * (1 - t) / t, i.e.
+        # d >= 0.495 for t = 1 %. The case sits at d = 0.979.
+        assert 0.979 >= 0.005 * (1 - D5_DILUTION_LIMIT) / D5_DILUTION_LIMIT
 
     def test_errors(self):
         with pytest.raises(ValueError, match="must be > 0"):
