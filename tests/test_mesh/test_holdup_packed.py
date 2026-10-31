@@ -1,11 +1,20 @@
 """Packed-column holdup tests (holdup/efficiency extension, 填料塔 part).
 
-Key finding driving the test strategy (cited design note sec. 7): **none of the
-packed-column correlations has a published worked example**, so these tests
-use independent re-computation of the published formulas (regression locks),
-plus dimensional / monotonicity / degradation checks, instead of literature
-value comparison.  The two tray correlations keep their literature worked
-examples in ``test_holdup.py``.
+Key finding driving the test strategy: apart from the Stichlmair-Bravo-Fair
+worked example noted below, the packed-column correlations have no published
+worked example, so these tests use independent re-computation of the published
+formulas (regression locks), plus dimensional / monotonicity / degradation
+checks.  One value is anchored to a published number instead:
+
+* Stichlmair-Bravo-Fair (1989) Eq. 14 -- the paper's own worked example
+  (p. 24) gives ``h0 = 0.088 m^3/m^3`` for ``u_L = 5e-3 m/s``,
+  ``a_p = 260 m^2/m^3``, ``eps = 0.68``; reproduced below to within the
+  paper's three-figure rounding.
+* Billet-Schultes and Rocha-Bravo-Fair still have no published worked
+  example; for those the regression locks are the best available evidence.
+
+The two tray correlations keep their literature worked examples in
+``test_holdup.py``.
 """
 
 from __future__ import annotations
@@ -48,17 +57,41 @@ class TestStichlmairPacked:
         assert h2 / h1 == pytest.approx(4.0, rel=1e-9)
 
     def test_loading_correction(self):
+        # The correction depends on the pressure-drop *gradient*, so the result
+        # must not change when the packed height changes (a height-independent
+        # gradient is the input).  Z = 2.0 keeps this test sensitive to a
+        # second division by Z.
         out = liquid_holdup_packed_stichlmair(
             0.01,
             self.A_P,
             self.EPS,
             dP_irr_per_Z=100.0,
-            Z=1.0,
+            Z=2.0,
             rho_l=self.RHO_L,
         )
-        expected = out["h0"] * (1.0 + 20.0 * (100.0 / (1.0 * self.RHO_L * 9.81)) ** 2)
+        expected = out["h0"] * (1.0 + 20.0 * (100.0 / (self.RHO_L * 9.81)) ** 2)
         assert out["h_L"] == pytest.approx(expected, rel=1e-12)
         assert out["h_L"] > out["h0"]
+
+    def test_loading_correction_independent_of_packed_height(self):
+        common = dict(
+            u_l=0.01,
+            a_p=self.A_P,
+            eps=self.EPS,
+            dP_irr_per_Z=100.0,
+            rho_l=self.RHO_L,
+        )
+        heights = [0.25, 0.5, 1.0, 2.0, 5.0]
+        values = [
+            liquid_holdup_packed_stichlmair(Z=z, **common)["h_L"] for z in heights
+        ]
+        assert max(values) - min(values) < 1e-12, values
+
+    def test_literature_worked_example(self):
+        """SBF (1989) p. 24: h0 = 0.088 for u_L=5e-3, a_p=260, eps=0.68."""
+        out = liquid_holdup_packed_stichlmair(5.0e-3, 260.0, 0.68)
+        assert out["h0"] == pytest.approx(0.088, rel=5e-3)
+        assert out["h_L"] == pytest.approx(0.088, rel=5e-3)
 
     def test_load_region_clamp_guard(self):
         # high pressure drop pushes the raw value above the 0.5 guard

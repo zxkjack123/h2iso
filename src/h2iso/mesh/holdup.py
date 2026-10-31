@@ -357,7 +357,10 @@ def liquid_holdup_packed_stichlmair(
         Irrigated pressure-drop gradient [Pa/m], packed height [m] and
         liquid density [kg/m^3].  When all three are given, the
         loading-region correction is applied; otherwise the pre-loading
-        value ``h0`` is returned.
+        value ``h0`` is returned.  ``Z`` does not enter the correction
+        itself -- it is validated for positivity only, because the
+        gradient already carries the division by the packed height
+        (see Notes).
     mu_l : float, optional
         Liquid viscosity [Pa*s]; a warning is issued above 5 mPa*s, the
         upper bound of the correlation's validation range.
@@ -372,11 +375,18 @@ def liquid_holdup_packed_stichlmair(
     -----
     ``h0 = 0.555 * Fr_L**(1/3)`` with
     ``Fr_L = u_L^2 * a_p / (g * eps**4.65)`` and
-    ``h_L = h0 * [1 + 20 * (dP_irr/Z / (rho_L g))**2]``.
-    Cross-confirmed by six independent documents including an executable
-    MATLAB listing (see the cited design note sec. 3).  The pressure-drop-side
-    packing constants C1/C2/C3 have conflicting published values and are
-    **not** used here.
+    ``h_L = h0 * [1 + 20 * ((dP_irr/dZ) / (rho_L g))**2]``.
+
+    Equations 14 and 15 of the paper.  ``dP_irr`` in Eq. 15 is the *total*
+    irrigated pressure drop over the packed height, so ``dP_irr/Z`` is the
+    gradient; taking the gradient as the input (``dP_irr_per_Z``) means the
+    height must **not** be divided out a second time.  The paper's own
+    worked example (p. 24: ``u_L = 5e-3 m/s``, ``a_p = 260 m^2/m^3``,
+    ``eps = 0.68`` -> ``h0 = 0.088 m^3/m^3``) is reproduced in
+    ``tests/test_mesh/test_holdup_packed.py``.
+
+    The pressure-drop-side packing constants C1/C2/C3 have conflicting
+    published values and are **not** used here.
     """
     if u_l < 0:
         raise ValueError("u_l must be non-negative")
@@ -398,7 +408,7 @@ def liquid_holdup_packed_stichlmair(
     if dP_irr_per_Z is not None and Z is not None and rho_l is not None:
         if Z <= 0:
             raise ValueError("Z must be > 0")
-        h_l = h0 * (1.0 + 20.0 * (dP_irr_per_Z / (Z * rho_l * _G)) ** 2)
+        h_l = h0 * (1.0 + 20.0 * (dP_irr_per_Z / (rho_l * _G)) ** 2)
     h_l = min(h_l, 0.5)  # same numerical guard as the ChemSep implementation
     return {"Fr_L": fr_l, "h0": h0, "h_L": h_l}
 
