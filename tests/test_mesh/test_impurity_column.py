@@ -11,9 +11,9 @@ Runs the CD2 impurity fixture end-to-end:
    the 0.5 % He-4 feed of this fixture (r = 0.5081300813 % > 0.5 %) and stays
    encoded as a strict xfail -- see
    ``docs/notes/2026-10-28-d5-dilution-band-not-met.md``; the owner-adopted
-   1 % limit (ruling of 2026-10-31, see
-   ``docs/notes/2026-10-31-dev-orchestrator-d5-threshold-relaxation.md``) is
-   met with a ~1.97x margin and is asserted by a separate, passing test;
+   limit ``r <= 2 * z_f`` (= 1 % for this fixture; ruling of 2026-10-31,
+   restated in ``docs/notes/2026-11-04-d5-criterion-definition.md``) is met
+   with a ~1.97x margin and is asserted by a separate, passing test;
 4. the corrected acceptance semantics are locked in as assertions (the
    original "99% to the top vent" claim holds only for helium -- see the
    impurity disposition documentation sec. 3.3).
@@ -45,13 +45,13 @@ FIXTURE = (
     / "wang2022_issi_cd2_impurity.json"
 )
 
-#: D5 dilution limit in force: 1 %, adopted by owner ruling on 2026-10-31
-#: (``docs/notes/2026-10-31-dev-orchestrator-d5-threshold-relaxation.md``).
-#: The delivered criterion ``r <= z_f`` (0.5 % for this fixture) is still
-#: encoded verbatim, and still unmet, in
-#: ``test_d5_strict_dilution_band_r_le_zf``. This constant is a test-level
-#: acceptance value for the relaxed limit only -- it is intentionally not a
-#: library default in ``h2iso.impurities``, because it encodes a project
+#: D5 dilution limit in force: ``r <= 2 * z_f`` (== 1 % for this fixture,
+#: z_f = 0.005), adopted by owner ruling on 2026-10-31 and restated in
+#: ``docs/notes/2026-11-04-d5-criterion-definition.md``. The delivered criterion
+#: ``r <= z_f`` (0.5 % for this fixture) is still encoded verbatim, and still
+#: unmet, in ``test_d5_strict_dilution_band_r_le_zf``. This constant is a
+#: test-level acceptance value for the relaxed limit only -- it is intentionally
+#: not a library default in ``h2iso.impurities``, because it encodes a project
 #: acceptance decision, not a property of the physics kernel.
 D5_DILUTION_LIMIT = 0.01
 
@@ -204,7 +204,7 @@ class TestTopProductDilution:
         #     this fixture (r = 0.5081300813 % > 0.5 %); it is encoded -- and
         #     currently xfailing -- in test_d5_strict_dilution_band_r_le_zf.
         #     No tolerance or approximation may be used to report it as a pass.
-        # (b) The owner-adopted 1 % limit (ruling of 2026-10-31) IS met; see
+        # (b) The owner-adopted ``r <= 2 * z_f`` limit (= 1 % here) IS met; see
         #     test_d5_relaxed_dilution_band_r_le_1pct. That pass says nothing
         #     about (a).
 
@@ -247,7 +247,8 @@ class TestTopProductDilution:
         assert r <= zf  # literal criterion, currently False (no tolerance)
 
     def test_d5_relaxed_dilution_band_r_le_1pct(self, fixture, cd2_result):
-        """Owner ruling of 2026-10-31: the D5 limit is 1 %, not 0.5 %.
+        """Owner ruling of 2026-10-31, restated 2026-11-04: the D5 limit is
+        ``r <= 2 * z_f`` (= 1 % for this fixture), not ``r <= z_f`` (0.5 %).
 
         This test asserts the *relaxed* limit and is expected to pass. It is
         deliberately a separate test from
@@ -255,12 +256,14 @@ class TestTopProductDilution:
 
         * ``r = 0.5081300813 %`` is **above** the delivered 0.5 % criterion --
           that test still xfails, i.e. the delivered criterion is not met;
-        * ``r`` is **below** the owner-adopted 1 % limit -- this test passes.
+        * ``r`` is **below** the owner-adopted ``2 * z_f`` = 1 % limit -- this
+          test passes.
 
-        A pass here is a statement about the 1 % limit only. It must not be
-        reported as the delivered criterion having been satisfied, and it is
-        not evidence that either limit was the intended design requirement
-        (the definition question remains open with the deliverer).
+        A pass here is a statement about the adopted ``r <= 2 * z_f`` limit
+        only. It must not be reported as the delivered criterion having been
+        satisfied. The definition question is settled in-repo (see
+        ``docs/notes/2026-11-04-d5-criterion-definition.md``); no clarification
+        is outstanding with the deliverer.
         """
         t_min = float(cd2_result.T_profile[0])
         t_max = float(cd2_result.T_profile[-1])
@@ -281,6 +284,14 @@ class TestTopProductDilution:
         d_flow = 0.979 * 80.357
         he_flow = to_top["He4"]
         r = he_flow / (d_flow + he_flow)
+
+        zf = fixture["feed"]["impurities"]["He4"]
+        # The adopted limit is exactly 2 * z_f here: ``r <= 2 * z_f`` says the
+        # top-product impurity fraction is at most twice the feed's impurity
+        # fraction (enrichment factor E = r / z_f <= 2). See
+        # ``docs/notes/2026-11-04-d5-criterion-definition.md``.
+        assert D5_DILUTION_LIMIT == pytest.approx(2 * zf, rel=1e-12)
+        assert r <= 2 * zf
 
         # The measured dilution itself is unchanged by the ruling.
         assert r == pytest.approx(0.005081300813008131, rel=1e-9)
